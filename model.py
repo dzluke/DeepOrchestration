@@ -44,14 +44,14 @@ class OrchMatchNet(nn.Module):
         )
 
         self.layer5 = nn.Sequential(
-            nn.Linear(in_features=2048, out_features=1024)
-            nn.ReLU()
+            nn.Linear(in_features=2048, out_features=1024),
+            nn.ReLU(),
             nn.Dropout(0.5)
         )
 
         self.layer6 = nn.Sequential(
-            nn.Linear(in_features=1024, out_features=256)
-            nn.ReLU()
+            nn.Linear(in_features=1024, out_features=256),
+            nn.ReLU(),
             nn.Dropout(0.5)
         )
 
@@ -63,6 +63,7 @@ class OrchMatchNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
         out = out.view(out.size()[0], -1)
+        print(out.shape)
         out = self.layer5(out)
         out = self.layer6(out)
         out = self.layer7(out)

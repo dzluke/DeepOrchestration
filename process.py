@@ -8,9 +8,12 @@
 
 import librosa
 from pydub import AudioSegment
+import numpy as np
+import torch
+from torchvision.transforms import transforms
 import os
 import pickle
-from dataset import OrchDataSet
+
 
 time = 3
 path = './TinySOL'
@@ -74,27 +77,69 @@ def get_class_num():
 #     print(len(all_pitch), all_pitch)
 
 
-def make_dataset(type):
+def make_dataset():
     # (feature, label)
-    list_combination = os.listdir(path+'/Combine')
-    print(len(list_combination))
-    features = []
+    root = './TinySOL/Combine'
+    audio_dirs = [os.path.join(root, x) for x in os.listdir(root)]
+    audio_path = []
+    audio_feature = []
     labels = []
+    sets = []
 
-    for combination in list_combination:
-        feature = extract_feature(path+'/Combine/'+combination)
-        label = combination.split('.')[0].split('-')
+    for x in audio_dirs:
+        audio_path.append(x)
+        y, sr = librosa.load(x, duration=time)
+        # (128, 117)
+        feature = librosa.feature.melspectrogram(y, sr)
+        feature = torch.Tensor(feature[:20])
+        audio_feature.append(feature)
 
-        features.append(feature)
+        if len(audio_feature) % 100 == 0:
+            print(
+                "{} / {} have finished".format(len(audio_feature), len(audio_dirs)))
+
+        label = x.split('.')[1].split('/')[-1].split('-')
+        label = np.array(label, dtype=int)
+        label = torch.Tensor(label)
         labels.append(label)
 
-    division = int(0.8*len(features))
-    if type == 'train':
-        return features[:division], labels[:division]
-    elif type == 'test':
-        return features[division:-1], labels[:division:-1]
+        sets.append([feature, label])
+
+        # save in disk
+        # division = int(0.8*len(sets))
+        # pickle.dump(sets[:division],
+        #             open('./data/trainset.pkl', 'wb'))
+        # pickle.dump(sets[division:],
+        #             open('./data/testset.pkl', 'wb'))
+
+
+def crop_data():
+    train = pickle.load(open('./data/trainset.pkl', 'rb'))
+    train = crop(train)
+    pickle.dump(train, open('./data/trainset1.pkl', 'wb'))
+
+    test = pickle.load(open('./data/testset.pkl', 'rb'))
+    test = crop(test)
+    pickle.dump(test, open('./data/testset1.pkl', 'wb'))
+
+
+def crop(data):
+    min = 10000
+    for sets in data:
+        feature = sets[0]
+        if feature.shape[1] < min:
+            min = feature.shape[1]
+
+    print(min)
+
+    for sets in data:
+        sets[0] = sets[0][:, :min]
+        sets[0] = np.split(sets[0].numpy(), 1)
+        sets[0] = torch.Tensor(sets[0])
+
+    return data
 
 
 if __name__ == "__main__":
-    a, b = make_dataset('test')
-    print(len(a), len(b))
+    make_dataset()
+    #print(len(a), len(b))
