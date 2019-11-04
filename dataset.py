@@ -32,6 +32,10 @@ class OrchDataSet(data.Dataset):
 
     def __getitem__(self, idx):
         audio = self.audio_feature[idx]
+
+        audio = np.array(audio)
+        audio = torch.tensor(audio)
+        # print(audio.shape)
         # if self.transform is not None:
         #     audio = self.transform(audio)
 
@@ -40,8 +44,9 @@ class OrchDataSet(data.Dataset):
 
 if __name__ == '__main__':
     # root = './TinySOL/Combine'
-    root = './data/testset.pkl'
+    root = './data/testset1.pkl'
     a = OrchDataSet(root, transforms.ToTensor())
-    # aa = torch.utils.data.DataLoader(dataset=a, batch_size=50, shuffle=True)
-    # for (test, label) in aa:
-    #     print(len(test), len(label))
+    aa = torch.utils.data.DataLoader(dataset=a, batch_size=50, shuffle=True)
+
+    for (test, labels) in aa:
+        print(test.shape)

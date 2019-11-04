@@ -9,7 +9,7 @@ import time
 
 
 epoch_num = 50
-batch_size = 50
+batch_size = 16
 learning_rate = 0.001
 
 
@@ -28,8 +28,8 @@ def main():
     # dataset
     print("Start loading data -----")
 
-    trainset = OrchDataSet('./data/trainset1.pkl', transforms.ToTensor())
-    testset = OrchDataSet('./data/testset1.pkl', transforms.ToTensor())
+    trainset = OrchDataSet('./data/trainset.pkl', transforms.ToTensor())
+    testset = OrchDataSet('./data/testset.pkl', transforms.ToTensor())
 
     # load data
     train_load = torch.utils.data.DataLoader(dataset=trainset,
@@ -37,7 +37,7 @@ def main():
                                              shuffle=True)
 
     test_load = torch.utils.data.DataLoader(dataset=testset,
-                                            batch_size=batch_size,
+                                            batch_size=1,
                                             shuffle=True)
     print("End loading data")
 
@@ -70,53 +70,51 @@ def train(model, train_load, test_load):
             loss_1 = criterion(outputs[:, :107], labels[:, 0])
             loss_2 = criterion(outputs[:, 107:], labels[:, 1])
             loss = loss_1 + loss_2
-            loss = criterion(outputs, labels)
 
             loss.backward()
             optimizer.step()
 
-            if (i+1)/10 == 0:
+            if (i+1) % 10 == 0:
                 print('Epoch:[{}/{}], Step:[{}/{}], Loss:{:.4f}'.format(epoch +
                                                                         1, epoch_num, i+1, total_step, loss))
 
         model.eval()
 
-        with torch.no_grad:
-            total_num = 0
-            total_time = 0.0
-            correct_num = 0
-            correct_num_sound1 = 0
-            correct_num_sound2 = 0
+        total_num = 0
+        total_time = 0.0
+        correct_num = 0
+        correct_num_sound1 = 0
+        correct_num_sound2 = 0
 
-            for tests, labels in test_load:
-                tests = tests.to(device)
-                labels = labels.to(device)
+        for tests, labels in test_load:
+            tests = tests.to(device)
+            labels = labels.to(device)
 
-                labels = labels.long()
+            labels = labels.long()
 
-                start = time.time()
-                outputs = model(tests)
-                predicts = get_pred(outputs)
-                end = time.time()
+            start = time.time()
+            outputs = model(tests)
+            predicts = get_pred(outputs)
+            end = time.time()
 
-                total_num += labels.size(0)
-                total_time += float(end-start)
+            total_num += labels.size(0)
+            total_time += float(end-start)
 
-                correct_num, correct_num_sound1, correct_num_sound2 = count_correct(
-                    predicts, labels)
+            correct_num, correct_num_sound1, correct_num_sound2 = count_correct(
+                predicts, labels)
 
-                total_acc = 100*float(correct_num)/total_num
-                first_acc = 100*float(correct_num_sound1)/total_num
-                second_acc = 100*float(correct_num_sound2)/total_num
+            total_acc = 100*float(correct_num)/total_num
+            first_acc = 100*float(correct_num_sound1)/total_num
+            second_acc = 100*float(correct_num_sound2)/total_num
 
-                print("Total Accuracy: {:.3f}%, first Acc: {:.3f}%, second Acc: {:.3f}%".format(
-                    total_acc, first_acc, second_acc))
+            print("Total Accuracy: {:.3f}%, first Acc: {:.3f}%, second Acc: {:.3f}%".format(
+                total_acc, first_acc, second_acc))
 
     torch.save(model.state_dict, 'model.ckpt')
 
 
 def count_correct(predicts, labels):
-    assert predicts.size[0] == labels.size[0]
+    assert predicts.size(0) == labels.size(0)
     correct = 0
     correct_1 = 0
     correct_2 = 0

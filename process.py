@@ -15,7 +15,7 @@ import os
 import pickle
 
 
-time = 3
+time = 4
 path = './TinySOL'
 brass = '/Brass/BTb'
 strings = '/Strings/Vn'
@@ -89,9 +89,22 @@ def make_dataset():
     for x in audio_dirs:
         audio_path.append(x)
         y, sr = librosa.load(x, duration=time)
-        # (128, 117)
-        feature = librosa.feature.melspectrogram(y, sr)
-        feature = torch.Tensor(feature[:20])
+        # (128, len)
+        feature = librosa.feature.melspectrogram(y, sr).T
+        # (len, 128)
+
+        if feature.shape[0] <= 128:
+            # add zero
+            zero = np.zeros((128-feature.shape[0], 128), dtype=np.float32)
+            feature = np.vstack((feature, zero))
+            feature = np.split(feature, 1)
+        else:
+            feature = feature[:-1*(feature.shape[0] % 128)]
+            num_chunk = feature.shape[0]/128
+            feature = np.split(feature, num_chunk)
+
+        # (128, 128)
+        feature = torch.tensor(feature)
         audio_feature.append(feature)
 
         if len(audio_feature) % 100 == 0:
@@ -105,12 +118,12 @@ def make_dataset():
 
         sets.append([feature, label])
 
-        # save in disk
-        # division = int(0.8*len(sets))
-        # pickle.dump(sets[:division],
-        #             open('./data/trainset.pkl', 'wb'))
-        # pickle.dump(sets[division:],
-        #             open('./data/testset.pkl', 'wb'))
+    # save in disk
+    division = int(0.8*len(sets))
+    pickle.dump(sets[:division],
+                open('./data/trainset.pkl', 'wb'))
+    pickle.dump(sets[division:],
+                open('./data/testset.pkl', 'wb'))
 
 
 def crop_data():
@@ -142,4 +155,3 @@ def crop(data):
 
 if __name__ == "__main__":
     make_dataset()
-    #print(len(a), len(b))

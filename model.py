@@ -63,7 +63,6 @@ class OrchMatchNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
         out = out.view(out.size()[0], -1)
-        print(out.shape)
         out = self.layer5(out)
         out = self.layer6(out)
         out = self.layer7(out)
