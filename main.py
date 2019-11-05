@@ -6,16 +6,20 @@ from model import OrchMatchNet
 from process import get_class_num, make_dataset
 from dataset import OrchDataSet
 import time
+import os
 
 
 epoch_num = 50
 batch_size = 16
 learning_rate = 0.001
+model_path = './model'
 
 
 def arg_parse():
     parser = argparse.ArgumentParser(description='combination of orch')
     parser.add_argument('--model', default='cnn')
+    parser.add_argument('--is_resume', default='False',
+                        choices=['True', 'False'])
 
     return parser.parse_args()
 
@@ -38,26 +42,44 @@ def main():
 
     test_load = torch.utils.data.DataLoader(dataset=testset,
                                             batch_size=1,
-                                            shuffle=True)
+                                            shuffle=False)
     print("End loading data")
 
     # model construction
     out_num = get_class_num()
     model = OrchMatchNet(out_num)
+    start_epoch = 0
+    if arg.is_resume == 'True':
+        ckpt = os.listdir(model_path)
+        ckpt.sort(reverse=True)
+        if len(ckpt) != 0:
+            model_resume_path = ckpt[0]
+            state = torch.load(model_path+'/'+model_resume_path)
+            model.load_state_dict(state['state_dict'])
+            start_epoch = state['epoch']
+            print("Load %s successfully! " % model_resume_path)
+        else:
+            print("[Error] no checkpoint ")
 
+    # train model
     if arg.model == 'cnn':
-        train(model, train_load, test_load)
+        train(model, train_load, test_load, start_epoch)
 
 
-def train(model, train_load, test_load):
+def train(model, train_load, test_load, start_epoch):
     print("Starting training")
+
     device = torch.device('gpu' if torch.cuda.is_available() else 'cpu')
 
     criterion = nn.CrossEntropyLoss().to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
-    total_step = len(train_load)
-    for epoch in range(epoch_num):
+    best_acc = 0
+    best_epoch = None
+    acc_sets = []
+
+    for epoch in range(start_epoch, epoch_num):
+        model.train()
         for i, (trains, labels) in enumerate(train_load):
             trains = trains.to(device)
             labels = labels.to(device)
@@ -76,7 +98,17 @@ def train(model, train_load, test_load):
 
             if (i+1) % 10 == 0:
                 print('Epoch:[{}/{}], Step:[{}/{}], Loss:{:.4f}'.format(epoch +
-                                                                        1, epoch_num, i+1, total_step, loss))
+                                                                        1, epoch_num, i+1, len(train_load), loss))
+
+        # save cuurent model
+        model_name = model_path+'/model_epoch_'+str(epoch+1)+'.pth'
+        state = {
+            'epoch': epoch,
+            'state_dict': model.state_dict(),
+        }
+
+        torch.save(state, model_name)
+        print('model_epoch_'+str(epoch+1)+' saved')
 
         model.eval()
 
@@ -100,17 +132,39 @@ def train(model, train_load, test_load):
             total_num += labels.size(0)
             total_time += float(end-start)
 
-            correct_num, correct_num_sound1, correct_num_sound2 = count_correct(
-                predicts, labels)
+            correct_list = count_correct(predicts, labels)
 
-            total_acc = 100*float(correct_num)/total_num
-            first_acc = 100*float(correct_num_sound1)/total_num
-            second_acc = 100*float(correct_num_sound2)/total_num
+            correct_num += correct_list[0]
+            correct_num_sound1 += correct_list[1]
+            correct_num_sound2 += correct_list[2]
 
-            print("Total Accuracy: {:.3f}%, first Acc: {:.3f}%, second Acc: {:.3f}%".format(
-                total_acc, first_acc, second_acc))
+        total_acc = 100*float(correct_num)/total_num
+        first_acc = 100*float(correct_num_sound1)/total_num
+        second_acc = 100*float(correct_num_sound2)/total_num
 
-    torch.save(model.state_dict, 'model.ckpt')
+        avg_time = total_time/float(len(test_load))
+        print("Average Time: {:2.3f} ms".format(1000*avg_time))
+        print("Total Accuracy: {:.3f}%, first Acc: {:.3f}%, second Acc: {:.3f}%".format(
+            total_acc, first_acc, second_acc))
+
+        acc_sets.append([total_acc, first_acc, second_acc])
+
+        if total_acc > best_acc:
+            best_acc = total_acc
+            best_epoch = epoch+1
+            state = {
+                'epoch': epoch,
+                'state_dict': model.state_dict(),
+            }
+            torch.save(state, "epoch_"+str(epoch+1)+"_best.pth")
+
+    print("Best test accuracy: {} at epoch: {}".format(best_acc, best_epoch))
+    f = open('acc.txt', 'w')
+    for acc in acc_sets:
+        for a in acc:
+            f.write(a+' ')
+        f.write('\n')
+    f.close()
 
 
 def count_correct(predicts, labels):
