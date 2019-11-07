@@ -49,11 +49,17 @@ def main():
     out_num = get_class_num()
     model = OrchMatchNet(out_num)
     start_epoch = 0
+
+    # model load
     if arg.is_resume == 'True':
         ckpt = os.listdir(model_path)
-        ckpt.sort(reverse=True)
+        ckpts = []
+        for x in ckpt:
+            if x.endswith('.pth'):
+                ckpts.append(int(x.split('.')[0].split('_')[-1]))
+
         if len(ckpt) != 0:
-            model_resume_path = ckpt[0]
+            model_resume_path = 'model_epoch_'+str(max(ckpts))+'.pth'
             state = torch.load(model_path+'/'+model_resume_path)
             model.load_state_dict(state['state_dict'])
             start_epoch = state['epoch']
@@ -72,7 +78,7 @@ def train(model, train_load, test_load, start_epoch):
     device = torch.device('gpu' if torch.cuda.is_available() else 'cpu')
 
     criterion = nn.CrossEntropyLoss().to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     best_acc = 0
     best_epoch = None
@@ -97,8 +103,8 @@ def train(model, train_load, test_load, start_epoch):
             optimizer.step()
 
             if (i+1) % 10 == 0:
-                print('Epoch:[{}/{}], Step:[{}/{}], Loss:{:.4f}'.format(epoch +
-                                                                        1, epoch_num, i+1, len(train_load), loss))
+                print('Epoch:[{}/{}], Step:[{}/{}], Loss:{:.4f}, Loss_1:{:.4f}, Loss_2:{:.4f} '.format(epoch +
+                                                                                                       1, epoch_num, i+1, len(train_load), loss, loss_1, loss_2))
 
         # save cuurent model
         model_name = model_path+'/model_epoch_'+str(epoch+1)+'.pth'
@@ -147,7 +153,7 @@ def train(model, train_load, test_load, start_epoch):
         print("Total Accuracy: {:.3f}%, first Acc: {:.3f}%, second Acc: {:.3f}%".format(
             total_acc, first_acc, second_acc))
 
-        acc_sets.append([total_acc, first_acc, second_acc])
+        acc_sets.append([epoch, total_acc, first_acc, second_acc])
 
         if total_acc > best_acc:
             best_acc = total_acc
@@ -156,15 +162,19 @@ def train(model, train_load, test_load, start_epoch):
                 'epoch': epoch,
                 'state_dict': model.state_dict(),
             }
-            torch.save(state, "epoch_"+str(epoch+1)+"_best.pth")
+            torch.save(state, "epoch_best.pth")
+
+        f = open('acc.csv', 'w')
+        for acc in acc_sets:
+            for a in acc:
+                if a != acc[len(acc)-1]:
+                    f.write(str(a)+',')
+                else:
+                    f.write(str(a))
+            f.write('\n')
+        f.close()
 
     print("Best test accuracy: {} at epoch: {}".format(best_acc, best_epoch))
-    f = open('acc.txt', 'w')
-    for acc in acc_sets:
-        for a in acc:
-            f.write(a+' ')
-        f.write('\n')
-    f.close()
 
 
 def count_correct(predicts, labels):
@@ -193,6 +203,81 @@ def get_pred(output):
     pred = torch.cat((idx_1, idx_2), dim=1)
 
     return pred
+
+
+def test():
+    device = torch.device('gpu' if torch.cuda.is_available() else 'cpu')
+
+    testset = OrchDataSet('./data/testset.pkl', transforms.ToTensor())
+    test_load = torch.utils.data.DataLoader(dataset=testset,
+                                            batch_size=1,
+                                            shuffle=False)
+
+    out_num = get_class_num()
+    model = OrchMatchNet(out_num)
+
+    acc_sets = []
+    model_paths = []
+
+    print("Start testing")
+    for x in os.listdir('./model'):
+        if x.endswith('.pth'):
+            x = x.split('.')[0].split('_')[-1]
+            model_paths.append(int(x))
+            model_paths.sort()
+
+    for model_path in model_paths:
+        state = torch.load('./model/model_epoch_'+str(model_path)+'.pth')
+        model.load_state_dict(state['state_dict'])
+
+        model.eval()
+
+        total_num = 0
+        total_time = 0.0
+        correct_num = 0
+        correct_num_sound1 = 0
+        correct_num_sound2 = 0
+
+        for tests, labels in test_load:
+            tests = tests.to(device)
+            labels = labels.to(device)
+
+            labels = labels.long()
+
+            start = time.time()
+            outputs = model(tests)
+            predicts = get_pred(outputs)
+            end = time.time()
+
+            total_num += labels.size(0)
+            total_time += float(end-start)
+
+            correct_list = count_correct(predicts, labels)
+
+            correct_num += correct_list[0]
+            correct_num_sound1 += correct_list[1]
+            correct_num_sound2 += correct_list[2]
+
+        total_acc = 100*float(correct_num)/total_num
+        first_acc = 100*float(correct_num_sound1)/total_num
+        second_acc = 100*float(correct_num_sound2)/total_num
+
+        avg_time = total_time/float(len(test_load))
+        print("Average Time: {:2.3f} ms".format(1000*avg_time))
+        print("Total Accuracy: {:.3f}%, first Acc: {:.3f}%, second Acc: {:.3f}%, at epoch: {} ".format(
+            total_acc, first_acc, second_acc, model_path))
+
+        acc_sets.append([model_path, total_acc, first_acc, second_acc])
+
+        f = open('acc.csv', 'w')
+        for acc in acc_sets:
+            for a in acc:
+                if a != acc[len(acc)-1]:
+                    f.write(str(a)+',')
+                else:
+                    f.write(str(a))
+            f.write('\n')
+        f.close()
 
 
 if __name__ == "__main__":

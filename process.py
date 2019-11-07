@@ -13,6 +13,7 @@ import torch
 from torchvision.transforms import transforms
 import os
 import pickle
+import matplotlib.pyplot as plt
 
 
 time = 4
@@ -153,5 +154,29 @@ def crop(data):
     return data
 
 
+def draw():
+    f = open('acc.csv', 'r')
+    epoch_num = []
+    total_acc = []
+    first_acc = []
+    second_acc = []
+
+    for line in f.readlines():
+        acc = line.split(',')
+        epoch_num.append(acc[0])
+        total_acc.append(round(float(acc[1]), 2))
+        first_acc.append(round(float(acc[2]), 2))
+        second_acc.append(round(float(acc[3]), 2))
+
+    plt.figure()
+    plt.plot(epoch_num, total_acc, color='b')
+    plt.plot(epoch_num, first_acc, color='g')
+    plt.plot(epoch_num, second_acc, color='r')
+    plt.xlabel('epoch')
+    plt.ylabel('b:total_acc g:first_acc r:second_acc')
+    plt.savefig('acc.png')
+    plt.show()
+
+
 if __name__ == "__main__":
-    make_dataset()
+    draw()
