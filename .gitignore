@@ -1,0 +1,7 @@
+.DS_Store
+__pycache__
+epoch_best.pth
+acc.csv
+/TinySOL
+/model
+/data
