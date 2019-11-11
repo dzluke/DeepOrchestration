@@ -11,6 +11,7 @@
 
 ![acc](./acc.png) 
 
+- the best result comes at epoch 47, total acc: `94.278` %, first acc: `94.755` % , second acc: `99.491` %
 
 ### Updating!
 - update the way to mix
