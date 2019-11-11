@@ -14,6 +14,7 @@ from torchvision.transforms import transforms
 import os
 import pickle
 import matplotlib.pyplot as plt
+import random
 
 
 time = 4
@@ -35,17 +36,29 @@ def random_combine(N=2):
 
 # combine instruments(2)
 def combine(soundlist, labellist):
-    brass_file = AudioSegment.from_wav(path+brass+'/'+soundlist[0])
-    strings_file = AudioSegment.from_wav(path+strings+'/'+soundlist[1])
-    output = brass_file.overlay(strings_file)
+    brass_file, sr1 = librosa.load(path+brass+'/'+soundlist[0], sr=None)
+    brass_file = np.array(brass_file)
+    strings_file, sr2 = librosa.load(path+strings+'/'+soundlist[1], sr=None)
+    strings_file = np.array(strings_file)
 
+    diff = len(brass_file) - len(strings_file)
+
+    if diff >= 0:
+        add = np.zeros((1, diff), dtype=np.float32)
+        strings_file = np.append(strings_file, add)
+    else:
+        add = np.zeros((1, -diff), dtype=np.float32)
+        brass_file = np.append(brass_file, add)
+
+    output = (brass_file+strings_file)/2
     label = labellist[0]+'-'+labellist[1] + '.wav'
     name = path+'/Combine/' + label
-    output.export(name, format='wav')
+
+    librosa.output.write_wav(name, y=output, sr=sr1)
 
 
 def extract_feature(file):
-    y, sr = librosa.load(file, duration=time)
+    y, sr = librosa.load(file, duration=time, sr=None)
     mel_feature = librosa.feature.melspectrogram(
         y=y, sr=sr, n_fft=1024, hop_length=512)
 
@@ -78,18 +91,43 @@ def get_class_num():
 #     print(len(all_pitch), all_pitch)
 
 
+def encode(labels):
+    class_num = get_class_num()
+
+    encode_label = np.array(class_num*[0], dtype=np.float32)
+    encode_label = torch.tensor(encode_label)
+    one, two = labels
+
+    encode_label[int(one)] = 0.5
+    encode_label[107+int(two)] = 0.5
+
+    return encode_label
+
+
+def decode(labels):
+    decode_label = []
+
+    for i in range(len(labels)):
+        if labels[i] > 0:
+            decode_label.append(i)
+
+    decode_label[1] = decode_label[1]-107
+
+    return decode_label
+
+
 def make_dataset():
     # (feature, label)
     root = './TinySOL/Combine'
     audio_dirs = [os.path.join(root, x) for x in os.listdir(root)]
+    random.shuffle(audio_dirs)
     audio_path = []
     audio_feature = []
-    labels = []
     sets = []
 
     for x in audio_dirs:
         audio_path.append(x)
-        y, sr = librosa.load(x, duration=time)
+        y, sr = librosa.load(x, duration=time, sr=None)
         # (128, len)
         feature = librosa.feature.melspectrogram(y, sr).T
         # (len, 128)
@@ -115,7 +153,6 @@ def make_dataset():
         label = x.split('.')[1].split('/')[-1].split('-')
         label = np.array(label, dtype=int)
         label = torch.Tensor(label)
-        labels.append(label)
 
         sets.append([feature, label])
 
@@ -125,33 +162,6 @@ def make_dataset():
                 open('./data/trainset.pkl', 'wb'))
     pickle.dump(sets[division:],
                 open('./data/testset.pkl', 'wb'))
-
-
-def crop_data():
-    train = pickle.load(open('./data/trainset.pkl', 'rb'))
-    train = crop(train)
-    pickle.dump(train, open('./data/trainset1.pkl', 'wb'))
-
-    test = pickle.load(open('./data/testset.pkl', 'rb'))
-    test = crop(test)
-    pickle.dump(test, open('./data/testset1.pkl', 'wb'))
-
-
-def crop(data):
-    min = 10000
-    for sets in data:
-        feature = sets[0]
-        if feature.shape[1] < min:
-            min = feature.shape[1]
-
-    print(min)
-
-    for sets in data:
-        sets[0] = sets[0][:, :min]
-        sets[0] = np.split(sets[0].numpy(), 1)
-        sets[0] = torch.Tensor(sets[0])
-
-    return data
 
 
 def draw():
@@ -179,4 +189,4 @@ def draw():
 
 
 if __name__ == "__main__":
-    draw()
+    make_dataset()

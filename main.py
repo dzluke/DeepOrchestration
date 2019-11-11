@@ -1,12 +1,14 @@
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
+import numpy as np
 import argparse
-from model import OrchMatchNet
-from process import get_class_num, make_dataset
-from dataset import OrchDataSet
 import time
 import os
+
+from model import OrchMatchNet
+from process import get_class_num, decode
+from dataset import OrchDataSet
 
 
 epoch_num = 50
