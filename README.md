@@ -4,21 +4,20 @@
 
 
 ### The first try is to implement cnn
-- take 2 instruments from TinySOL and then combine 
+- take N(currently 2) instruments from TinySOL and then combine 
 - take melspectrogram features (128*128, if the combined pieces are small, just add zeros)
 - a multi-label model used to take the loss from both instruments
-- after 50 epochs training on cpu, accuracy results shown as follow
+- after 10 epochs training on cpu, accuracy results of every instruments shown as follow
 
-![acc](./acc.png) 
+![acc](./specific_acc.png) 
 
-- the best result comes at epoch 47, total acc: `94.278` %, first acc: `94.755` % , second acc: `99.491` %
+### Updating
+- extend from 2 specific instruments to 2 instruments with different kinds of combinations 
+- encode the labels in the format of 0-1 mitrix and take binary cross entropy with logits as loss function
 
-### Updating!
-- update the way to mix
-- simplify the model which is faster and more accurate now
-- encode labels or not can be successful, which depends on the loss function, more detials can be seen [here][1]. 
-
-[1]: https://pytorch.org/docs/stable/nn.html
+### Problem
+- see from the figure, the accuracy of both right predictions(total_acc) is low but the single right prediction is high.
+- some kinds of instruments show low accuracy in the result like Tbn, Cb, Fl ...
 
 
 

@@ -15,6 +15,7 @@ import os
 import pickle
 import matplotlib.pyplot as plt
 import random
+import json
 
 from dataset import OrchDataSet
 
@@ -98,8 +99,8 @@ def extract_feature(file):
     return mel_feature
 
 
-def get_class_num():
-    return len(os.listdir(path+brass+'/BTb'))+len(os.listdir(path+strings+'/Vn'))
+# def get_class_num():
+#     return len(os.listdir(path+brass+'/BTb'))+len(os.listdir(path+strings+'/Vn'))
 
 
 def show_all_class_num():
@@ -236,29 +237,47 @@ def make_dataset():
                 open('./data/testset.pkl', 'wb'))
 
 
-def draw():
+def draw_total():
     f = open('acc.csv', 'r')
     epoch_num = []
     total_acc = []
-    first_acc = []
-    second_acc = []
+    single_acc = []
 
     for line in f.readlines():
         acc = line.split(',')
         epoch_num.append(acc[0])
         total_acc.append(round(float(acc[1]), 2))
-        first_acc.append(round(float(acc[2]), 2))
-        second_acc.append(round(float(acc[3]), 2))
+        single_acc.append(round(float(acc[2]), 2))
 
     plt.figure()
     plt.plot(epoch_num, total_acc, color='b')
-    plt.plot(epoch_num, first_acc, color='g')
-    plt.plot(epoch_num, second_acc, color='r')
+    plt.plot(epoch_num, single_acc, color='r')
+
     plt.xlabel('epoch')
-    plt.ylabel('b:total_acc g:first_acc r:second_acc')
+    plt.ylabel('b:total_acc r:single_acc')
     plt.savefig('acc.png')
     plt.show()
 
 
+def draw_specific():
+    f = open('specific_acc.json', 'r')
+    specific_acc = json.load(f)
+
+    x = []
+    y = []
+
+    for key in specific_acc.keys():
+        x.append(key)
+        y.append(specific_acc[key])
+
+    plt.figure()
+    plt.plot(x, y, color='r')
+
+    plt.xlabel("type")
+    plt.ylabel("acc")
+    plt.savefig("specific_acc.png")
+    plt.show()
+
+
 if __name__ == "__main__":
-    make_dataset()
+    draw_specific()

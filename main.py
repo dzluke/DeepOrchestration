@@ -6,7 +6,7 @@ from torch.autograd import Variable
 import numpy as np
 import argparse
 import time
-import heapq
+import json
 import os
 
 from model import OrchMatchNet
@@ -163,12 +163,13 @@ def train(model, train_load, test_load, start_epoch):
         print("Average Time: {:2.3f} ms".format(1000*avg_time))
         print("Total Accuracy: {:.3f}%, single Acc: {:.3f}% ".format(
             total_acc, single_acc))
+        acc_result = {}
         for key in stat_result.keys():
-            acc = 100*float(stat_result[key])/float(db[key])
+            acc_result[key] = 100*float(stat_result[key])/float(db[key])
             print("{}: {}/{} = {:.4f} % ".format(key,
-                                                 stat_result[key], db[key], acc))
+                                                 stat_result[key], db[key], acc_result[key]))
 
-        #acc_sets.append([epoch, total_acc, single_acc])
+        acc_sets.append([epoch, total_acc, single_acc])
 
         if total_acc > best_acc:
             best_acc = total_acc
@@ -179,15 +180,18 @@ def train(model, train_load, test_load, start_epoch):
             }
             torch.save(state, "epoch_best.pth")
 
-        # f = open('acc.csv', 'w')
-        # for acc in acc_sets:
-        #     for a in acc:
-        #         if a != acc[len(acc)-1]:
-        #             f.write(str(a)+',')
-        #         else:
-        #             f.write(str(a))
-        #     f.write('\n')
-        # f.close()
+        f = open('acc.csv', 'w')
+        for acc in acc_sets:
+            for a in acc:
+                if a != acc[len(acc)-1]:
+                    f.write(str(a)+',')
+                else:
+                    f.write(str(a))
+            f.write('\n')
+        f.close()
+
+        f = open('specific_acc.json', 'w')
+        json.dump(acc_result, f)
 
     print("Best test accuracy: {} at epoch: {}".format(best_acc, best_epoch))
 
