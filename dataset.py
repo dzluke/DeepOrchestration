@@ -44,9 +44,11 @@ class OrchDataSet(data.Dataset):
 
 if __name__ == '__main__':
     # root = './TinySOL/Combine'
-    root = './data/testset1.pkl'
+    root = './data/trainset.pkl'
     a = OrchDataSet(root, transforms.ToTensor())
-    aa = torch.utils.data.DataLoader(dataset=a, batch_size=50, shuffle=True)
+    aa = torch.utils.data.DataLoader(dataset=a, batch_size=1, shuffle=True)
 
-    for (test, labels) in aa:
-        print(test.shape)
+    for (train, labels) in aa:
+        if train.shape[1] != 2:
+            print(train.shape)
+            print(train)

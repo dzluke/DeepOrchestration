@@ -16,7 +16,7 @@ class OrchMatchNet(nn.Module):
                       kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=6),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=4)
+            nn.MaxPool2d(kernel_size=2)
         )
 
         self.layer2 = nn.Sequential(
@@ -24,16 +24,16 @@ class OrchMatchNet(nn.Module):
                       kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=16),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=4)
+            nn.MaxPool2d(kernel_size=2)
         )
 
         self.layer3 = nn.Sequential(
-            nn.Linear(in_features=1024, out_features=256),
+            nn.Linear(in_features=16*32*32, out_features=2048),
             nn.ReLU(),
             nn.Dropout(0.5)
         )
 
-        self.layer4 = nn.Linear(256, out_num)
+        self.layer4 = nn.Linear(2048, out_num)
 
         # self.layer1 = nn.Sequential(
         #     nn.Conv2d(in_channels=1, out_channels=64,
