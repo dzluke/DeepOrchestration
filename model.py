@@ -12,28 +12,36 @@ class OrchMatchNet(nn.Module):
         super(OrchMatchNet, self).__init__()
 
         self.layer1 = nn.Sequential(
-            nn.Conv2d(in_channels=2, out_channels=6,
-                      kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=6),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2)
-        )
-
-        self.layer2 = nn.Sequential(
-            nn.Conv2d(in_channels=6, out_channels=16,
+            nn.Conv2d(in_channels=2, out_channels=16,
                       kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=16),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2)
         )
 
+        self.layer2 = nn.Sequential(
+            nn.Conv2d(in_channels=16, out_channels=64,
+                      kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(num_features=64),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=4)
+        )
+
         self.layer3 = nn.Sequential(
-            nn.Linear(in_features=16*32*32, out_features=2048),
+            nn.Conv2d(in_channels=64, out_channels=256,
+                      kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(num_features=256),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=4)
+        )
+
+        self.layer4 = nn.Sequential(
+            nn.Linear(in_features=4096, out_features=2048),
             nn.ReLU(),
             nn.Dropout(0.5)
         )
 
-        self.layer4 = nn.Linear(2048, out_num)
+        self.layer5 = nn.Linear(2048, out_num)
 
         # self.layer1 = nn.Sequential(
         #     nn.Conv2d(in_channels=1, out_channels=64,
@@ -84,9 +92,10 @@ class OrchMatchNet(nn.Module):
     def forward(self, x):
         out = self.layer1(x)
         out = self.layer2(out)
-        out = out.view(out.size()[0], -1)
         out = self.layer3(out)
+        out = out.view(out.size()[0], -1)
         out = self.layer4(out)
+        out = self.layer5(out)
 
         # out = self.layer1(x)
         # out = self.layer2(out)

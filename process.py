@@ -11,11 +11,12 @@ from pydub import AudioSegment
 import numpy as np
 import torch
 from torchvision.transforms import transforms
-import os
-import pickle
 import matplotlib.pyplot as plt
 import random
 import json
+import copy
+import pickle
+import os
 
 from dataset import OrchDataSet
 
@@ -26,8 +27,10 @@ brass = '/Brass'
 strings = '/Strings'
 winds = '/Winds'
 instru_type = [brass, strings, winds]
+ins = ['BTb', 'TpC', 'Hn', 'Tbn', 'Va', 'Vn',
+       'Vc', 'Cb', 'Ob', 'Fl', 'Bn', 'ClBb']
 N = 2
-MAX_NUM = 20000
+MAX_NUM = 40000
 
 
 def random_combine():
@@ -60,11 +63,11 @@ def random_combine():
             soundlist.append(os.path.join(instr, instr_file_list[num]))
             labellist.append(instr.split('/')[-1]+'!'+str(num))
 
-        if labellist in all_selects:
+        if set(labellist) in all_selects:
             continue
 
         combine(soundlist, labellist)
-        all_selects.append(labellist)
+        all_selects.append(set(labellist))
         init += 1
 
 
@@ -99,10 +102,6 @@ def extract_feature(file):
     return mel_feature
 
 
-# def get_class_num():
-#     return len(os.listdir(path+brass+'/BTb'))+len(os.listdir(path+strings+'/Vn'))
-
-
 def show_all_class_num():
     division = {}
     start = 0
@@ -121,6 +120,17 @@ def show_all_class_num():
     return end+1, division
 
 
+def show_all_instru_num():
+    ins = []
+    for instruments in instru_type:
+        for instrument in os.listdir(path+instruments):
+            if instrument.startswith('.'):
+                continue
+            ins.append(instrument)
+
+    return ins
+
+
 def stat_all_db():
     root = './TinySOL/Combine'
     _, class_div = show_all_class_num()
@@ -134,7 +144,7 @@ def stat_all_db():
         for l in lists:
             key = l.split('!')[0]
             class_div[key] += 1
-
+    print(class_div)
     return class_div
 
 
@@ -152,6 +162,8 @@ def stat_test_db():
     for _, labels in test_load:
         labels = decode(labels)
         for label in labels:
+            # stat_result[ins[label[0]]] += 1
+            # stat_result[ins[label[1]]] += 1
             for key in class_div.keys():
                 if label[0] >= class_div[key][0] and label[0] <= class_div[key][1]:
                     stat_result[key] += 1
@@ -164,11 +176,13 @@ def stat_test_db():
 
 def encode(labels):
     class_num, class_div = show_all_class_num()
+    #class_num = len(ins)
 
-    encode_label = np.array(class_num*[-1], dtype=np.float32)
+    encode_label = np.array(class_num*[0], dtype=np.float32)
 
     for label in labels:
         type, index = label.split('!')
+        # encode_label[ins.index(type)] = float(1)
         start = class_div[type][0]
         encode_label[start+int(index)] = float(1)
 
@@ -178,11 +192,11 @@ def encode(labels):
 
 def decode(labels):
     decode_label = []
-
-    for i in range(len(labels)):
-        one = list(labels[i]).index(1)
-        labels[i][one] = -1
-        two = list(labels[i]).index(1)
+    labels_copy = copy.deepcopy(labels)
+    for i in range(len(labels_copy)):
+        one = list(labels_copy[i]).index(1)
+        labels_copy[i][one] = 0
+        two = list(labels_copy[i]).index(1)
         decode_label.append([one, two])
 
     return torch.tensor(decode_label)
@@ -214,9 +228,17 @@ def make_dataset():
         num_chunk = feature.shape[0]/128
         feature = np.split(feature, num_chunk)
 
+        # if feature.shape[0] <= 128:
+        #     # add zero
+        #     zero = np.zeros((128-feature.shape[0], 128), dtype=np.float32)
+        #     feature = np.vstack((feature, zero))
+        # else:
+        #     feature = feature[:128]
+
+        # feature = np.split(feature, 1)
+
         # (2, 128, 128)
         feature = torch.tensor(feature)
-
         audio_feature.append(feature)
 
         if len(audio_feature) % 100 == 0:
@@ -225,7 +247,6 @@ def make_dataset():
 
         label = x.split('.')[1].split('/')[-1].split('-')
         label = encode(label)
-        label = torch.Tensor(label)
 
         sets.append([feature, label])
 
@@ -238,7 +259,7 @@ def make_dataset():
 
 
 def draw_total():
-    f = open('acc.csv', 'r')
+    f = open('acc_inst.csv', 'r')
     epoch_num = []
     total_acc = []
     single_acc = []
@@ -260,7 +281,7 @@ def draw_total():
 
 
 def draw_specific():
-    f = open('specific_acc.json', 'r')
+    f = open('specific_acc_inst.json', 'r')
     specific_acc = json.load(f)
 
     x = []
@@ -280,4 +301,4 @@ def draw_specific():
 
 
 if __name__ == "__main__":
-    draw_specific()
+    stat_test_db()

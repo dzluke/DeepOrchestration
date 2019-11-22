@@ -5,23 +5,25 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
 import argparse
+# import adabound
 import time
 import json
+import copy
 import os
 
 from model import OrchMatchNet
-from process import show_all_class_num, show_all_instru_num, stat_test_db, decode
+from process import show_all_class_num, stat_test_db, decode, ins
 from dataset import OrchDataSet
 
 
-epoch_num = 100
-batch_size = 64
+epoch_num = 200
+batch_size = 32
 model_path = './model'
 # db = stat_test_db()
-db = {'BTb': 1349, 'TpC': 1305, 'Hn': 1370, 'Tbn': 1270, 'Va': 1357, 'Vn': 1358,
-      'Vc': 1321, 'Cb': 1328, 'Ob': 1301, 'Fl': 1306, 'Bn': 1332, 'ClBb': 1403}
-# db = {'BTb': 24, 'TpC': 17, 'Hn': 25, 'Tbn': 20, 'Va': 37, 'Vn': 27,
-#       'Vc': 26, 'Cb': 33, 'Ob': 20, 'Fl': 24, 'Bn': 28, 'ClBb': 26}
+# db = {'BTb': 1284, 'TpC': 1308, 'Hn': 1388, 'Tbn': 1345, 'Va': 1296, 'Vn': 1306,
+#       'Vc': 1363, 'Cb': 1304, 'Ob': 1385, 'Fl': 1356, 'Bn': 1350, 'ClBb': 1315}
+db = {'BTb': 136, 'TpC': 128, 'Hn': 147, 'Tbn': 131, 'Va': 135, 'Vn': 114,
+      'Vc': 143, 'Cb': 133, 'Ob': 148, 'Fl': 119, 'Bn': 121, 'ClBb': 145}
 
 
 def arg_parse():
@@ -41,8 +43,8 @@ def main():
     # dataset
     print("Start loading data -----")
 
-    trainset = OrchDataSet('./data/trainset.pkl', transforms.ToTensor())
-    testset = OrchDataSet('./data/testset.pkl', transforms.ToTensor())
+    trainset = OrchDataSet('./data/trainset_mini.pkl', transforms.ToTensor())
+    testset = OrchDataSet('./data/testset_mini.pkl', transforms.ToTensor())
 
     # load data
     train_load = torch.utils.data.DataLoader(dataset=trainset,
@@ -56,11 +58,12 @@ def main():
 
     # model construction
     out_num, class_div = show_all_class_num()
-    model = OrchMatchNet(out_num)
-    start_epoch = 0
+    model = OrchMatchNet(12)
     optimizer = torch.optim.Adam(
         model.parameters(), lr=0.001, betas=(0.9, 0.999))
+    # optimizer = adabound.AdaBound(model.parameters(), lr=0.001, final_lr=0.1)
     # optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+    start_epoch = 0
 
     # model load
     if arg.is_resume == 'True':
@@ -73,9 +76,9 @@ def main():
         if len(ckpt) != 0:
             model_resume_path = 'model_epoch_'+str(max(ckpts))+'.pth'
             state = torch.load(model_path+'/'+model_resume_path)
-            model.load_state_dict(state['state_dict'])
-            optimizer = optimizer.load_state_dict(state['optimizer'])
             start_epoch = state['epoch']
+            optimizer = optimizer.load_state_dict(state['optimizer'])
+            model.load_state_dict(state['state_dict'])
             print("Load %s successfully! " % model_resume_path)
         else:
             print("[Error] no checkpoint ")
@@ -88,12 +91,11 @@ def main():
 def train(model, optimizer, train_load, test_load, start_epoch):
     print("Starting training")
 
-    device = torch.device('gpu: 0' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     out_num, class_div = show_all_class_num()
 
-    # criterion = nn.CrossEntropyLoss().to(device)
-    # criterion = nn.BCEWithLogitsLoss().to(device)
+    # criterion = F.binary_cross_entropy_with_logits
     sm = F.softmax
     criterion = F.binary_cross_entropy
 
@@ -109,21 +111,23 @@ def train(model, optimizer, train_load, test_load, start_epoch):
             labels = labels.to(device)
 
             outputs = model(trains)
+
             weights = np.ones(labels.shape, dtype=np.float32)
+            for index in [1, 2, 3, 4, 5, 6, 7, 9, 11]:
+                weights[index] = 2
             weights = torch.tensor(weights)
 
-            labels[labels == -1] = 0
             output = sm(outputs, dim=1)
-            loss = criterion(output, labels/2,
-                             weight=Variable(weights))*out_num
+            loss = criterion(output, labels/2, weight=Variable(weights))*12
 
             optimizer.zero_grad()
+
             loss.backward()
             optimizer.step()
 
             if (i+1) % 10 == 0:
                 print('Epoch:[{}/{}], Step:[{}/{}], Loss:{:.4f} '.format(
-                    epoch + 1, epoch_num, i+1, len(train_load), loss))
+                    epoch+1, epoch_num, i+1, len(train_load), loss))
 
         # save cuurent model
         model_name = model_path+'/model_epoch_'+str(epoch+1)+'.pth'
@@ -137,28 +141,33 @@ def train(model, optimizer, train_load, test_load, start_epoch):
         print('model_epoch_'+str(epoch+1)+' saved')
 
         model.eval()
+
         for key in class_div.keys():
             stat_result[key] = 0
 
-        total_num = 0
-        total_time = 0.0
         correct_num = 0
         correct_num_single = 0
+        total_num = 0
+        error_stat = {}
+        exchange = 0
+        exchange_single = 0
+        for key in class_div.keys():
+            error_stat[key] = copy.deepcopy(stat_result)
 
         for tests, labels in test_load:
             tests = tests.to(device)
             labels = labels.to(device)
-
-            start = time.time()
-            outputs = model(tests)
-            predicts = get_pred(outputs)
-            end = time.time()
-
             total_num += labels.size(0)
-            total_time += float(end-start)
-            labels = decode(labels)
-            correct_list, stat_result = count_correct(
-                predicts, labels, class_div, stat_result)
+
+            outputs = model(tests)
+
+            # get top N
+            predicts = get_pred(outputs)
+
+            decode_labels = decode(labels)
+
+            correct_list, stat_result, error_stat = count_correct(
+                predicts, decode_labels, stat_result, error_stat)
 
             correct_num += correct_list[0]
             correct_num_single += correct_list[1]
@@ -166,16 +175,18 @@ def train(model, optimizer, train_load, test_load, start_epoch):
         total_acc = 100*float(correct_num)/total_num
         single_acc = 100*float(correct_num_single)/total_num
 
-        avg_time = total_time/float(len(test_load))
-        print("Average Time: {:2.3f} ms".format(1000*avg_time))
-        print("Total Accuracy: {:.3f}%, single Acc: {:.3f}% ".format(
+        print("Test: Total Accuracy: {:.3f}%, single Acc: {:.3f}% ".format(
             total_acc, single_acc))
+
         acc_result = {}
         for key in stat_result.keys():
             acc_result[key] = 100*float(stat_result[key])/float(db[key])
             print("{}: {}/{} = {:.4f} % ".format(key,
                                                  stat_result[key], db[key], acc_result[key]))
 
+        # print("Error stat: ")
+        # for key in error_stat.keys():
+        #     print(key, error_stat[key])
         acc_sets.append([epoch, total_acc, single_acc])
 
         if total_acc > best_acc:
@@ -187,6 +198,8 @@ def train(model, optimizer, train_load, test_load, start_epoch):
                 'state_dict': model.state_dict(),
             }
             torch.save(state, "epoch_best.pth")
+            f = open('specific_acc.json', 'w')
+            json.dump(acc_result, f)
 
         f = open('acc.csv', 'w')
         for acc in acc_sets:
@@ -198,41 +211,42 @@ def train(model, optimizer, train_load, test_load, start_epoch):
             f.write('\n')
         f.close()
 
-        f = open('specific_acc.json', 'w')
-        json.dump(acc_result, f)
+        # model_name = model_path+'/model_epoch_'+str(epoch+1)+'.pth'
+        # state = {
+        #     'epoch': epoch,
+        #     'optimizer': optimizer.state_dict(),
+        #     'state_dict': model.state_dict(),
+        # }
+
+        # torch.save(state, model_name)
 
     print("Best test accuracy: {} at epoch: {}".format(best_acc, best_epoch))
 
 
-def count_correct(predicts, labels, class_div, stat_result):
+def count_correct(predicts, labels, stat_result, error_stat):
     assert predicts.size(0) == labels.size(0)
     correct = 0
     correct_single = 0
 
+    # !!! keep in mind to consider the sequence of the output
     for one, two in zip(predicts, labels):
         if torch.equal(one, two) or one[0] == two[1] and one[1] == two[0]:
             correct += 1
-            for key in class_div.keys():
-                if one[0] >= class_div[key][0] and one[0] <= class_div[key][1]:
-                    stat_result[key] += 1
-                elif one[1] >= class_div[key][0] and one[1] <= class_div[key][1]:
-                    stat_result[key] += 1
+            stat_result[ins[one[0]]] += 1
+            stat_result[ins[one[1]]] += 1
 
         elif one[0] == two[0] or one[0] == two[1]:
             correct_single += 1
-            for key in class_div.keys():
-                if one[0] >= class_div[key][0] and one[0] <= class_div[key][1]:
-                    stat_result[key] += 1
-                    break
+            stat_result[ins[one[0]]] += 1
+            #error_stat[ins[two[1]]][ins[one[1]]] += 1
 
         elif one[1] == two[1] or one[1] == two[0]:
             correct_single += 1
-            for key in class_div.keys():
-                if one[1] >= class_div[key][0] and one[1] <= class_div[key][1]:
-                    stat_result[key] += 1
-                    break
+            stat_result[ins[one[1]]] += 1
+            #error_stat[ins[two[0]]][ins[one[0]]] += 1
 
-    return [correct, correct_single], stat_result
+        # print(error_stat)
+    return [correct, correct_single], stat_result, error_stat
 
 
 def get_pred(output):
@@ -247,14 +261,14 @@ def get_pred(output):
 
 
 def test():
-    device = torch.device('gpu' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    testset = OrchDataSet('./data/testset.pkl', transforms.ToTensor())
+    testset = OrchDataSet('./data/testset_mini.pkl', transforms.ToTensor())
     test_load = torch.utils.data.DataLoader(dataset=testset,
-                                            batch_size=1,
+                                            batch_size=3,
                                             shuffle=False)
 
-    model = OrchMatchNet(12)
+    model = OrchMatchNet(24)
 
     acc_sets = []
     model_paths = []
@@ -268,64 +282,64 @@ def test():
             model_paths.append(int(x))
             model_paths.sort()
 
-    for model_path in model_paths:
-        for key in class_div.keys():
-            stat_result[key] = 0
-        state = torch.load('./model/model_epoch_'+str(model_path)+'.pth')
-        # state = torch.load('./epoch_best.pth')
-        model.load_state_dict(state['state_dict'])
+    # for model_path in model_paths:
+    for key in class_div.keys():
+        stat_result[key] = 0
+    state = torch.load('./model/model_epoch_'+'171'+'.pth')
+    # state = torch.load('./epoch_best.pth')
+    epoch = state['epoch']
+    model.load_state_dict(state['state_dict'])
 
-        model.eval()
+    model.eval()
 
-        total_num = len(test_load)
-        total_time = 0.0
-        correct_num = 0
-        correct_num_single = 0
+    total_num = len(test_load)
 
-        for tests, labels in test_load:
-            tests = tests.to(device)
-            labels = labels.to(device)
+    correct_num = 0
+    correct_num_single = 0
 
-            start = time.time()
-            outputs = model(tests)
-            predicts = get_pred(outputs)
-            end = time.time()
+    for tests, labels in test_load:
+        tests = tests.to(device)
+        labels = labels.to(device)
 
-            total_time += float(end-start)
-            labels = decode(labels)
-            correct_list, stat_result = count_correct(
-                predicts, labels, class_div, stat_result)
+        outputs = model(tests)
+        predicts = get_pred(outputs)
 
-            correct_num += correct_list[0]
-            correct_num_single += correct_list[1]
+        labels = decode(labels)
+        print("label: ", labels)
 
-        total_acc = 100*float(correct_num)/total_num
-        single_acc = 100*float(correct_num_single)/total_num
+        return
 
-        avg_time = total_time/float(len(test_load))
-        print("Average Time: {:2.3f} ms".format(1000*avg_time))
-        print("Total Accuracy: {:.3f}%, single Acc: {:.3f}% ".format(
-            total_acc, single_acc))
-        acc_result = {}
-        for key in stat_result.keys():
-            acc_result[key] = 100*float(stat_result[key])/float(db[key])
-            print("{}: {}/{} = {:.4f} % ".format(key,
-                                                 stat_result[key], db[key], acc_result[key]))
+        correct_list, stat_result = count_correct(
+            predicts, labels, class_div, stat_result)
 
-        acc_sets.append([epoch, total_acc, single_acc])
+        correct_num += correct_list[0]
+        correct_num_single += correct_list[1]
 
-        f = open('acc.csv', 'w')
-        for acc in acc_sets:
-            for a in acc:
-                if a != acc[len(acc)-1]:
-                    f.write(str(a)+',')
-                else:
-                    f.write(str(a))
-            f.write('\n')
-        f.close()
+    total_acc = 100*float(correct_num)/total_num
+    single_acc = 100*float(correct_num_single)/total_num
 
-        f = open('specific_acc.json', 'w')
-        json.dump(acc_result, f)
+    print("Total Accuracy: {:.3f}%, single Acc: {:.3f}% ".format(
+        total_acc, single_acc))
+    acc_result = {}
+    for key in stat_result.keys():
+        acc_result[key] = 100*float(stat_result[key])/float(db[key])
+        print("{}: {}/{} = {:.4f} % ".format(key,
+                                             stat_result[key], db[key], acc_result[key]))
+
+    acc_sets.append([epoch, total_acc, single_acc])
+
+    # f = open('acc.csv', 'w')
+    # for acc in acc_sets:
+    #     for a in acc:
+    #         if a != acc[len(acc)-1]:
+    #             f.write(str(a)+',')
+    #         else:
+    #             f.write(str(a))
+    #     f.write('\n')
+    # f.close()
+
+    f = open('specific_acc.json', 'w')
+    json.dump(acc_result, f)
 
 
 if __name__ == "__main__":
