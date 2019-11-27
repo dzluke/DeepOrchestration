@@ -19,8 +19,9 @@
 - After 200 epochs training on gpu, results of every instruments shown
 
 ![all](./specific_acc.png)
+![data](./best.png)
 
-- Total acc and single acc are shown
+- Total acc and single acc are shown, which reaches 86.625 %.
 
 ![all_all](./acc.png)
 
