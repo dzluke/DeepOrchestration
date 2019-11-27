@@ -16,8 +16,8 @@ from process import show_all_class_num, stat_test_db, decode, ins
 from dataset import OrchDataSet
 
 
-epoch_num = 200
-batch_size = 32
+epoch_num = 700
+batch_size = 64
 model_path = './model'
 # db = stat_test_db()
 # db = {'BTb': 1284, 'TpC': 1308, 'Hn': 1388, 'Tbn': 1345, 'Va': 1296, 'Vn': 1306,
@@ -98,38 +98,124 @@ def train(model, optimizer, train_load, test_load, start_epoch):
     # criterion = F.binary_cross_entropy_with_logits
     sm = F.softmax
     criterion = F.binary_cross_entropy
+    model = model.to(device)
 
     best_acc = 0
     best_epoch = None
     acc_sets = []
     stat_result = {}
 
-    for epoch in range(start_epoch, epoch_num):
-        model.train()
-        for i, (trains, labels) in enumerate(train_load):
-            trains = trains.to(device)
-            labels = labels.to(device)
+    try:
+        for epoch in range(start_epoch, epoch_num):
+            model.train()
+            for i, (trains, labels) in enumerate(train_load):
+                trains = trains.to(device)
+                labels = labels.to(device)
 
-            outputs = model(trains)
+                outputs = model(trains)
 
-            weights = np.ones(labels.shape, dtype=np.float32)
-            for index in [1, 2, 3, 4, 5, 6, 7, 9, 11]:
-                weights[index] = 2
-            weights = torch.tensor(weights)
+                weights = np.ones(labels.shape, dtype=np.float32)
+                for index in [1, 2, 3, 4, 5, 6, 7, 9, 11]:
+                    weights[index] = 2
+                weights = Variable(torch.tensor(weights)).to(device)
 
-            output = sm(outputs, dim=1)
-            loss = criterion(output, labels/2, weight=Variable(weights))*12
+                output = sm(outputs, dim=1)
+                loss = criterion(output, labels/2, weight=weights)*12
 
-            optimizer.zero_grad()
+                optimizer.zero_grad()
 
-            loss.backward()
-            optimizer.step()
+                loss.backward()
+                optimizer.step()
 
-            if (i+1) % 10 == 0:
-                print('Epoch:[{}/{}], Step:[{}/{}], Loss:{:.4f} '.format(
-                    epoch+1, epoch_num, i+1, len(train_load), loss))
+                if (i+1) % 10 == 0:
+                    print('Epoch:[{}/{}], Step:[{}/{}], Loss:{:.4f} '.format(
+                        epoch+1, epoch_num, i+1, len(train_load), loss))
 
-        # save cuurent model
+            # save cuurent model
+            if epoch % 100 == 0:
+                model_name = model_path+'/model_epoch_'+str(epoch+1)+'.pth'
+                state = {
+                    'epoch': epoch,
+                    'optimizer': optimizer.state_dict(),
+                    'state_dict': model.state_dict(),
+                }
+
+                torch.save(state, model_name)
+                print('model_epoch_'+str(epoch+1)+' saved')
+
+            model.eval()
+
+            for key in class_div.keys():
+                stat_result[key] = 0
+
+            correct_num = 0
+            correct_num_single = 0
+            total_num = 0
+            error_stat = {}
+            exchange = 0
+            exchange_single = 0
+            for key in class_div.keys():
+                error_stat[key] = copy.deepcopy(stat_result)
+
+            for tests, labels in test_load:
+                tests = tests.to(device)
+                labels = labels.to(device)
+                total_num += labels.size(0)
+
+                outputs = model(tests)
+
+                # get top N
+                outputs = sm(outputs, dim=1)
+                predicts = get_pred(outputs).to(device)
+
+                decode_labels = decode(labels).to(device)
+
+                correct_list, stat_result, error_stat = count_correct(
+                    predicts, decode_labels, stat_result, error_stat)
+
+                correct_num += correct_list[0]
+                correct_num_single += correct_list[1]
+
+            total_acc = 100*float(correct_num)/total_num
+            single_acc = 100*float(correct_num_single)/total_num
+
+            print("Test: Total Accuracy: {:.3f}%, single Acc: {:.3f}% ".format(
+                total_acc, single_acc))
+
+            acc_result = {}
+            for key in stat_result.keys():
+                acc_result[key] = 100*float(stat_result[key])/float(db[key])
+                print("{}: {}/{} = {:.4f} % ".format(key,
+                                                     stat_result[key], db[key], acc_result[key]))
+
+            # print("Error stat: ")
+            # for key in error_stat.keys():
+            #     print(key, error_stat[key])
+            acc_sets.append([epoch, total_acc, single_acc])
+
+            if total_acc > best_acc:
+                best_acc = total_acc
+                best_epoch = epoch+1
+                state = {
+                    'epoch': epoch,
+                    'optimizer': optimizer.state_dict(),
+                    'state_dict': model.state_dict(),
+                }
+                torch.save(state, "epoch_best.pth")
+                f = open('specific_acc.json', 'w')
+                json.dump(acc_result, f)
+
+            f = open('acc.csv', 'w')
+            for acc in acc_sets:
+                for a in acc:
+                    if a != acc[len(acc)-1]:
+                        f.write(str(a)+',')
+                    else:
+                        f.write(str(a))
+                f.write('\n')
+            f.close()
+
+    except KeyboardInterrupt:
         model_name = model_path+'/model_epoch_'+str(epoch+1)+'.pth'
         state = {
             'epoch': epoch,
@@ -138,89 +224,9 @@ def train(model, optimizer, train_load, test_load, start_epoch):
         }
 
         torch.save(state, model_name)
-        print('model_epoch_'+str(epoch+1)+' saved')
 
-        model.eval()
-
-        for key in class_div.keys():
-            stat_result[key] = 0
-
-        correct_num = 0
-        correct_num_single = 0
-        total_num = 0
-        error_stat = {}
-        exchange = 0
-        exchange_single = 0
-        for key in class_div.keys():
-            error_stat[key] = copy.deepcopy(stat_result)
-
-        for tests, labels in test_load:
-            tests = tests.to(device)
-            labels = labels.to(device)
-            total_num += labels.size(0)
-
-            outputs = model(tests)
-
-            # get top N
-            predicts = get_pred(outputs)
-
-            decode_labels = decode(labels)
-
-            correct_list, stat_result, error_stat = count_correct(
-                predicts, decode_labels, stat_result, error_stat)
-
-            correct_num += correct_list[0]
-            correct_num_single += correct_list[1]
-
-        total_acc = 100*float(correct_num)/total_num
-        single_acc = 100*float(correct_num_single)/total_num
-
-        print("Test: Total Accuracy: {:.3f}%, single Acc: {:.3f}% ".format(
-            total_acc, single_acc))
-
-        acc_result = {}
-        for key in stat_result.keys():
-            acc_result[key] = 100*float(stat_result[key])/float(db[key])
-            print("{}: {}/{} = {:.4f} % ".format(key,
-                                                 stat_result[key], db[key], acc_result[key]))
-
-        # print("Error stat: ")
-        # for key in error_stat.keys():
-        #     print(key, error_stat[key])
-        acc_sets.append([epoch, total_acc, single_acc])
-
-        if total_acc > best_acc:
-            best_acc = total_acc
-            best_epoch = epoch+1
-            state = {
-                'epoch': epoch,
-                'optimizer': optimizer.state_dict(),
-                'state_dict': model.state_dict(),
-            }
-            torch.save(state, "epoch_best.pth")
-            f = open('specific_acc.json', 'w')
-            json.dump(acc_result, f)
-
-        f = open('acc.csv', 'w')
-        for acc in acc_sets:
-            for a in acc:
-                if a != acc[len(acc)-1]:
-                    f.write(str(a)+',')
-                else:
-                    f.write(str(a))
-            f.write('\n')
-        f.close()
-
-        # model_name = model_path+'/model_epoch_'+str(epoch+1)+'.pth'
-        # state = {
-        #     'epoch': epoch,
-        #     'optimizer': optimizer.state_dict(),
-        #     'state_dict': model.state_dict(),
-        # }
-
-        # torch.save(state, model_name)
-
-    print("Best test accuracy: {} at epoch: {}".format(best_acc, best_epoch))
+    else:
+        print("Best test accuracy: {} at epoch: {}".format(best_acc, best_epoch))
 
 
 def count_correct(predicts, labels, stat_result, error_stat):
