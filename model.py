@@ -33,76 +33,56 @@ class CNN(nn.Module):
             nn.MaxPool2d(kernel_size=2)
         )
 
-        self.layer4 = nn.Sequential(
-            nn.Linear(in_features=64*16*16, out_features=4096),
-            nn.ReLU(inplace=True),
-            nn.Dropout(0.5)
-        )
-
-        self.layer5 = nn.Linear(4096, out_num)
-
-        # self.layer1 = nn.Sequential(
-        #     nn.Conv2d(in_channels=1, out_channels=64,
-        #               kernel_size=3, stride=1, padding=1),
-        #     nn.BatchNorm2d(num_features=64),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d(kernel_size=2)
-        # )
-
-        # self.layer2 = nn.Sequential(
-        #     nn.Conv2d(in_channels=64, out_channels=128,
-        #               kernel_size=3, stride=1, padding=1),
-        #     nn.BatchNorm2d(num_features=128),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d(kernel_size=2)
-        # )
-
-        # self.layer3 = nn.Sequential(
-        #     nn.Conv2d(in_channels=128, out_channels=256,
-        #               kernel_size=3, stride=1, padding=1),
-        #     nn.BatchNorm2d(num_features=256),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d(kernel_size=4)
-        # )
-
+        # # bottleneck start
         # self.layer4 = nn.Sequential(
-        #     nn.Conv2d(in_channels=256, out_channels=512,
-        #               kernel_size=3, stride=1, padding=1),
-        #     nn.BatchNorm2d(num_features=512),
-        #     nn.ReLU(),
-        #     nn.MaxPool2d(kernel_size=4)
+        #     nn.Conv2d(in_channels=64, out_channels=16,
+        #               kernel_size=1, stride=1, bias=False),
+        #     nn.BatchNorm2d(16),
+        #     nn.ReLU()
         # )
 
         # self.layer5 = nn.Sequential(
-        #     nn.Linear(in_features=2048, out_features=1024),
-        #     nn.ReLU(),
-        #     nn.Dropout(0.5)
+        #     nn.Conv2d(in_channels=16, out_channels=16,
+        #               kernel_size=3, stride=1, padding=1, bias=False),
+        #     nn.BatchNorm2d(16),
+        #     nn.ReLU()
         # )
 
         # self.layer6 = nn.Sequential(
-        #     nn.Linear(in_features=1024, out_features=256),
-        #     nn.ReLU(),
-        #     nn.Dropout(0.5)
+        #     nn.Conv2d(in_channels=16, out_channels=64,
+        #               kernel_size=1, stride=1, bias=False),
+        #     nn.BatchNorm2d(64)
+        #     # nn.ReLU()
         # )
+        # # bottleneck end
 
-        # self.layer7 = nn.Linear(256, out_num)
+        self.lstm = nn.LSTM(input_size=16, hidden_size=16, batch_first=True)
+
+        self.layer7 = nn.Sequential(
+            nn.Linear(in_features=64*16*16, out_features=4096),
+            nn.ReLU(),
+            nn.Dropout(0.5)
+        )
+
+        self.layer8 = nn.Linear(4096, out_num)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.5)
 
     def forward(self, x):
         out = self.layer1(x)
         out = self.layer2(out)
         out = self.layer3(out)
-        out = out.view(out.size()[0], -1)
-        out = self.layer4(out)
-        out = self.layer5(out)
+        # res = out
+        out = out.view(-1, 64*16, 16)
+        out, _ = self.lstm(out)
 
-        # out = self.layer1(x)
-        # out = self.layer2(out)
-        # out = self.layer3(out)
-        # out = self.layer4(out)
-        # out = out.view(out.size()[0], -1)
-        # out = self.layer5(out)
-        # out = self.layer6(out)
-        # out = self.layer7(out)
+        # out = out.contiguous().view(-1, 32, 32, 32)
+        # out += res
+        # out = self.relu(out)
+
+        out = out.contiguous().view(out.size()[0], -1)
+        out = self.layer7(out)
+        out = self.layer8(out)
 
         return out
 
