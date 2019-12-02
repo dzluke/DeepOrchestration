@@ -36,43 +36,43 @@
 
 ### Other Architectures
 #### BottleNeck
-- Best acc: 84.875%
+Best acc: 84.875%
 ![bn_acc](./bottleneck-300/bottleneck_acc.png)
-- for every instrument:
+for every instrument:
 ![bn_inst](./bottleneck-300/bottleneck_inst.png)
-- Loss:
+Loss:
 ![bn_loss](./bottleneck-300/bottleneck_loss.png)
 
 #### BottleNeck+Residual
-- Best acc: 80.037%
+Best acc: 80.037%
 ![bn_res_acc](./bottleneck-300/res/bottleneck_acc.png)
-- for every instrument:
+for every instrument:
 ![bn_res_inst](./bottleneck-300/res/res_inst.png)
-- Loss:
+Loss:
 ![bn_res_loss](./bottleneck-300/res/bottleneck_loss.png)
 
 #### CNN+LSTM
-- Best acc: 80.688%
+Best acc: 80.688%
 ![cl_acc](./lstm-300/slstm/lstm_acc.png)
-- for every instrument:
+for every instrument:
 ![cl_inst](./lstm-300/slstm/lstm_inst.png)
-- Loss:
+Loss:
 ![cl_loss](./lstm-300/slstm/lstm_loss.png)
 
 #### CNN+BiLSTM
-- Best acc: 67.513%
+Best acc: 67.513%
 ![cbl_acc](./lstm-300/bilstm/lstm_acc.png)
-- for every instrument:
+for every instrument:
 ![cbl_inst](./lstm-300/bilstm/lstm_inst.png)
-- Loss:
+Loss:
 ![cbl_loss](./lstm-300/bilstm/lstm_loss.png)
 
 #### CNN+LSTM+Residual
-- Best acc: 86.125%
+Best acc: 86.125%
 ![clr_acc](./lstm-300/lstm+res/lstm_acc.png)
-- for every instrument:
+for every instrument:
 ![clr_inst](./lstm-300/lstm+res/lstm_inst.png)
-- Loss:
+Loss:
 ![clr_loss](./lstm-300/lstm+res/lstm_loss.png)
 
 ### Baseline(Only instrument recognition)
@@ -81,5 +81,5 @@ Random forrest(with 60 estimators) performs better than SVM
 ![rf](./rf.png)
 
 #### SVM
-The third try is to use SVM
+- Grid Search para with rbf kernel from C: 1 to 10000, gama: 0.0001 - 1, and get a best result of 71.12 %
 - SVM with linear kernel shows better result which reaches a result of 71.99 % on test set
