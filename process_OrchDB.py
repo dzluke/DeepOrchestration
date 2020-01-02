@@ -1,0 +1,326 @@
+import librosa
+import numpy as np
+import torch
+from torchvision.transforms import transforms
+import matplotlib.pyplot as plt
+import random
+import json
+import copy
+import pickle
+import os
+
+from dataset import OrchDataSet
+
+
+path = './OrchDB'
+ins = ['Va', 'Cb', 'Cbs', 'Vns', 'Vc', 'Fl', 'Vn', 'BTbn', 'BClBb', 'ClBb',
+       'BFl', 'CbTb', 'Picc', 'ClEb', 'Ob', 'EH', 'CbFl', 'Bn', 'Vas', 'Vcs', 'CbClBb']
+N = 5
+time = 4
+MAX_NUM = 200000
+out_num = 10120
+my_data_path = './data/ten/'
+server_data_path = '/home/data/happipub/gradpro_l/ten'
+
+
+def random_combine():
+    all_class = []
+    all_mixture = []
+    inx = json.load(open('class.index', 'r'))
+
+    for inst in os.listdir(path):
+        if inst.startswith('.'):
+            continue
+        newpath = os.path.join(path, inst)
+        all_class.append(newpath)
+
+    # combine
+    all_selects = []
+    all_mix = []
+    init = 0
+    while init < MAX_NUM:
+        # select N files randomly
+        selects = random.sample(range(len(all_class)), N)
+        flag = False
+        soundlist = []
+        labellist = []
+
+        for num in selects:
+            f = all_class[num].split('.')[1].split('/')[-1]
+            if f.endswith('c'):
+                idx = inx[f[:-3]]
+            else:
+                idx = inx[f]
+
+            if idx in labellist:
+                flag = True
+                break
+
+            labellist.append(str(idx))
+            soundlist.append(all_class[num])
+
+        if flag or set(labellist) in all_selects:
+            continue
+
+        mixed = combine(soundlist, labellist)
+        mix = deal_mix(mixed)
+
+        all_selects.append(set(labellist))
+        all_mix.append(mix)
+
+        init += 1
+        if init % 100 == 0:
+            print(
+                "{} / {} have finished".format(init, MAX_NUM))
+
+        # distributed data
+        if init % 50000 == 0:
+            # save in disk
+            num = int(init/50000)
+            division = int(0.8*len(all_mix))
+            pickle.dump(all_mix[:division], open(
+                './data/ten/trainset-'+str(num)+'.pkl', 'wb'))
+            pickle.dump(all_mix[division:], open(
+                './data/ten/testset-'+str(num)+'.pkl', 'wb'))
+            all_mix = []
+            print("store "+str(num))
+
+
+# combine(N)
+def combine(soundlist, labellist):
+    mixed_file = np.zeros((1, 1))
+    sr = 0
+    for sound in soundlist:
+        sfile, sr = librosa.load(sound, sr=None)
+        mixed_file = mix(mixed_file, sfile)
+    mixed_file = mixed_file/len(soundlist)
+    mixed_file = mixed_file[:time*sr]
+
+    mixed_label = ''
+    for label in labellist:
+        mixed_label = mixed_label+label+'-'
+
+    # name = '/home/data/happipub/gradpro_l/Combine/' + mixed_label
+    # librosa.output.write_wav(name, y=mixed_file, sr=sr)
+    return [mixed_file, sr, mixed_label]
+
+
+def mix(fa, fb):
+    diff = len(fa) - len(fb)
+
+    if diff >= 0:
+        add = np.zeros((1, diff), dtype=np.float32)
+        fb = np.append(fb, add)
+    else:
+        add = np.zeros((1, -diff), dtype=np.float32)
+        fa = np.append(fa, add)
+
+    return fa+fb
+
+
+def deal_mix(mix):
+    y = mix[0]
+    sr = mix[1]
+    label = mix[2]
+
+    feature = librosa.feature.melspectrogram(y=y, sr=sr).T
+
+    if feature.shape[0] <= 256:
+        # add zero
+        zero = np.zeros((256-feature.shape[0], 128), dtype=np.float32)
+        feature = np.vstack((feature, zero))
+    else:
+        feature = feature[:-1*(feature.shape[0] % 128)]
+
+    num_chunk = feature.shape[0]/128
+    feature = np.split(feature, num_chunk)
+
+    # (2, 128, 128)
+    feature = torch.tensor(feature)
+    label = label.split('-')[:-1]
+
+    label = encode(label)
+
+    return [feature, label]
+
+
+def show_all_class_num():
+    cmt = 0
+    m = []
+    inx = {}
+    for f in os.listdir(path):
+        if f.startswith("."):
+            continue
+
+        if f.split('.')[0].endswith('c'):
+            name = f.split('.')[0].split('-')[:-1]
+            if name not in m:
+                m.append(name)
+                inx[f.split('.')[0][:-3]] = cmt
+                cmt += 1
+
+        else:
+            m.append(f.split('.')[0].split('-'))
+            inx[f.split('.')[0]] = cmt
+            cmt += 1
+
+    f = open('class.index', 'w')
+
+    json.dump(inx, f)
+    print(cmt)
+
+    return cmt
+
+
+def remove():
+    cnt = 0
+    for f in os.listdir(path):
+        if '+' in f.split('-')[0]:
+            y, sr = librosa.load(path+'/'+f, sr=None)
+            librosa.output.write_wav("./OrchDB_remove/"+f, y, sr)
+            os.remove(path+'/'+f)
+
+
+def show_all_instru_num():
+    # ins = []
+    ins_dic = {}
+    for i in ins:
+        ins_dic[i] = 0
+
+    for f in os.listdir(path):
+        if f.startswith('.'):
+            continue
+        inst = f.split('-')[0]
+        # if inst not in ins:
+        #     ins.append(inst)
+        ins_dic[inst] += 1
+
+    print(ins_dic)
+    print(len(os.listdir(path)))
+
+    return ins
+
+
+def stat_test_db():
+    inx = json.load(open('class.index', 'r'))
+    t = np.array(out_num*[0], dtype=np.float32)
+
+    stat_result = {}
+    for key in ins:
+        stat_result[key] = 0
+
+    testset = OrchDataSet(
+        my_data_path, 'test', transforms.ToTensor())
+    test_load = torch.utils.data.DataLoader(dataset=testset,
+                                            batch_size=1,
+                                            shuffle=False)
+
+    for _, labels in test_load:
+        labels = labels.cpu().numpy()
+        p = (labels == 1).astype(float)
+        t += p[0]
+
+    for i in inx.keys():
+        ins_type = i.split('-')[0]
+        id = inx[i]
+        stat_result[ins_type] += t[id]
+
+    print(stat_result)
+    return stat_result
+
+
+def encode(labels):
+    encode_label = np.array(out_num*[0], dtype=np.float32)
+
+    for index in labels:
+        encode_label[int(index)] = float(1)
+
+    encode_label = torch.tensor(encode_label)
+    return encode_label
+
+
+def decode(labels, f=0):
+    decode_label = []
+    labels_copy = copy.deepcopy(labels)
+    inx = json.load(open('class.index', 'r'))
+
+    for i in range(len(labels_copy)):
+        one = list(labels_copy[i]).index(1)
+        labels_copy[i][one] = 0
+        one = list(inx.keys())[list(inx.values()).index(one)]
+
+        two = list(labels_copy[i]).index(1)
+        labels_copy[i][two] = 0
+        two = list(inx.keys())[list(inx.values()).index(two)]
+
+        three = list(labels_copy[i]).index(1)
+        labels_copy[i][three] = 0
+        three = list(inx.keys())[list(inx.values()).index(three)]
+
+        if f == 1:
+            four = list(labels_copy[i]).index(1)
+            four = list(inx.keys())[list(inx.values()).index(four)]
+            decode_label.append([one, two, three, four])
+        else:
+            decode_label.append([one, two, three])
+
+    return decode_label[0]
+
+
+def proc_out():
+    root = './exp/two/'
+    f = open(root+'myout.txt', 'r')
+
+    acc1 = []
+    acc2 = []
+    acc3 = []
+
+    loss_log = []
+    lines = f.readlines()
+    loss = 0
+    best = 0
+    cnt = 0
+    for line in lines:
+        if line.startswith('Epoch:'):
+            l = line.split(':')[-1]
+            loss += float(l)
+            cnt += 1
+            if cnt % 500 == 0:
+                loss_log.append(loss/500)
+                loss = 0
+        elif line.startswith('Correct'):
+            a = line.split(' ')[-2].split('%')[0]
+            if '1/3' in line:
+                acc1.append(a)
+            elif '2/3' in line:
+                acc2.append(a)
+            elif '3/3' in line:
+                acc3.append(a)
+
+                if float(a) > best:
+                    best = float(a)
+
+    epoch_num1 = range(0, 5*len(loss_log), 5)
+    epoch_num2 = range(5, 5*len(acc1)+5, 5)
+
+    plt.figure()
+    plt.plot(epoch_num1, loss_log, color='b')
+    plt.ylabel('loss')
+    plt.savefig(root+"three_loss.png")
+    plt.show()
+
+    plt.figure()
+    plt.plot(epoch_num2, acc3, color='g')
+    plt.plot(epoch_num2, acc2, color='b')
+    plt.plot(epoch_num2, acc1, color='r')
+    plt.ylabel('accuracy')
+    plt.savefig(root+"three_acc.png")
+    plt.show()
+    print("best: ", best)
+    print(acc1)
+    print(acc2)
+    print(acc3)
+
+
+if __name__ == "__main__":
+    random_combine()

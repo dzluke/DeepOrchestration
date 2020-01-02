@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.init as init
 import torch.nn.functional as F
 import numpy as np
 import math
@@ -13,8 +14,7 @@ class CNN(nn.Module):
             nn.Conv2d(in_channels=2, out_channels=16,
                       kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=16),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2)
+            nn.ReLU()
         )
 
         self.layer2 = nn.Sequential(
@@ -33,56 +33,43 @@ class CNN(nn.Module):
             nn.MaxPool2d(kernel_size=2)
         )
 
-        # # bottleneck start
-        # self.layer4 = nn.Sequential(
-        #     nn.Conv2d(in_channels=64, out_channels=16,
-        #               kernel_size=1, stride=1, bias=False),
-        #     nn.BatchNorm2d(16),
-        #     nn.ReLU()
-        # )
+        self.lstm = nn.LSTM(input_size=32, hidden_size=32, batch_first=True)
 
-        # self.layer5 = nn.Sequential(
-        #     nn.Conv2d(in_channels=16, out_channels=16,
-        #               kernel_size=3, stride=1, padding=1, bias=False),
-        #     nn.BatchNorm2d(16),
-        #     nn.ReLU()
-        # )
-
-        # self.layer6 = nn.Sequential(
-        #     nn.Conv2d(in_channels=16, out_channels=64,
-        #               kernel_size=1, stride=1, bias=False),
-        #     nn.BatchNorm2d(64)
-        #     # nn.ReLU()
-        # )
-        # # bottleneck end
-
-        self.lstm = nn.LSTM(input_size=16, hidden_size=16, batch_first=True)
-
-        self.layer7 = nn.Sequential(
-            nn.Linear(in_features=64*16*16, out_features=4096),
+        self.layer4 = nn.Sequential(
+            nn.Conv2d(in_channels=64, out_channels=128,
+                      kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Dropout(0.5)
+            nn.MaxPool2d(kernel_size=2)
         )
 
-        self.layer8 = nn.Linear(4096, out_num)
-        self.relu = nn.ReLU()
+        # self.layer6 = nn.Sequential(
+        #     nn.Linear(in_features=128*32*32, out_features=128*16*16),
+        #     nn.ReLU(),
+        #     nn.Dropout(0.5)
+        # )
+
+        self.fc = nn.Linear(in_features=128*16*16, out_features=out_num)
+
         self.dropout = nn.Dropout(0.5)
+        self.sm = F.softmax
+        # init.normal_(self.layer5.weight, std=0.001)
+        # init.constant_(self.layer5.bias, 0)
 
     def forward(self, x):
         out = self.layer1(x)
         out = self.layer2(out)
         out = self.layer3(out)
-        # res = out
-        out = out.view(-1, 64*16, 16)
+
+        out = out.view(-1, 32, 32)
         out, _ = self.lstm(out)
 
-        # out = out.contiguous().view(-1, 32, 32, 32)
-        # out += res
-        # out = self.relu(out)
+        out = out.contiguous().view(-1, 64, 32, 32)
+        out = self.layer4(out)
 
         out = out.contiguous().view(out.size()[0], -1)
-        out = self.layer7(out)
-        out = self.layer8(out)
+        out = self.dropout(out)
+        out = self.fc(out)
+        out = self.sm(out, dim=1)
 
         return out
 

@@ -8,21 +8,31 @@ import os
 
 
 class OrchDataSet(data.Dataset):
-    def __init__(self, root, transform):
+    def __init__(self, root, mode, transform):
         if not os.path.exists(root):
             print("[Error] root not exits")
             return
 
         self.audio_feature = []
         self.labels = []
+        self.mix = []
+        num = 1
 
-        if root.split('.')[-1] == 'pkl':
-            inp = pickle.load(open(root, 'rb'))
-            for x in inp:
-                self.audio_feature.append(x[0])
-                self.labels.append(x[1])
-
-                # print(x[0].shape)
+        for data in os.listdir(root):
+            if data.startswith(mode):
+                new_path = os.path.join(root, data)
+                print(new_path)
+                inp = pickle.load(open(new_path, 'rb'))
+                for i, x in enumerate(inp):
+                    # self.audio_feature.append(x[0])
+                    # self.labels.append(x[1])
+                    self.mix.append(x)
+                    if (i+1) % 10000 == 0:
+                        pickle.dump(self.mix, open(
+                            root+'/'+mode+str(num)+'.pkl', 'wb'))
+                        num += 1
+                        self.mix = []
+                # break
 
         if transform is not None:
             self.transform = transform
@@ -43,12 +53,15 @@ class OrchDataSet(data.Dataset):
 
 
 if __name__ == '__main__':
-    # root = './TinySOL/Combine'
-    root = './data/trainset.pkl'
-    a = OrchDataSet(root, transforms.ToTensor())
-    aa = torch.utils.data.DataLoader(dataset=a, batch_size=1, shuffle=True)
+    root = './data/ten'
+    a = OrchDataSet(root, 'trainset-1', transforms.ToTensor())
+    a = OrchDataSet(root, 'trainset-2', transforms.ToTensor())
+    a = OrchDataSet(root, 'trainset-3', transforms.ToTensor())
+    a = OrchDataSet(root, 'trainset-4', transforms.ToTensor())
+    # aa = torch.utils.data.DataLoader(dataset=a, batch_size=1, shuffle=True)
 
-    for (train, labels) in aa:
-        if train.shape[1] != 2:
-            print(train.shape)
-            print(train)
+    # for (train, labels) in aa:
+    #     for i, ind in enumerate(labels[0]):
+    #         if ind == 1:
+    #             print(i)
+    #     break

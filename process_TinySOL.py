@@ -21,7 +21,6 @@ import os
 from dataset import OrchDataSet
 
 
-time = 4
 path = './TinySOL'
 brass = '/Brass'
 strings = '/Strings'
@@ -30,7 +29,10 @@ instru_type = [brass, strings, winds]
 ins = ['BTb', 'TpC', 'Hn', 'Tbn', 'Va', 'Vn',
        'Vc', 'Cb', 'Ob', 'Fl', 'Bn', 'ClBb']
 N = 2
+time = 4
 MAX_NUM = 40000
+my_data_path = './data/'
+server_data_path = '/home/data/happipub/gradpro_l/'
 
 
 def random_combine():
@@ -46,6 +48,7 @@ def random_combine():
 
     # combine
     all_selects = []
+    all_mix = []
     init = 0
     while init < MAX_NUM:
         # select N instruments randomly
@@ -67,8 +70,22 @@ def random_combine():
             continue
 
         combine(soundlist, labellist)
+        # mix = deal_mix(mix)
+
         all_selects.append(set(labellist))
+        # all_mix.append(mix)
+
         init += 1
+        if init % 100 == 0:
+            print(
+                "{} / {} have finished".format(init, MAX_NUM))
+
+    # save in disk
+    # division = int(0.8*len(all_mix))
+    # pickle.dump(all_mix[:division], open(
+    #     '/home/data/happipub/gradpro_l/trainset.pkl', 'wb'))
+    # pickle.dump(all_mix[division:], open(
+    #     '/home/data/happipub/gradpro_l/testset.pkl', 'wb'))
 
 
 # combine instruments(N)
@@ -89,17 +106,37 @@ def combine(soundlist, labellist):
 
     output = (brass_file+strings_file)/2
     label = labellist[0]+'-'+labellist[1] + '.wav'
-    name = path+'/Combine/' + label
 
+    name = '/home/data/happipub/gradpro_l/Combine/' + label
     librosa.output.write_wav(name, y=output, sr=sr1)
+    # return [output, sr1, label]
 
 
-def extract_feature(file):
-    y, sr = librosa.load(file, duration=time, sr=None)
-    mel_feature = librosa.feature.melspectrogram(
-        y=y, sr=sr, n_fft=1024, hop_length=512)
+def deal_mix(mix):
+    y = mix[0]
+    sr = mix[1]
+    label = mix[2]
+    librosa.output.write_wav('tmp.wav', y=y, sr=sr)
+    y1, sr1 = librosa.load('tmp.wav', duration=time, sr=None)
+    feature = librosa.feature.melspectrogram(y=y1, sr=sr1).T
 
-    return mel_feature
+    if feature.shape[0] <= 256:
+        # add zero
+        zero = np.zeros((256-feature.shape[0], 128), dtype=np.float32)
+        feature = np.vstack((feature, zero))
+    else:
+        feature = feature[:-1*(feature.shape[0] % 128)]
+
+    num_chunk = feature.shape[0]/128
+    feature = np.split(feature, num_chunk)
+
+    # (2, 128, 128)
+    feature = torch.tensor(feature)
+
+    label = label.split('.')[0].split('-')
+    label = encode(label)
+
+    return [feature, label]
 
 
 def show_all_class_num():
@@ -154,7 +191,8 @@ def stat_test_db():
     for key in class_div.keys():
         stat_result[key] = 0
 
-    testset = OrchDataSet('./data/testset.pkl', transforms.ToTensor())
+    testset = OrchDataSet(
+        my_data_path+'testset_mini.pkl', transforms.ToTensor())
     test_load = torch.utils.data.DataLoader(dataset=testset,
                                             batch_size=1,
                                             shuffle=False)
@@ -162,13 +200,13 @@ def stat_test_db():
     for _, labels in test_load:
         labels = decode(labels)
         for label in labels:
-            # stat_result[ins[label[0]]] += 1
-            # stat_result[ins[label[1]]] += 1
-            for key in class_div.keys():
-                if label[0] >= class_div[key][0] and label[0] <= class_div[key][1]:
-                    stat_result[key] += 1
-                if label[1] >= class_div[key][0] and label[1] <= class_div[key][1]:
-                    stat_result[key] += 1
+            stat_result[ins[label[0]]] += 1
+            stat_result[ins[label[1]]] += 1
+            # for key in class_div.keys():
+            #     if label[0] >= class_div[key][0] and label[0] <= class_div[key][1]:
+            #         stat_result[key] += 1
+            #     if label[1] >= class_div[key][0] and label[1] <= class_div[key][1]:
+            #         stat_result[key] += 1
 
     print(stat_result)
     return stat_result
@@ -176,7 +214,7 @@ def stat_test_db():
 
 def encode(labels):
     class_num, class_div = show_all_class_num()
-    #class_num = len(ins)
+    # class_num = len(ins)
 
     encode_label = np.array(class_num*[0], dtype=np.float32)
 
@@ -204,8 +242,18 @@ def decode(labels):
 
 def make_dataset():
     # (feature, label)
-    root = './TinySOL/Combine'
-    audio_dirs = [os.path.join(root, x) for x in os.listdir(root)]
+
+    print("Start to make dataset -- ")
+    # root = my_data_path+'Combine'
+    # audio_dirs = [os.path.join(root, x) for x in os.listdir(root)]
+    audio_dirs = []
+    for instruments in instru_type:
+        for instrument in os.listdir(path+instruments):
+            if instrument.startswith('.'):
+                continue
+            for i in os.listdir(path+instruments+'/'+instrument):
+                newpath = os.path.join(path+instruments+'/'+instrument, i)
+                audio_dirs.append(newpath)
     random.shuffle(audio_dirs)
     audio_feature = []
     sets = []
@@ -245,43 +293,54 @@ def make_dataset():
             print(
                 "{} / {} have finished".format(len(audio_feature), len(audio_dirs)))
 
-        label = x.split('.')[1].split('/')[-1].split('-')
-        label = encode(label)
+        label = x.split('.')[1].split('/')[-1].split('-')[0]
+        label = ins.index(label)
+        # label = encode(label)
 
         sets.append([feature, label])
 
     # save in disk
     division = int(0.8*len(sets))
     pickle.dump(sets[:division],
-                open('./data/trainset.pkl', 'wb'))
+                open(my_data_path+'trainset_svm_2.pkl', 'wb'))
     pickle.dump(sets[division:],
-                open('./data/testset.pkl', 'wb'))
+                open(my_data_path+'testset_svm_2.pkl', 'wb'))
 
 
 def draw_total():
-    f = open('acc_inst.csv', 'r')
+    f = open('./all_cnn_500/acc.csv', 'r')
     epoch_num = []
-    total_acc = []
-    single_acc = []
+    total_acc_cnn = []
+    total_acc_res = []
+    # single_acc = []
 
-    for line in f.readlines():
+    for line in f.readlines()[:4]:
         acc = line.split(',')
         epoch_num.append(acc[0])
-        total_acc.append(round(float(acc[1]), 2))
-        single_acc.append(round(float(acc[2]), 2))
+        total_acc_cnn.append(round(float(acc[1]), 2))
+        # single_acc.append(round(float(acc[2]), 2))
+    f.close()
+
+    f = open('./acc.csv', 'r')
+    for line in f.readlines():
+        acc = line.split(',')
+        # epoch_num.append(acc[0])
+        total_acc_res.append(round(float(acc[1]), 2))
+    f.close()
 
     plt.figure()
-    plt.plot(epoch_num, total_acc, color='b')
-    plt.plot(epoch_num, single_acc, color='r')
+    plt.plot(epoch_num, total_acc_cnn, color='b')
+    # plt.plot(epoch_num, single_acc, color='r')
+    plt.plot(epoch_num, total_acc_res, color='r')
 
     plt.xlabel('epoch')
-    plt.ylabel('b:total_acc r:single_acc')
-    plt.savefig('acc.png')
+    plt.ylabel('b:total_acc_cnn r:total_acc_res')
+    plt.savefig('acc_compare.png')
     plt.show()
 
 
 def draw_specific():
-    f = open('specific_acc_inst.json', 'r')
+    f = open('./all_cnn_500/specific_acc.json', 'r')
     specific_acc = json.load(f)
 
     x = []
@@ -300,5 +359,46 @@ def draw_specific():
     plt.show()
 
 
+def proc_out():
+    root = './lstm-300/slstm/'
+    f = open(root+'myout.txt', 'r')
+
+    total_acc = []
+    loss_log = []
+    lines = f.readlines()
+    loss = 0
+    best = 0
+    cnt = 0
+    for line in lines:
+        if line.startswith('Epoch:'):
+            l = line.split(':')[-1]
+            loss += float(l)
+            cnt += 1
+            if cnt % 500 == 0:
+                loss_log.append(loss/500)
+                loss = 0
+        elif line.startswith('Total'):
+            a = line.split('%')[0].split(' ')[-1]
+            total_acc.append(float(a))
+            if float(a) > best:
+                best = float(a)
+
+    epoch_num1 = range(0, 10*len(loss_log), 10)
+    epoch_num2 = range(10, 10*len(total_acc)+10, 10)
+
+    plt.figure()
+    plt.plot(epoch_num1, loss_log, color='b')
+    plt.ylabel('loss')
+    plt.savefig(root+"lstm_loss.png")
+    plt.show()
+
+    plt.figure()
+    plt.plot(epoch_num2, total_acc, color='r')
+    plt.ylabel('total_accuracy')
+    plt.savefig(root+"lstm_acc.png")
+    plt.show()
+    print("best: ", best)
+
+
 if __name__ == "__main__":
-    stat_test_db()
+    proc_out()
