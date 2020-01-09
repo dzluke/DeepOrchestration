@@ -3,5 +3,9 @@ __pycache__
 epoch_best.pth
 acc.csv
 /TinySOL
+/OrchDB
+/OrchDB_ord
+/new_OrchDB_ord
+/StaticSOL_0.6
 /model
 /data
