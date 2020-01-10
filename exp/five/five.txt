@@ -1,0 +1,65 @@
+nohup: ignoring input
+--------------------------
+target:  YanBn-mul-PG-ST12.wav
+orch:
+TTbn-ord-E2-mf
+Cb-ord-A4-pp
+Hn-ord-C2-pp
+Hn-ord-G4-pp
+BTb-ord-A#2-mf
+--------------------------
+target:  boat_docking.wav
+orch:
+Vc-ord-F2-pp
+CbTb-ord-A#0-pp
+Vc-ord-G#3-pp
+CbTb-ord-E0-mf
+CbTb-ord-C#1-pp
+--------------------------
+target:  WinchesterBell.wav
+orch:
+Acc-ord-F4-mf
+BTbn-ord-C4-ff
+Acc-ord-F#4-ff
+Bn-ord-C4-ff
+Acc-ord-C5-mf
+--------------------------
+target:  wind-harp.wav
+orch:
+CbTb-ord-G3-pp
+CbTb-ord-G3-ff
+CbTb-ord-A#3-f
+Va-ord-A3-mf
+BTb-ord-G#3-pp
+--------------------------
+target:  car-horn.wav
+orch:
+BFl-ord-C5-mf
+ClBb-ord-C5-ff
+TTbn-ord-B4-mp
+TTbn-ord-G#3-f
+Fl-ord-G#4-ff
+--------------------------
+target:  archeos-bell.wav
+orch:
+ASax-ord-G#4-mf
+Hn-ord-G#2-pp
+Picc-ord-G#5-p
+TTbn-ord-A3-mf
+Hn-ord-E2-pp
+--------------------------
+target:  bass_clarinet.wav
+orch:
+TTbn-ord-B4-pp
+Bn-ord-D#3-p
+BClBb-ord-D#2-pp
+Bn-ord-F#4-f
+ClBb-ord-A#4-pp
+--------------------------
+target:  girl-scream.wav
+orch:
+Vn-ord-F5-ff
+CbClBb-ord-E1-ff
+Acc-ord-G#4-ff
+Vn-ord-G#6-ff
+ClEb-ord-C#7-pp
