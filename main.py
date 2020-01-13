@@ -14,15 +14,15 @@ from process_OrchDB import ins, decode, N, out_num
 from dataset import OrchDataSet
 
 
-epoch_num = 200
+epoch_num = 50
 batch_size = 32
 my_model_path = './model'
 server_model_path = '/home/data/happipub/gradpro_l/model/five'
 my_data_path = './data/five'
 server_data_path = '/home/data/happipub/gradpro_l/five'
 result = N*[0]
-db = {'Va': 25908.0, 'Cb': 25285.0, 'Cbs': 5657.0, 'Vns': 9404.0, 'Vc': 27583.0, 'Fl': 16569.0, 'Vn': 23219.0, 'BTbn': 2942.0, 'BClBb': 4499.0, 'ClBb': 8368.0,
-      'BFl': 1767.0, 'CbTb': 3679.0, 'Picc': 2866.0, 'ClEb': 1598.0, 'Ob': 8507.0, 'EH': 4953.0, 'CbFl': 1788.0, 'Bn': 9064.0, 'Vas': 7778.0, 'Vcs': 7272.0, 'CbClBb': 1294.0}
+db = {'Va': 9802.0, 'Cb': 9209.0, 'Vns': 11264.0, 'Vc': 10098.0, 'BTb': 14146.0, 'Fl': 13571.0, 'Vn': 9321.0, 'Hn': 11575.0, 'BTbn': 9889.0, 'BClBb': 11825.0, 'ClBb': 10013.0, 'TpC': 6468.0, 'TTbn': 14118.0,
+      'BFl': 2643.0, 'CbTb': 10779.0, 'Picc': 7487.0, 'ClEb': 3007.0, 'Acc': 17294.0, 'Ob': 13968.0, 'EH': 8704.0, 'CbFl': 2627.0, 'Bn': 14083.0, 'Vas': 10074.0, 'Vcs': 9974.0, 'ASax': 5025.0, 'CbClBb': 3036.0}
 
 
 def arg_parse():
@@ -61,8 +61,7 @@ def main():
     model = OrchMatchNet(out_num, arg.model)
 
     start_epoch = 0
-    optimizer = torch.optim.Adam(
-        model.parameters(), lr=0.001, betas=(0.9, 0.999))
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     # optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
     # model load
@@ -105,6 +104,7 @@ def train(model, optimizer, train_load, test_load, start_epoch):
     best_epoch = None
     total_loss = 0
     result_ins = np.array(out_num*[0], dtype=np.float32)
+    weight_decay = 0.01
 
     for epoch in range(start_epoch, epoch_num):
         model.train()
@@ -114,11 +114,15 @@ def train(model, optimizer, train_load, test_load, start_epoch):
             labels = labels.to(device)
 
             outputs = model(trains)
-            weights = np.ones(labels.shape, dtype=np.float32)
-            weights = Variable(torch.tensor(weights)).to(device)
+            # weights = np.ones(labels.shape, dtype=np.float32)
+            # weights = Variable(torch.tensor(weights)).to(device)
 
-            loss = criterion(outputs, labels/N,
-                             weight=weights)*out_num
+            # L1 regularization
+            l1_reg = torch.tensor(0.)
+            for param in model.parameters():
+                l1_reg = torch.sum(torch.abs(param))
+
+            loss = criterion(outputs, labels/N)*out_num + weight_decay*l1_reg
 
             total_loss += float(loss)
             optimizer.zero_grad()
@@ -143,11 +147,12 @@ def train(model, optimizer, train_load, test_load, start_epoch):
         #     torch.save(state, model_name)
         #     print('model_epoch_'+str(epoch+1)+' saved')
 
-        if (epoch+1) % 10 == 0:
+        if (epoch+1) % 5 == 0:
             model.eval()
 
             total_num = 0
             total_time = 0.0
+            test_loss = 0.0
 
             for tests, labels in test_load:
                 tests = tests.to(device)
@@ -157,17 +162,22 @@ def train(model, optimizer, train_load, test_load, start_epoch):
                 outputs = model(tests)
                 end = time.time()
 
+                # weights = np.ones(labels.shape, dtype=np.float32)
+                # weights = Variable(torch.tensor(weights)).to(device)
+
+                loss = criterion(outputs, labels/N)*out_num
                 predicts = get_pred(outputs)
 
                 total_num += labels.size(0)
                 total_time += float(end-start)
+                test_loss += float(loss)
 
                 result_ins = evaluate(predicts, labels, result_ins)
 
             avg_time = total_time/float(len(test_load))
             print("Average Time: {:2.3f} ms".format(1000*avg_time))
+            print("Test Loss: {:.4f}".format(test_loss/total_num))
             total_acc = 100*float(result[-1])/total_num
-
             for i in range(N):
                 print("Correct: {}/{}, Accuracy: {:.3f}% ".format(i +
                                                                   1, N, 100*float(result[i])/total_num))
@@ -221,7 +231,7 @@ def evaluate(pret, grot, result_ins):
     # print("+++++++++++++++")
     # d_g = decode(grot)
     # for g in d_g:
-    #     if g.split('-')[0] in ['Va', 'Va+S', 'Va+SP', 'Vn', 'Vn+S', 'Vn+SP', 'Vc', 'Vc+S', 'Vc+SP', 'Cb']:
+    #     if g.split('-')[0] in ['Va', 'Vn', 'Vc']:
     #         d_p = decode(pret)
     #         print("g: ", d_g)
     #         print("p: ", d_p)

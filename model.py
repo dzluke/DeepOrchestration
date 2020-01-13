@@ -12,14 +12,14 @@ class CNN(nn.Module):
 
         self.layer1 = nn.Sequential(
             nn.Conv2d(in_channels=2, out_channels=16,
-                      kernel_size=3, stride=1, padding=1),
+                      kernel_size=7, stride=1, padding=3),
             nn.BatchNorm2d(num_features=16),
             nn.ReLU()
         )
 
         self.layer2 = nn.Sequential(
             nn.Conv2d(in_channels=16, out_channels=32,
-                      kernel_size=3, stride=1, padding=1),
+                      kernel_size=5, stride=1, padding=2),
             nn.BatchNorm2d(num_features=32),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2)
@@ -33,7 +33,8 @@ class CNN(nn.Module):
             nn.MaxPool2d(kernel_size=2)
         )
 
-        self.lstm = nn.LSTM(input_size=32, hidden_size=32, batch_first=True)
+        self.lstm = nn.LSTM(input_size=32, hidden_size=32,
+                            batch_first=True, dropout=0.5, num_layers=2)
 
         self.layer4 = nn.Sequential(
             nn.Conv2d(in_channels=64, out_channels=128,
@@ -42,8 +43,8 @@ class CNN(nn.Module):
             nn.MaxPool2d(kernel_size=2)
         )
 
-        # self.layer6 = nn.Sequential(
-        #     nn.Linear(in_features=128*32*32, out_features=128*16*16),
+        # self.layer5 = nn.Sequential(
+        #     nn.Linear(in_features=128*16*16, out_features=8192),
         #     nn.ReLU(),
         #     nn.Dropout(0.5)
         # )
@@ -51,6 +52,7 @@ class CNN(nn.Module):
         self.fc = nn.Linear(in_features=128*16*16, out_features=out_num)
 
         self.dropout = nn.Dropout(0.5)
+        # self.sm = F.sigmoid
         self.sm = F.softmax
         # init.normal_(self.layer5.weight, std=0.001)
         # init.constant_(self.layer5.bias, 0)
@@ -67,6 +69,7 @@ class CNN(nn.Module):
         out = self.layer4(out)
 
         out = out.contiguous().view(out.size()[0], -1)
+        # out = self.layer5(out)
         out = self.dropout(out)
         out = self.fc(out)
         out = self.sm(out, dim=1)

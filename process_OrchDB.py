@@ -12,15 +12,14 @@ import os
 from dataset import OrchDataSet
 
 
-path = './OrchDB'
-ins = ['Va', 'Cb', 'Cbs', 'Vns', 'Vc', 'Fl', 'Vn', 'BTbn', 'BClBb', 'ClBb',
-       'BFl', 'CbTb', 'Picc', 'ClEb', 'Ob', 'EH', 'CbFl', 'Bn', 'Vas', 'Vcs', 'CbClBb']
+path = './new_OrchDB_ord'
+ins = ['Va', 'Cb', 'Vns', 'Vc', 'BTb', 'Fl', 'Vn', 'Hn', 'BTbn', 'BClBb', 'ClBb', 'TpC', 'TTbn',
+       'BFl', 'CbTb', 'Picc', 'ClEb', 'Acc', 'Ob', 'EH', 'CbFl', 'Bn', 'Vas', 'Vcs', 'ASax', 'CbClBb']
 N = 5
 time = 4
-MAX_NUM = 200000
-out_num = 10120
-my_data_path = './data/ten/'
-server_data_path = '/home/data/happipub/gradpro_l/ten'
+MAX_NUM = 250000
+out_num = 3674
+my_data_path = './data/five/'
 
 
 def random_combine():
@@ -79,9 +78,9 @@ def random_combine():
             num = int(init/50000)
             division = int(0.8*len(all_mix))
             pickle.dump(all_mix[:division], open(
-                './data/ten/trainset-'+str(num)+'.pkl', 'wb'))
+                './data/five/trainset-'+str(num)+'.pkl', 'wb'))
             pickle.dump(all_mix[division:], open(
-                './data/ten/testset-'+str(num)+'.pkl', 'wb'))
+                './data/five/testset-'+str(num)+'.pkl', 'wb'))
             all_mix = []
             print("store "+str(num))
 
@@ -92,9 +91,12 @@ def combine(soundlist, labellist):
     sr = 0
     for sound in soundlist:
         sfile, sr = librosa.load(sound, sr=None)
+        if len(sfile) > time*sr:
+            n = np.random.randint(0, len(sfile)-time*sr)
+            sfile = sfile[n:n+time*sr]
         mixed_file = mix(mixed_file, sfile)
     mixed_file = mixed_file/len(soundlist)
-    mixed_file = mixed_file[:time*sr]
+    # mixed_file = mixed_file[:time*sr]
 
     mixed_label = ''
     for label in labellist:
@@ -108,10 +110,10 @@ def combine(soundlist, labellist):
 def mix(fa, fb):
     diff = len(fa) - len(fb)
 
-    if diff >= 0:
+    if diff > 0:
         add = np.zeros((1, diff), dtype=np.float32)
         fb = np.append(fb, add)
-    else:
+    elif diff < 0:
         add = np.zeros((1, -diff), dtype=np.float32)
         fa = np.append(fa, add)
 
@@ -153,9 +155,9 @@ def show_all_class_num():
             continue
 
         if f.split('.')[0].endswith('c'):
-            name = f.split('.')[0].split('-')[:-1]
-            if name not in m:
-                m.append(name)
+            n = f.split('.')[0].split('-')[:-1]
+            if n not in m:
+                m.append(n)
                 inx[f.split('.')[0][:-3]] = cmt
                 cmt += 1
 
@@ -173,16 +175,17 @@ def show_all_class_num():
 
 
 def remove():
-    cnt = 0
+    c = 0
     for f in os.listdir(path):
-        if '+' in f.split('-')[0]:
-            y, sr = librosa.load(path+'/'+f, sr=None)
-            librosa.output.write_wav("./OrchDB_remove/"+f, y, sr)
-            os.remove(path+'/'+f)
+        if f.startswith("."):
+            continue
+        y, sr = librosa.load(path+'/'+f, sr=None)
+        if len(y) < sr*time:
+            print("!")
 
 
 def show_all_instru_num():
-    # ins = []
+    ins = []
     ins_dic = {}
     for i in ins:
         ins_dic[i] = 0
@@ -191,12 +194,15 @@ def show_all_instru_num():
         if f.startswith('.'):
             continue
         inst = f.split('-')[0]
-        # if inst not in ins:
-        #     ins.append(inst)
-        ins_dic[inst] += 1
-
-    print(ins_dic)
-    print(len(os.listdir(path)))
+        # if '+' in inst:
+        #     continue
+        if inst not in ins:
+            ins.append(inst)
+        # ins_dic[inst] += 1
+    print(ins)
+    print(len(ins))
+    # print(ins_dic)
+    # print(len(os.listdir(path)))
 
     return ins
 
@@ -253,74 +259,62 @@ def decode(labels, f=0):
         labels_copy[i][two] = 0
         two = list(inx.keys())[list(inx.values()).index(two)]
 
-        three = list(labels_copy[i]).index(1)
-        labels_copy[i][three] = 0
-        three = list(inx.keys())[list(inx.values()).index(three)]
+        # three = list(labels_copy[i]).index(1)
+        # labels_copy[i][three] = 0
+        # three = list(inx.keys())[list(inx.values()).index(three)]
 
         if f == 1:
             four = list(labels_copy[i]).index(1)
             four = list(inx.keys())[list(inx.values()).index(four)]
             decode_label.append([one, two, three, four])
         else:
-            decode_label.append([one, two, three])
+            decode_label.append([one, two])
 
     return decode_label[0]
 
 
-def proc_out():
-    root = './exp/two/'
-    f = open(root+'myout.txt', 'r')
-
-    acc1 = []
-    acc2 = []
-    acc3 = []
-
+def loss(s):
+    root = './exp/'
+    f = open(root+'/myout.txt', 'r')
     loss_log = []
+    test_log = []
     lines = f.readlines()
     loss = 0
-    best = 0
     cnt = 0
     for line in lines:
         if line.startswith('Epoch:'):
             l = line.split(':')[-1]
             loss += float(l)
             cnt += 1
-            if cnt % 500 == 0:
-                loss_log.append(loss/500)
+            if cnt % 625 == 0:
+                loss_log.append(loss/625)
                 loss = 0
-        elif line.startswith('Correct'):
-            a = line.split(' ')[-2].split('%')[0]
-            if '1/3' in line:
-                acc1.append(a)
-            elif '2/3' in line:
-                acc2.append(a)
-            elif '3/3' in line:
-                acc3.append(a)
+        if line.startswith('Test'):
+            l = line.split(':')[-1]
+            test_log.append(float(l))
 
-                if float(a) > best:
-                    best = float(a)
+    return loss_log, test_log
 
-    epoch_num1 = range(0, 5*len(loss_log), 5)
-    epoch_num2 = range(5, 5*len(acc1)+5, 5)
+
+def draw_loss_figure():
+    # loss_two = loss('two')
+    # loss_three = loss('three')
+    loss_five, test_five = loss('five')
+    # loss_ten = loss('ten')
+
+    epoch_num = range(0, 5*len(loss_five[:4]), 5)
 
     plt.figure()
-    plt.plot(epoch_num1, loss_log, color='b')
+    # plt.plot(epoch_num, loss_two[:30], color='r', label='two')
+    # plt.plot(epoch_num, loss_three[:30], color='g', label='three')
+    plt.plot(epoch_num, loss_five[:4], color='b', label='train')
+    plt.plot(epoch_num, test_five[:4], color='r', label='test')
+    # plt.plot(epoch_num, loss_ten[:30], color='y', label='ten')
     plt.ylabel('loss')
-    plt.savefig(root+"three_loss.png")
+    plt.legend()
+    plt.savefig("./exp/loss_five_L1.png")
     plt.show()
-
-    plt.figure()
-    plt.plot(epoch_num2, acc3, color='g')
-    plt.plot(epoch_num2, acc2, color='b')
-    plt.plot(epoch_num2, acc1, color='r')
-    plt.ylabel('accuracy')
-    plt.savefig(root+"three_acc.png")
-    plt.show()
-    print("best: ", best)
-    print(acc1)
-    print(acc2)
-    print(acc3)
 
 
 if __name__ == "__main__":
-    random_combine()
+    draw_loss_figure()
