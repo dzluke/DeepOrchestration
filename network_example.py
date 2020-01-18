@@ -68,13 +68,13 @@ class ResNet(nn.Module):
         self.bn1 = nn.BatchNorm2d(32)
 
         self.block1 = self._create_block(32, 32, stride=1)
-        self.block2 = self._create_block(32, 16, stride=2)
-        self.block3 = self._create_block(16, 16, stride=2)
-        self.block4 = self._create_block(16, 16, stride=2)
-        self.bn2 = nn.BatchNorm1d(320)
-        self.bn3 = nn.BatchNorm1d(100)
-        self.linear1 = nn.Linear(320, 100)
-        self.linear2 = nn.Linear(100, num_classes)
+        self.block2 = self._create_block(32, 64, stride=2)
+        self.block3 = self._create_block(64, 32, stride=2)
+        self.block4 = self._create_block(32, 32, stride=2)
+        self.bn2 = nn.BatchNorm1d(640)
+        self.bn3 = nn.BatchNorm1d(1000)
+        self.linear1 = nn.Linear(640, 1000)
+        self.linear2 = nn.Linear(1000, num_classes)
 
         self.dropout = nn.Dropout(dropout_rate)
 
