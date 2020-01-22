@@ -1,4 +1,11 @@
-import os, sys, pickle, time, librosa, torch, numpy as np
+import librosa
+import os
+import sys
+import pickle
+import time
+import librosa
+import torch
+import numpy as np
 from torch import nn
 import torch.nn.functional as F
 from torch import optim
@@ -6,13 +13,16 @@ from torch.distributions.categorical import Categorical
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
 def count_parameters(model):
     counts = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f'The model has {counts:,} trainable parameters')
+    print('The model has {:,} trainable parameters'.format(counts))
+
 
 def init_weights(model):
     for name, param in model.named_parameters():
         nn.init.normal_(param.data, mean=0, std=0.01)
+
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
@@ -48,20 +58,21 @@ class ResidualBlock(nn.Module):
         out += self.shortcut(x)
         out = nn.ReLU()(out)
         return out
-        
+
+
 class ResNet(nn.Module):
-    def __init__(self, num_classes=3000, dropout_rate=0.5, output_nonlinearity='sigmoid'):
+    def __init__(self, num_classes=3000, dropout_rate=0.5, output_nonlinearity='softmax'):
         super(ResNet, self).__init__()
         # Initial input conv
         self.conv1 = nn.Conv2d(
             in_channels=1, out_channels=32, kernel_size=(3, 3),
             stride=1, padding=1, bias=False
         )
-        
+
         if output_nonlinearity is 'sigmoid':
-            self.output_nonlinearity=torch.sigmoid
+            self.output_nonlinearity = torch.sigmoid
         elif output_nonlinearity is 'softmax':
-            self.output_nonlinearity=torch.softmax
+            self.output_nonlinearity = torch.softmax
         else:
             raise Exception("")
 
@@ -71,9 +82,9 @@ class ResNet(nn.Module):
         self.block2 = self._create_block(32, 64, stride=2)
         self.block3 = self._create_block(64, 32, stride=2)
         self.block4 = self._create_block(32, 32, stride=2)
-        self.bn2 = nn.BatchNorm1d(640)
+        self.bn2 = nn.BatchNorm1d(1024)
         self.bn3 = nn.BatchNorm1d(1000)
-        self.linear1 = nn.Linear(640, 1000)
+        self.linear1 = nn.Linear(1024, 1000)
         self.linear2 = nn.Linear(1000, num_classes)
 
         self.dropout = nn.Dropout(dropout_rate)
@@ -100,17 +111,17 @@ class ResNet(nn.Module):
         out = self.dropout(out)
         out = F.relu(out)
         out = self.linear2(out)
-        out = self.output_nonlinearity(out)
+        out = self.output_nonlinearity(out, dim=1)
         return out
 
     def set_device(self, device):
         for b in [self.block1, self.block2, self.block3, self.block4]:
             b.to(device)
         self.to(device)
-        
+
+
 # Make a test input for the network and compute the features
-import librosa
-sr = 22050 # sample rate
+sr = 44100  # sample rate
 test_audio_signal = librosa.core.tone(1000, sr=sr, duration=4)
 
 test_spec = librosa.feature.melspectrogram(test_audio_signal)
@@ -119,8 +130,8 @@ print(test_spec.shape)
 
 
 # Expected input size to the network is [batch_size, 128, 173]
-batch_size = 20
-batch_specs = np.tile(test_spec, (batch_size,1,1))
+batch_size = 32
+batch_specs = np.tile(test_spec, (batch_size, 1, 1))
 print("Batch Feature shape:")
 print(batch_specs.shape)
 
@@ -130,11 +141,11 @@ test_tensor = test_tensor.unsqueeze(1)
 print("Network input shape:")
 print(test_tensor.shape)
 
-resnet = ResNet(num_classes=3000, dropout_rate=0.5)
+resnet = ResNet(num_classes=3674, dropout_rate=0.5)
 init_weights(resnet)
 resnet.set_device(device)
 
-print("Network output shape:")
-print(resnet(test_tensor).shape)
+# print("Network output shape:")
+# print(resnet(test_tensor).shape)
 
 count_parameters(resnet)

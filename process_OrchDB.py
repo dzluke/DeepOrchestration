@@ -17,7 +17,7 @@ ins = ['Va', 'Cb', 'Vns', 'Vc', 'BTb', 'Fl', 'Vn', 'Hn', 'BTbn', 'BClBb', 'ClBb'
        'BFl', 'CbTb', 'Picc', 'ClEb', 'Acc', 'Ob', 'EH', 'CbFl', 'Bn', 'Vas', 'Vcs', 'ASax', 'CbClBb']
 N = 5
 time = 4
-MAX_NUM = 250000
+MAX_NUM = 250
 out_num = 3674
 my_data_path = './data/five/'
 
@@ -73,19 +73,22 @@ def random_combine():
                 "{} / {} have finished".format(init, MAX_NUM))
 
         # distributed data
-        if init % 50000 == 0:
-            # save in disk
-            num = int(init/50000)
-            division = int(0.8*len(all_mix))
-            pickle.dump(all_mix[:division], open(
-                './data/five/trainset-'+str(num)+'.pkl', 'wb'))
-            pickle.dump(all_mix[division:], open(
-                './data/five/testset-'+str(num)+'.pkl', 'wb'))
-            all_mix = []
-            print("store "+str(num))
-
+        # if init % 50000 == 0:
+        #     # save in disk
+        #     num = int(init/50000)
+        #     division = int(0.8*len(all_mix))
+        #     pickle.dump(all_mix[:division], open(
+        #         './data/five/trainset-'+str(num)+'.pkl', 'wb'))
+        #     pickle.dump(all_mix[division:], open(
+        #         './data/five/testset-'+str(num)+'.pkl', 'wb'))
+        #     all_mix = []
+        #     print("store "+str(num))
+    pickle.dump(all_mix, open(
+        './data/five/set.pkl', 'wb'))
 
 # combine(N)
+
+
 def combine(soundlist, labellist):
     mixed_file = np.zeros((1, 1))
     sr = 0
@@ -127,18 +130,20 @@ def deal_mix(mix):
 
     feature = librosa.feature.melspectrogram(y=y, sr=sr).T
 
-    if feature.shape[0] <= 256:
-        # add zero
-        zero = np.zeros((256-feature.shape[0], 128), dtype=np.float32)
-        feature = np.vstack((feature, zero))
-    else:
-        feature = feature[:-1*(feature.shape[0] % 128)]
+    # if feature.shape[0] <= 256:
+    #     # add zero
+    #     zero = np.zeros((256-feature.shape[0], 128), dtype=np.float32)
+    #     feature = np.vstack((feature, zero))
+    # else:
+    #     feature = feature[:-1*(feature.shape[0] % 128)]
 
-    num_chunk = feature.shape[0]/128
-    feature = np.split(feature, num_chunk)
+    # num_chunk = feature.shape[0]/128
+    # feature = np.split(feature, num_chunk)
 
-    # (2, 128, 128)
+    # (1, 128, 128)
+    feature = np.split(feature, 1)
     feature = torch.tensor(feature)
+
     label = label.split('-')[:-1]
 
     label = encode(label)
@@ -182,6 +187,24 @@ def remove():
         y, sr = librosa.load(path+'/'+f, sr=None)
         if len(y) < sr*time:
             print("!")
+
+
+def crop_data(mode):
+    root = '/home/data/happipub/gradpro_l/five'
+
+    mix = []
+    for data in os.listdir(root):
+        if data.startswith(mode):
+            new_path = os.path.join(root, data)
+            print(new_path)
+            inp = pickle.load(open(new_path, 'rb'))
+            for i, x in enumerate(inp):
+                x[0] = torch.tensor(
+                    [np.vstack((x[0][0].numpy(), x[0][1].numpy()))])
+                mix.append(x)
+
+            pickle.dump(mix, open(new_path+'new.pkl', 'wb'))
+            mix = []
 
 
 def show_all_instru_num():
@@ -274,8 +297,8 @@ def decode(labels, f=0):
 
 
 def loss(s):
-    root = './exp/'
-    f = open(root+'/myout.txt', 'r')
+    root = './exp/after1-13'
+    f = open(root+'/myout-resnet-aug-sig.txt', 'r')
     loss_log = []
     test_log = []
     lines = f.readlines()
@@ -302,17 +325,17 @@ def draw_loss_figure():
     loss_five, test_five = loss('five')
     # loss_ten = loss('ten')
 
-    epoch_num = range(0, 5*len(loss_five[:4]), 5)
+    epoch_num = range(0, 5*len(loss_five[:10]), 5)
 
     plt.figure()
     # plt.plot(epoch_num, loss_two[:30], color='r', label='two')
     # plt.plot(epoch_num, loss_three[:30], color='g', label='three')
-    plt.plot(epoch_num, loss_five[:4], color='b', label='train')
-    plt.plot(epoch_num, test_five[:4], color='r', label='test')
+    plt.plot(epoch_num, loss_five[:10], color='b', label='train')
+    plt.plot(epoch_num, test_five[:10], color='r', label='test')
     # plt.plot(epoch_num, loss_ten[:30], color='y', label='ten')
     plt.ylabel('loss')
     plt.legend()
-    plt.savefig("./exp/loss_five_L1.png")
+    plt.savefig("./exp/after1-13/loss_resnet.png")
     plt.show()
 
 

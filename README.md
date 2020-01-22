@@ -73,3 +73,5 @@ L2: weight decay: 1e-6
 L1: weight decay: 0.01
 
 ![loss_L1](./exp/loss_five_L1.png)
+
+

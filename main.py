@@ -14,12 +14,12 @@ from process_OrchDB import ins, decode, N, out_num
 from dataset import OrchDataSet
 
 
-epoch_num = 50
+epoch_num = 200
 batch_size = 32
 my_model_path = './model'
 server_model_path = '/home/data/happipub/gradpro_l/model/five'
 my_data_path = './data/five'
-server_data_path = '/home/data/happipub/gradpro_l/five'
+server_data_path = '/home/data/happipub/gradpro_l/five/new'
 result = N*[0]
 db = {'Va': 9802.0, 'Cb': 9209.0, 'Vns': 11264.0, 'Vc': 10098.0, 'BTb': 14146.0, 'Fl': 13571.0, 'Vn': 9321.0, 'Hn': 11575.0, 'BTbn': 9889.0, 'BClBb': 11825.0, 'ClBb': 10013.0, 'TpC': 6468.0, 'TTbn': 14118.0,
       'BFl': 2643.0, 'CbTb': 10779.0, 'Picc': 7487.0, 'ClEb': 3007.0, 'Acc': 17294.0, 'Ob': 13968.0, 'EH': 8704.0, 'CbFl': 2627.0, 'Bn': 14083.0, 'Vas': 10074.0, 'Vcs': 9974.0, 'ASax': 5025.0, 'CbClBb': 3036.0}
@@ -27,7 +27,7 @@ db = {'Va': 9802.0, 'Cb': 9209.0, 'Vns': 11264.0, 'Vc': 10098.0, 'BTb': 14146.0,
 
 def arg_parse():
     parser = argparse.ArgumentParser(description='combination of orch')
-    parser.add_argument('--model', default='cnn')
+    parser.add_argument('--model', default='resnet')
     parser.add_argument('--is_resume', default='False',
                         choices=['True', 'False'])
 
@@ -43,9 +43,9 @@ def main():
     print("Start loading data -----")
 
     trainset = OrchDataSet(
-        server_data_path, 'train', transforms.ToTensor())
+        server_data_path, 'trainset', transforms.ToTensor())
     testset = OrchDataSet(
-        server_data_path, 'test', transforms.ToTensor())
+        server_data_path, 'testset', transforms.ToTensor())
 
     # load data
     train_load = torch.utils.data.DataLoader(dataset=trainset,
@@ -62,7 +62,6 @@ def main():
 
     start_epoch = 0
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
     # model load
     if arg.is_resume == 'True':
@@ -98,6 +97,7 @@ def train(model, optimizer, train_load, test_load, start_epoch):
     model = model.to(device)
 
     criterion = F.binary_cross_entropy
+    sig = F.sigmoid
 
     best_acc = 0
     total_acc = 0
@@ -110,19 +110,19 @@ def train(model, optimizer, train_load, test_load, start_epoch):
         model.train()
 
         for i, (trains, labels) in enumerate(train_load):
+            # add some zero to the traindata
+
             trains = trains.to(device)
             labels = labels.to(device)
 
             outputs = model(trains)
-            # weights = np.ones(labels.shape, dtype=np.float32)
-            # weights = Variable(torch.tensor(weights)).to(device)
 
-            # L1 regularization
-            l1_reg = torch.tensor(0.)
-            for param in model.parameters():
-                l1_reg = torch.sum(torch.abs(param))
+            # L2 regularization
+            # l2_reg = torch.tensor(0.)
+            # for param in model.parameters():
+            #     l2_reg += torch.norm(param, p=2)
 
-            loss = criterion(outputs, labels/N)*out_num + weight_decay*l1_reg
+            loss = criterion(outputs, labels/N)
 
             total_loss += float(loss)
             optimizer.zero_grad()
@@ -130,8 +130,8 @@ def train(model, optimizer, train_load, test_load, start_epoch):
             optimizer.step()
 
             if (i+1) % 50 == 0:
-                print('Epoch:[{}/{}], Step:[{}/{}], Loss:{:.4f} '.format(
-                    epoch + 1, epoch_num, i+1, len(train_load), total_loss/50))
+                print('Epoch:[{}/{}], Step:[{}/{}], Loss:{:.6f} '.format(
+                    epoch + 1, epoch_num, i+1, len(train_load), out_num*total_loss/50))
                 total_loss = 0
 
         # save cuurent model
@@ -162,10 +162,8 @@ def train(model, optimizer, train_load, test_load, start_epoch):
                 outputs = model(tests)
                 end = time.time()
 
-                # weights = np.ones(labels.shape, dtype=np.float32)
-                # weights = Variable(torch.tensor(weights)).to(device)
-
-                loss = criterion(outputs, labels/N)*out_num
+                loss = criterion(outputs, labels/N)
+                # outputs = sig(outputs)
                 predicts = get_pred(outputs)
 
                 total_num += labels.size(0)
@@ -176,7 +174,7 @@ def train(model, optimizer, train_load, test_load, start_epoch):
 
             avg_time = total_time/float(len(test_load))
             print("Average Time: {:2.3f} ms".format(1000*avg_time))
-            print("Test Loss: {:.4f}".format(test_loss/total_num))
+            print("Test Loss: {:.6f}".format(out_num*test_loss/total_num))
             total_acc = 100*float(result[-1])/total_num
             for i in range(N):
                 print("Correct: {}/{}, Accuracy: {:.3f}% ".format(i +

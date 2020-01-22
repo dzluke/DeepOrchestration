@@ -44,7 +44,7 @@ def get_data():
 
 
 def test():
-    server_model_path = '/home/data/happipub/gradpro_l/model/five'
+    server_model_path = '/home/data/happipub/gradpro_l/model/three'
     state = torch.load(server_model_path+"/epoch_best.pth")
     model = OrchMatchNet(out_num, 'cnn')
     model.load_state_dict(state['state_dict'])
@@ -114,28 +114,24 @@ def mix(fa, fb):
 def get_pred_file(output):
     '''
         get Top N prediction
+        or set a threshold
     '''
-    f = []
+
     pred = np.zeros(output.shape)
+    inx = json.load(open('class.index', 'r'))
 
     preidx = []
-
+    print("orch:")
     for i, p in enumerate(output[0]):
         if p > 0.01:
             preidx.append(i)
-            print(p)
+            orch_file = list(inx.keys())[list(inx.values()).index(i)]
+            print(round(float(p), 3), orch_file)
 
         # for i in range(N):
         #     idx = output.max(1, keepdim=True)[1]
         #     preidx.append(idx)
         #     output[0][idx] = -1
-
-    inx = json.load(open('class.index', 'r'))
-    print("orch:")
-    for i in preidx:
-        orch_file = list(inx.keys())[list(inx.values()).index(i)]
-        print(orch_file)
-        f.append(orch_file)
 
 
 if __name__ == "__main__":

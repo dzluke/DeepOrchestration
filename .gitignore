@@ -9,3 +9,6 @@ acc.csv
 /StaticSOL_0.6
 /model
 /data
+/exp
+/other
+.DS_Store
