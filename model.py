@@ -4,7 +4,7 @@ import torch.nn.init as init
 import torch.nn.functional as F
 import numpy as np
 import math
-from network_example import resnet
+from network_example import resnet, ResNet, count_parameters, init_weights, device, test_tensor
 
 
 class CNN(nn.Module):
@@ -14,7 +14,7 @@ class CNN(nn.Module):
         self.layer1 = nn.Sequential(
             nn.Conv2d(in_channels=1, out_channels=8,
                       kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=16),
+            nn.BatchNorm2d(num_features=8),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2)
         )
@@ -22,7 +22,7 @@ class CNN(nn.Module):
         self.layer2 = nn.Sequential(
             nn.Conv2d(in_channels=8, out_channels=16,
                       kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=32),
+            nn.BatchNorm2d(num_features=16),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2)
         )
@@ -30,7 +30,7 @@ class CNN(nn.Module):
         self.layer3 = nn.Sequential(
             nn.Conv2d(in_channels=16, out_channels=32,
                       kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=64),
+            nn.BatchNorm2d(num_features=32),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2)
         )
@@ -41,7 +41,8 @@ class CNN(nn.Module):
             nn.Conv2d(in_channels=32, out_channels=32,
                       kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2)
+            nn.MaxPool2d(kernel_size=2),
+            nn.Dropout(0.5)
         )
 
         self.fc1 = nn.Sequential(
@@ -69,7 +70,7 @@ class CNN(nn.Module):
         out = out.contiguous().view(out.size()[0], -1)
         out = self.fc1(out)
         out = self.fc3(out)
-        out = self.activation(out)
+        out = self.activation(out, dim=1)
 
         return out
 
@@ -80,10 +81,19 @@ class OrchMatchNet(nn.Module):
         if model_select == 'cnn':
             self.net = CNN(out_num)
         elif model_select == 'resnet':
-            # self.net = ResNet(num_classes=out_num)
-            self.net = resnet
+            self.net = ResNet(num_classes=out_num)
 
     def forward(self, x):
         out = self.net(x)
 
         return out
+
+
+cnn = CNN(out_num=505)
+init_weights(cnn)
+cnn.to(device)
+
+print("Network output shape:")
+print(cnn(test_tensor).shape)
+
+count_parameters(cnn)

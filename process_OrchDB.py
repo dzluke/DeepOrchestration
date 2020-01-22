@@ -1,4 +1,3 @@
-import librosa
 import numpy as np
 import torch
 from torchvision.transforms import transforms
@@ -6,20 +5,22 @@ import matplotlib.pyplot as plt
 import random
 import json
 import copy
+import librosa
 import pickle
 import os
 
 from dataset import OrchDataSet
+from augment import wav_augment
 
 
-path = './new_OrchDB_ord'
-ins = ['Va', 'Cb', 'Vns', 'Vc', 'BTb', 'Fl', 'Vn', 'Hn', 'BTbn', 'BClBb', 'ClBb', 'TpC', 'TTbn',
-       'BFl', 'CbTb', 'Picc', 'ClEb', 'Acc', 'Ob', 'EH', 'CbFl', 'Bn', 'Vas', 'Vcs', 'ASax', 'CbClBb']
-N = 5
+path = './StaticSOL_ord/'
+ins = ['Vc', 'Fl', 'Va', 'Vn', 'Ob', 'BTb',
+       'Cb', 'ClBb', 'Hn', 'TpC', 'Bn', 'Tbn']
+N = 3
 time = 4
-MAX_NUM = 250
-out_num = 3674
-my_data_path = './data/five/'
+MAX_NUM = 60000
+out_num = 505
+my_data_path = './data/three/'
 
 
 def random_combine():
@@ -45,15 +46,12 @@ def random_combine():
         labellist = []
 
         for num in selects:
-            f = all_class[num].split('.')[1].split('/')[-1]
-            if f.endswith('c'):
-                idx = inx[f[:-3]]
-            else:
-                idx = inx[f]
+            f = all_class[num].split('.')[1].split('/')[-1].split('-')[:3]
+            f = f[0]+'-'+f[1]+'-'+f[2]
+            idx = inx[f]
 
-            if idx in labellist:
+            if str(idx) in labellist:
                 flag = True
-                break
 
             labellist.append(str(idx))
             soundlist.append(all_class[num])
@@ -69,26 +67,27 @@ def random_combine():
 
         init += 1
         if init % 100 == 0:
-            print(
-                "{} / {} have finished".format(init, MAX_NUM))
+            print("{} / {} have finished".format(init, MAX_NUM))
 
         # distributed data
-        # if init % 50000 == 0:
-        #     # save in disk
-        #     num = int(init/50000)
-        #     division = int(0.8*len(all_mix))
-        #     pickle.dump(all_mix[:division], open(
-        #         './data/five/trainset-'+str(num)+'.pkl', 'wb'))
-        #     pickle.dump(all_mix[division:], open(
-        #         './data/five/testset-'+str(num)+'.pkl', 'wb'))
-        #     all_mix = []
-        #     print("store "+str(num))
-    pickle.dump(all_mix, open(
-        './data/five/set.pkl', 'wb'))
+    division = int(0.8*len(all_mix))
+    pickle.dump(all_mix[:division], open(
+        './data/three/trainset.pkl', 'wb'))
+    pickle.dump(all_mix[division:], open(
+        './data/three/testset.pkl', 'wb'))
+    # if init % 50000 == 0:
+    #     # save in disk
+    #     num = int(init/50000)
+    #     division = int(0.8*len(all_mix))
+    #     pickle.dump(all_mix[:division], open(
+    #         './data/five/trainset-'+str(num)+'.pkl', 'wb'))
+    #     pickle.dump(all_mix[division:], open(
+    #         './data/five/testset-'+str(num)+'.pkl', 'wb'))
+    #     all_mix = []
+    #     print("store "+str(num))
+
 
 # combine(N)
-
-
 def combine(soundlist, labellist):
     mixed_file = np.zeros((1, 1))
     sr = 0
@@ -97,9 +96,10 @@ def combine(soundlist, labellist):
         if len(sfile) > time*sr:
             n = np.random.randint(0, len(sfile)-time*sr)
             sfile = sfile[n:n+time*sr]
+        # add augment
+        # sfile = wav_augment(sfile, sr)
         mixed_file = mix(mixed_file, sfile)
     mixed_file = mixed_file/len(soundlist)
-    # mixed_file = mixed_file[:time*sr]
 
     mixed_label = ''
     for label in labellist:
@@ -128,24 +128,13 @@ def deal_mix(mix):
     sr = mix[1]
     label = mix[2]
 
-    feature = librosa.feature.melspectrogram(y=y, sr=sr).T
+    feature = librosa.feature.melspectrogram(y=y, sr=sr)
 
-    # if feature.shape[0] <= 256:
-    #     # add zero
-    #     zero = np.zeros((256-feature.shape[0], 128), dtype=np.float32)
-    #     feature = np.vstack((feature, zero))
-    # else:
-    #     feature = feature[:-1*(feature.shape[0] % 128)]
-
-    # num_chunk = feature.shape[0]/128
-    # feature = np.split(feature, num_chunk)
-
-    # (1, 128, 128)
+    # (1, 128, 345)
     feature = np.split(feature, 1)
     feature = torch.tensor(feature)
 
     label = label.split('-')[:-1]
-
     label = encode(label)
 
     return [feature, label]
@@ -159,17 +148,18 @@ def show_all_class_num():
         if f.startswith("."):
             continue
 
-        if f.split('.')[0].endswith('c'):
-            n = f.split('.')[0].split('-')[:-1]
-            if n not in m:
-                m.append(n)
-                inx[f.split('.')[0][:-3]] = cmt
-                cmt += 1
-
-        else:
-            m.append(f.split('.')[0].split('-'))
-            inx[f.split('.')[0]] = cmt
+        n = f.split('.')[0].split('-')[:3]
+        if n not in m:
+            m.append(n)
+            i = n[0]+'-'+n[1]+'-'+n[2]
+            inx[i] = cmt
             cmt += 1
+
+        y, sr = librosa.load(path+f, sr=None)
+        if len(y) < time*sr:
+            add = np.zeros((1, time*sr-len(y)), dtype=np.float32)
+            y = np.append(y, add)
+            librosa.output.write_wav(path+f, y, sr)
 
     f = open('class.index', 'w')
 
@@ -184,9 +174,10 @@ def remove():
     for f in os.listdir(path):
         if f.startswith("."):
             continue
-        y, sr = librosa.load(path+'/'+f, sr=None)
+        y, sr = librosa.load(path+f, sr=None)
         if len(y) < sr*time:
-            print("!")
+            add = np.zeros((1, sr*time-len(y)))
+            y = np.append(y, add)
 
 
 def crop_data(mode):
@@ -217,15 +208,11 @@ def show_all_instru_num():
         if f.startswith('.'):
             continue
         inst = f.split('-')[0]
-        # if '+' in inst:
-        #     continue
         if inst not in ins:
             ins.append(inst)
-        # ins_dic[inst] += 1
+
     print(ins)
     print(len(ins))
-    # print(ins_dic)
-    # print(len(os.listdir(path)))
 
     return ins
 
@@ -239,7 +226,7 @@ def stat_test_db():
         stat_result[key] = 0
 
     testset = OrchDataSet(
-        my_data_path, 'test', transforms.ToTensor())
+        my_data_path, 'testset', transforms.ToTensor())
     test_load = torch.utils.data.DataLoader(dataset=testset,
                                             batch_size=1,
                                             shuffle=False)
@@ -297,20 +284,21 @@ def decode(labels, f=0):
 
 
 def loss(s):
-    root = './exp/after1-13'
-    f = open(root+'/myout-resnet-aug-sig.txt', 'r')
+    root = './exp/'
+    f = open(root+'/myout-'+s+'.txt', 'r')
     loss_log = []
     test_log = []
     lines = f.readlines()
     loss = 0
     cnt = 0
+    k = {"two": 200, "three": 300, "five": 500}
     for line in lines:
         if line.startswith('Epoch:'):
             l = line.split(':')[-1]
             loss += float(l)
             cnt += 1
-            if cnt % 625 == 0:
-                loss_log.append(loss/625)
+            if cnt % k[s] == 0:
+                loss_log.append(loss/k[s])
                 loss = 0
         if line.startswith('Test'):
             l = line.split(':')[-1]
@@ -320,24 +308,81 @@ def loss(s):
 
 
 def draw_loss_figure():
-    # loss_two = loss('two')
-    # loss_three = loss('three')
-    loss_five, test_five = loss('five')
+    loss_two, _ = loss('two')
+    loss_three, _ = loss('three')
+    loss_five, _ = loss('five')
     # loss_ten = loss('ten')
 
-    epoch_num = range(0, 5*len(loss_five[:10]), 5)
+    epoch_num = range(5, 5*len(loss_five[:20])+5, 5)
 
     plt.figure()
-    # plt.plot(epoch_num, loss_two[:30], color='r', label='two')
-    # plt.plot(epoch_num, loss_three[:30], color='g', label='three')
-    plt.plot(epoch_num, loss_five[:10], color='b', label='train')
-    plt.plot(epoch_num, test_five[:10], color='r', label='test')
+    plt.plot(epoch_num, loss_two[:20], color='r', label='two')
+    plt.plot(epoch_num, loss_three[:20], color='g', label='three')
+    plt.plot(epoch_num, loss_five[:20], color='b', label='five')
+    # plt.plot(epoch_num, test_five[:20], color='r', label='test')
     # plt.plot(epoch_num, loss_ten[:30], color='y', label='ten')
     plt.ylabel('loss')
     plt.legend()
-    plt.savefig("./exp/after1-13/loss_resnet.png")
+    plt.savefig("./exp/loss_resnet_100.png")
+    plt.show()
+
+
+def draw_acc_figure():
+    root = './exp/'
+    f = open(root+'/myout-three.txt', 'r')
+    lines = f.readlines()
+    acc = []
+    precision = []
+    recall = []
+
+    for line in lines:
+        if line.startswith('instance_acc'):
+            l = line.split(':')[-1]
+            acc.append(float(l))
+        elif line.startswith('instance_precision'):
+            l = line.split(':')[-1]
+            precision.append(float(l))
+        elif line.startswith('instance_recall'):
+            l = line.split(':')[-1]
+            recall.append(float(l))
+
+    epoch_num = range(5, 5*len(acc[:20])+5, 5)
+
+    plt.figure()
+
+    plt.plot(epoch_num, acc[:20], color='r', label='acc')
+    plt.plot(epoch_num, precision[:20], color='b', label='precision')
+    # plt.plot(epoch_num, recall[:20], color='g', label='recall')
+
+    plt.ylabel('acc')
+    plt.legend()
+    plt.savefig("./exp/acc_three_resnet_100.png")
+    plt.show()
+
+
+def draw_acc_comp():
+    x = [2, 3, 5]
+    y = [88.99, 84.21, 65.98]
+    plt.bar(x=range(len(x)), height=y, width=0.4, label='accuracy',
+            color='steelblue', tick_label=x, alpha=0.8)
+    # for x1, yy in zip(x, y):
+    #     plt.text(x1, yy + 1, str(yy), ha='center',
+    #              va='bottom', fontsize=10, rotation=0)
+
+    # # 设置标题
+    # plt.title("")
+    # # 为两条坐标轴设置名称
+    # plt.xlabel("mixture number")
+    # plt.ylabel("accuracy")
+    # # 显示图例
+    # plt.legend()
+    # # 画折线图
+    # plt.plot(x, y, "r", marker='*', ms=10, label="a")
+    # plt.xticks(rotation=45)
+    # plt.legend(loc="upper right")
+    plt.savefig('./exp/acc_comp.png')
     plt.show()
 
 
 if __name__ == "__main__":
-    draw_loss_figure()
+    draw_acc_comp()

@@ -10,5 +10,6 @@ acc.csv
 /model
 /data
 /exp
+/exp_pre
 /other
 .DS_Store

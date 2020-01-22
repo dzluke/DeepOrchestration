@@ -11,6 +11,7 @@ import torch.nn.functional as F
 from torch import optim
 from torch.distributions.categorical import Categorical
 
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -82,9 +83,9 @@ class ResNet(nn.Module):
         self.block2 = self._create_block(32, 64, stride=2)
         self.block3 = self._create_block(64, 32, stride=2)
         self.block4 = self._create_block(32, 32, stride=2)
-        self.bn2 = nn.BatchNorm1d(1024)
+        self.bn2 = nn.BatchNorm1d(1408)
         self.bn3 = nn.BatchNorm1d(1000)
-        self.linear1 = nn.Linear(1024, 1000)
+        self.linear1 = nn.Linear(1408, 1000)
         self.linear2 = nn.Linear(1000, num_classes)
 
         self.dropout = nn.Dropout(dropout_rate)
@@ -141,11 +142,11 @@ test_tensor = test_tensor.unsqueeze(1)
 print("Network input shape:")
 print(test_tensor.shape)
 
-resnet = ResNet(num_classes=3674, dropout_rate=0.5)
+resnet = ResNet(num_classes=505, dropout_rate=0.5)
 init_weights(resnet)
 resnet.set_device(device)
 
-# print("Network output shape:")
-# print(resnet(test_tensor).shape)
+print("Network output shape:")
+print(resnet(test_tensor).shape)
 
 count_parameters(resnet)

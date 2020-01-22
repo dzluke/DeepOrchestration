@@ -15,14 +15,14 @@ from dataset import OrchDataSet
 
 
 epoch_num = 200
-batch_size = 32
+batch_size = 16
 my_model_path = './model'
-server_model_path = '/home/data/happipub/gradpro_l/model/five'
+server_model_path = '/home/data/happipub/gradpro_l/model/three'
 my_data_path = './data/five'
-server_data_path = '/home/data/happipub/gradpro_l/five/new'
-result = N*[0]
-db = {'Va': 9802.0, 'Cb': 9209.0, 'Vns': 11264.0, 'Vc': 10098.0, 'BTb': 14146.0, 'Fl': 13571.0, 'Vn': 9321.0, 'Hn': 11575.0, 'BTbn': 9889.0, 'BClBb': 11825.0, 'ClBb': 10013.0, 'TpC': 6468.0, 'TTbn': 14118.0,
-      'BFl': 2643.0, 'CbTb': 10779.0, 'Picc': 7487.0, 'ClEb': 3007.0, 'Acc': 17294.0, 'Ob': 13968.0, 'EH': 8704.0, 'CbFl': 2627.0, 'Bn': 14083.0, 'Vas': 10074.0, 'Vcs': 9974.0, 'ASax': 5025.0, 'CbClBb': 3036.0}
+server_data_path = '/home/data/happipub/gradpro_l/three/new-less'
+
+db = {'Vc': 3560.0, 'Fl': 2831.0, 'Va': 3469.0, 'Vn': 3328.0, 'Ob': 2668.0, 'BTb': 2565.0,
+      'Cb': 3305.0, 'ClBb': 2960.0, 'Hn': 3271.0, 'TpC': 2245.0, 'Bn': 2944.0, 'Tbn': 2854.0}
 
 
 def arg_parse():
@@ -53,7 +53,7 @@ def main():
                                              shuffle=True)
 
     test_load = torch.utils.data.DataLoader(dataset=testset,
-                                            batch_size=1,
+                                            batch_size=batch_size,
                                             shuffle=False)
     print("End loading data")
 
@@ -103,20 +103,17 @@ def train(model, optimizer, train_load, test_load, start_epoch):
     total_acc = 0
     best_epoch = None
     total_loss = 0
-    result_ins = np.array(out_num*[0], dtype=np.float32)
+
     weight_decay = 0.01
 
     for epoch in range(start_epoch, epoch_num):
         model.train()
 
         for i, (trains, labels) in enumerate(train_load):
-            # add some zero to the traindata
-
             trains = trains.to(device)
             labels = labels.to(device)
 
             outputs = model(trains)
-
             # L2 regularization
             # l2_reg = torch.tensor(0.)
             # for param in model.parameters():
@@ -150,9 +147,11 @@ def train(model, optimizer, train_load, test_load, start_epoch):
         if (epoch+1) % 5 == 0:
             model.eval()
 
-            total_num = 0
             total_time = 0.0
             test_loss = 0.0
+            pret_tmp = np.zeros((len(test_load)*batch_size, out_num))
+            grod_tmp = np.zeros((len(test_load)*batch_size, out_num))
+            s = 0
 
             for tests, labels in test_load:
                 tests = tests.to(device)
@@ -161,40 +160,31 @@ def train(model, optimizer, train_load, test_load, start_epoch):
                 start = time.time()
                 outputs = model(tests)
                 end = time.time()
-
                 loss = criterion(outputs, labels/N)
-                # outputs = sig(outputs)
-                predicts = get_pred(outputs)
 
-                total_num += labels.size(0)
+                predicts = get_pred(outputs)
+                pret_tmp[s:s+batch_size,
+                         :] = predicts.reshape((batch_size, -1))
+
+                # pret_tmp[s:s+batch_size,
+                #          :] = outputs.cpu().detach().numpy().reshape((batch_size, -1))
+                grod_tmp[s:s+batch_size,
+                         :] = labels.cpu().detach().numpy().reshape((batch_size, -1))
+                s += batch_size
+
                 total_time += float(end-start)
                 test_loss += float(loss)
 
-                result_ins = evaluate(predicts, labels, result_ins)
+                # result_ins = evaluate(predicts, labels, result_ins)
+
+            # pret_tmp[pret_tmp >= 0.05] = 1
+            # pret_tmp[pret_tmp < 0.05] = 0
+            result = evaluate(pret_tmp, grod_tmp)
 
             avg_time = total_time/float(len(test_load))
             print("Average Time: {:2.3f} ms".format(1000*avg_time))
-            print("Test Loss: {:.6f}".format(out_num*test_loss/total_num))
-            total_acc = 100*float(result[-1])/total_num
-            for i in range(N):
-                print("Correct: {}/{}, Accuracy: {:.3f}% ".format(i +
-                                                                  1, N, 100*float(result[i])/total_num))
-                result[i] = 0
-
-            inx = json.load(open('class.index', 'r'))
-            stat_result = {}
-            for i in ins:
-                stat_result[i] = 0
-
-            for i in inx.keys():
-                ins_type = i.split('-')[0]
-                id = inx[i]
-                stat_result[ins_type] += result_ins[id]
-                result_ins[id] = 0
-
-            for i in ins:
-                print("{}: {}/{} = {:.3f}% ".format(i,
-                                                    stat_result[i], db[i], 100*float(stat_result[i]/db[i])))
+            print("Test Loss: {:.6f}".format(out_num*test_loss/len(test_load)))
+            total_acc = 100*float(result['a'][-1])/len(test_load)
 
         if total_acc > best_acc:
             best_acc = total_acc
@@ -209,21 +199,85 @@ def train(model, optimizer, train_load, test_load, start_epoch):
     print("Best test accuracy: {} at epoch: {}".format(best_acc, best_epoch))
 
 
-def evaluate(pret, grot, result_ins):
-    grot = grot.cpu().numpy()
+def evaluate(pret, grot):
     if pret.shape != grot.shape:
         print("[Error]: size difference")
+    total_num = pret.shape[0]
+    # compute the label-based accuracy
+    result = {}
 
-    acc_num = np.sum((pret == 1).astype(float) *
-                     (grot == 1).astype(float), axis=1)
+    gt_pos = np.sum((grot == 1).astype(float), axis=0)
+    gt_neg = np.sum((grot == 0).astype(float), axis=0)
+    pt_pos = np.sum((pret == 1).astype(float) *
+                    (grot == 1).astype(float), axis=0)
+    pt_neg = np.sum((grot == 0).astype(float) *
+                    (pret == 0).astype(float), axis=0)
+    label_pos_acc = 1.0*pt_pos/gt_pos
+    # label_neg_acc = 1.0*pt_neg/gt_neg
+    # label_acc = (label_pos_acc + label_neg_acc)/2
 
-    for num in acc_num:
+    result['label_pos_acc'] = label_pos_acc
+    # result['label_neg_acc'] = label_neg_acc
+    # result['label_acc'] = label_acc
+    print("label_pos_acc: ", label_pos_acc)
+    # print("label_neg_acc: ", label_neg_acc)
+    # print("label_acc: ", label_acc)
+
+    inx = json.load(open('class.index', 'r'))
+    acc_num = {}
+    stat_result = {}
+    for i in ins:
+        acc_num[i] = 0
+
+    for i in inx.keys():
+        ins_type = i.split('-')[0]
+        id = inx[i]
+        acc_num[ins_type] += pt_pos[id]
+
+    for i in ins:
+        print("{}: {}/{} = {:.3f}% ".format(i,
+                                            acc_num[i], db[i], 100.0*acc_num[i]/db[i]))
+    # compute the instance-based accuracy
+    # precision
+    gt_pos = np.sum((grot == 1).astype(float), axis=1)
+    pt_pos = np.sum((pret == 1).astype(float), axis=1)
+    floatersect_pos = np.sum((grot == 1).astype(
+        float)*(pret == 1).astype(float), axis=1)
+
+    union_pos = np.sum(((grot == 1)+(pret == 1)).astype(float), axis=1)
+    cnt_eff = float(grot.shape[0])
+    for iter, key in enumerate(gt_pos):
+        if key == 0:
+            union_pos[iter] = 1
+            pt_pos[iter] = 1
+            gt_pos[iter] = 1
+            cnt_eff = cnt_eff - 1
+            continue
+        if pt_pos[iter] == 0:
+            pt_pos[iter] = 1
+
+    instance_acc = np.sum(floatersect_pos/union_pos)/cnt_eff
+    instance_precision = np.sum(floatersect_pos/pt_pos)/cnt_eff
+    instance_recall = np.sum(floatersect_pos/gt_pos)/cnt_eff
+    floatance_F1 = 2*instance_precision*instance_recall / \
+        (instance_precision+instance_recall)
+    result['instance_acc'] = instance_acc
+    result['instance_precision'] = instance_precision
+    result['instance_recall'] = instance_recall
+    result['instance_F1'] = floatance_F1
+    print("instance_acc: ", instance_acc)
+    print("instance_precision: ", instance_precision)
+    print("instance_recall: ", instance_recall)
+    print("instance_F1: ", floatance_F1)
+
+    result['a'] = N*[0]
+    for num in floatersect_pos:
         if num > 0:
-            result[int(num)-1] += 1
+            result['a'][int(num)-1] += 1
 
-    pos_acc = np.sum((pret == 1).astype(float) *
-                     (grot == 1).astype(float), axis=0)
-    result_ins += pos_acc
+    for i in range(N):
+        print("Correct: {}/{}, Accuracy: {:.3f}% ".format(i +
+                                                          1, N, 100*float(result['a'][i])/total_num))
 
     # inx = json.load(open('class.index', 'r'))
     # print("+++++++++++++++")
@@ -235,7 +289,7 @@ def evaluate(pret, grot, result_ins):
     #         print("p: ", d_p)
     #         break
 
-    return result_ins
+    return result
 
 
 def get_pred(output):
@@ -244,15 +298,15 @@ def get_pred(output):
     '''
 
     pred = np.zeros(output.shape)
+    for k, o in enumerate(output):
+        preidx = []
+        for i in range(N):
+            idx = o.max(0)[1]
+            preidx.append(idx)
+            o[int(idx)] = -1
 
-    preidx = []
-    for i in range(N):
-        idx = output.max(1, keepdim=True)[1]
-        preidx.append(idx)
-        output[0][idx] = -1
-
-    for idx in preidx:
-        pred[0][idx] = 1.0
+        for idx in preidx:
+            pred[k][idx] = 1.0
 
     return pred
 
