@@ -10,8 +10,11 @@ import pickle
 import os
 
 from dataset import OrchDataSet
-from augment import wav_augment
 
+
+"""
+Create random combinations of instruments, making the training and testing data
+"""
 
 path = './StaticSOL_ord/'
 ins = ['Vc', 'Fl', 'Va', 'Vn', 'Ob', 'BTb',
@@ -385,4 +388,4 @@ def draw_acc_comp():
 
 
 if __name__ == "__main__":
-    draw_acc_comp()
+    random_combine()

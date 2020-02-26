@@ -19,7 +19,7 @@ batch_size = 16
 my_model_path = './model'
 server_model_path = '/home/data/happipub/gradpro_l/model/three'
 my_data_path = './data/five'
-server_data_path = '/home/data/happipub/gradpro_l/three/new-less'
+featurized_data_path = './featurized_data/'
 
 db = {'Vc': 3560.0, 'Fl': 2831.0, 'Va': 3469.0, 'Vn': 3328.0, 'Ob': 2668.0, 'BTb': 2565.0,
       'Cb': 3305.0, 'ClBb': 2960.0, 'Hn': 3271.0, 'TpC': 2245.0, 'Bn': 2944.0, 'Tbn': 2854.0}
@@ -43,9 +43,9 @@ def main():
     print("Start loading data -----")
 
     trainset = OrchDataSet(
-        server_data_path, 'trainset', transforms.ToTensor())
+        featurized_data_path, 'training', transforms.ToTensor())
     testset = OrchDataSet(
-        server_data_path, 'testset', transforms.ToTensor())
+        featurized_data_path, 'test', transforms.ToTensor())
 
     # load data
     train_load = torch.utils.data.DataLoader(dataset=trainset,

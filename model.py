@@ -4,7 +4,8 @@ import torch.nn.init as init
 import torch.nn.functional as F
 import numpy as np
 import math
-from network_example import resnet, ResNet, count_parameters, init_weights, device, test_tensor
+
+from resnet import ResNet, count_parameters, init_weights, device
 
 
 class CNN(nn.Module):
@@ -89,11 +90,12 @@ class OrchMatchNet(nn.Module):
         return out
 
 
-cnn = CNN(out_num=505)
-init_weights(cnn)
-cnn.to(device)
+if __name__ == '__main__':
+    cnn = CNN(out_num=505)
+    init_weights(cnn)
+    cnn.to(device)
 
-print("Network output shape:")
-print(cnn(test_tensor).shape)
+    print("Network output shape:")
+    print(cnn(test_tensor).shape)
 
-count_parameters(cnn)
+    count_parameters(cnn)

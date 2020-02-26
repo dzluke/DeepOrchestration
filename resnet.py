@@ -121,32 +121,33 @@ class ResNet(nn.Module):
         self.to(device)
 
 
-# Make a test input for the network and compute the features
-sr = 44100  # sample rate
-test_audio_signal = librosa.core.tone(1000, sr=sr, duration=4)
+if __name__ == "__main__":
+    # Make a test input for the network and compute the features
+    sr = 44100  # sample rate
+    test_audio_signal = librosa.core.tone(1000, sr=sr, duration=4)
 
-test_spec = librosa.feature.melspectrogram(test_audio_signal)
-print("Melspec Feature Shape:")
-print(test_spec.shape)
+    test_spec = librosa.feature.melspectrogram(test_audio_signal)
+    print("Melspec Feature Shape:")
+    print(test_spec.shape)
 
 
-# Expected input size to the network is [batch_size, 128, 173]
-batch_size = 32
-batch_specs = np.tile(test_spec, (batch_size, 1, 1))
-print("Batch Feature shape:")
-print(batch_specs.shape)
+    # Expected input size to the network is [batch_size, 128, 173]
+    batch_size = 32
+    batch_specs = np.tile(test_spec, (batch_size, 1, 1))
+    print("Batch Feature shape:")
+    print(batch_specs.shape)
 
-# Network expects a channel dimension for the inputs, so add a dimension
-test_tensor = torch.from_numpy(batch_specs).float().to(device)
-test_tensor = test_tensor.unsqueeze(1)
-print("Network input shape:")
-print(test_tensor.shape)
+    # Network expects a channel dimension for the inputs, so add a dimension
+    test_tensor = torch.from_numpy(batch_specs).float().to(device)
+    test_tensor = test_tensor.unsqueeze(1)
+    print("Network input shape:")
+    print(test_tensor.shape)
 
-resnet = ResNet(num_classes=505, dropout_rate=0.5)
-init_weights(resnet)
-resnet.set_device(device)
+    resnet = ResNet(num_classes=505, dropout_rate=0.5)
+    init_weights(resnet)
+    resnet.set_device(device)
 
-print("Network output shape:")
-print(resnet(test_tensor).shape)
+    print("Network output shape:")
+    print(resnet(test_tensor).shape)
 
-count_parameters(resnet)
+    count_parameters(resnet)
