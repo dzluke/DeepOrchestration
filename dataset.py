@@ -11,7 +11,7 @@ from augment import spec_augment
 class OrchDataSet(data.Dataset):
     def __init__(self, root, mode, transform):
         if not os.path.exists(root):
-            print("[Error] root not exits")
+            print("[Error] root does not exist")
             return
         self.mode = mode
         self.audio_feature = []
@@ -19,21 +19,14 @@ class OrchDataSet(data.Dataset):
         self.mix = []
         num = 1
 
-        for data in os.listdir(root):
-            if data.startswith(mode):
-                new_path = os.path.join(root, data)
-                print(new_path)
-                inp = pickle.load(open(new_path, 'rb'))
+        for dir in os.listdir(root):
+            if dir.startswith(mode):
+                new_path = os.path.join(root, dir)
+                f = open(new_path, 'rb')
+                inp = pickle.load(f)
                 for i, x in enumerate(inp):
                     self.audio_feature.append(x[0])
                     self.labels.append(x[1])
-                    # self.mix.append(x)
-                    # if (i+1) % 12000 == 0:
-                    #     pickle.dump(self.mix, open(
-                    #         root+'/'+mode+str(num)+'.pkl', 'wb'))
-                    #     num += 1
-                    #     self.mix = []
-                # break
 
         if transform is not None:
             self.transform = transform
@@ -55,12 +48,6 @@ class OrchDataSet(data.Dataset):
 
 
 if __name__ == '__main__':
-    root = './data/three'
-    a = OrchDataSet(root, 'trainset1', transforms.ToTensor())
-    a = OrchDataSet(root, 'trainset2', transforms.ToTensor())
+    root = './featurized_data'
+    training_data = OrchDataSet(root, 'training', transforms.ToTensor())
 
-    # aa = torch.utils.data.DataLoader(dataset=a, batch_size=1, shuffle=True)
-
-    # for (train, labels) in aa:
-    #     print(labels.shape)
-    #     break
