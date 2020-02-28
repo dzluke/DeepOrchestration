@@ -259,11 +259,10 @@ def make_dataset():
     #             audio_dirs.append(newpath)
     # random.shuffle(audio_dirs)
     # audio_feature = []
-    audio_dirs = [data_path + "training", data_path + "test"]
-    sets = []
 
     for data_type in ["training", "test"]:
         directory = data_path + data_type
+        sets = []
         for file in os.listdir(directory):
             if file.endswith('.DS_Store'):
                 continue
