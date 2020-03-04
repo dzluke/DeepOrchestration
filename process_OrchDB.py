@@ -12,10 +12,17 @@ import os
 from dataset import OrchDataSet
 from augment import wav_augment
 
-# original dataset
+# raw dataset
+# file hierarchy: (note that folders Brass, Winds, Strings are not present)
+# ----TinySOL
+#   ----Bn
+#   ----Cb
+#   ----Va
+#   etc...
 path = './TinySOL_0.6/TinySOL'
-# generated dataset
-my_data_path = './data/'
+
+# generated dataset were picklized files will be stored
+featurized_data_path = './featurized_data/'
 
 instruments = ['Vc', 'Fl', 'Va', 'Vn', 'Ob', 'BTb',
        'Cb', 'ClBb', 'Hn', 'TpC', 'Bn', 'Tbn']
@@ -32,17 +39,17 @@ out_num = 505
 
 def random_combine():
     '''
-        call this function to generate dataset and devide it into training set and test set
+        call this function to generate dataset and divide it into training set and test set
     '''
-    all_class = []
+    all_samples = []
     all_mixture = []
     inx = json.load(open('class.index', 'r'))
 
-    for inst in os.listdir(path):
-        if inst.startswith('.'):
-            continue
-        newpath = os.path.join(path, inst)
-        all_class.append(newpath)
+    for instrument in instruments:
+        instrument_path = os.path.join(path, instrument)
+        for sample in os.listdir(instrument_path):
+            sample_path = os.path.join(instrument_path, sample)
+            all_samples.append(sample_path)
 
     # combine
     all_selects = []
@@ -50,13 +57,13 @@ def random_combine():
     init = 0
     while init < MAX_NUM:
         # select N files randomly
-        selects = random.sample(range(len(all_class)), N)
+        selects = random.sample(range(len(all_samples)), N)
         flag = False
         soundlist = []
         labellist = []
 
         for num in selects:
-            f = all_class[num].split('.')[1].split('/')[-1].split('-')[:3]
+            f = all_samples[num].split('/')[-1].split('-')[:3]
             f = f[0]+'-'+f[1]+'-'+f[2]
             idx = inx[f]
 
@@ -65,7 +72,7 @@ def random_combine():
                 flag = True
 
             labellist.append(str(idx))
-            soundlist.append(all_class[num])
+            soundlist.append(all_samples[num])
 
         if flag or set(labellist) in all_selects:
             continue
@@ -80,14 +87,14 @@ def random_combine():
         if init % 100 == 0:
             print("{} / {} have finished".format(init, MAX_NUM))
 
-    if os.path.exists(my_data_path) == False:
-        os.makedirs(my_data_path)
+    if not os.path.exists(featurized_data_path):
+        os.makedirs(featurized_data_path)
 
     division = int(0.8*len(all_mix))
     pickle.dump(all_mix[:division], open(
-        my_data_path+'trainset.pkl', 'wb'))
+        featurized_data_path + 'training_featurized.pkl', 'wb'))
     pickle.dump(all_mix[division:], open(
-        my_data_path+'testset.pkl', 'wb'))
+        featurized_data_path + 'test_featurized.pkl', 'wb'))
 
     # divide the data into sevaral parts when its size is large
     # if init % 50000 == 0:
@@ -106,6 +113,7 @@ def combine(soundlist, labellist):
     mixed_file = np.zeros((1, 1))
     sr = 0
     for sound in soundlist:
+        sound_path = os
         sfile, sr = librosa.load(sound, sr=None)
         if len(sfile) > time*sr:
             # randomly select one part of the raw audio
@@ -165,20 +173,21 @@ def show_all_class_num():
     for f in os.listdir(path):
         if f.startswith("."):
             continue
-
-        n = f.split('.')[0].split('-')[:3]
-        print(n)
-        if n not in m:
-            m.append(n)
-            i = n[0]+'-'+n[1]+'-'+n[2]
-            inx[i] = cmt
-            cmt += 1
-
-        y, sr = librosa.load(path+f, sr=None)
-        if len(y) < time*sr:
-            add = np.zeros((1, time*sr-len(y)), dtype=np.float32)
-            y = np.append(y, add)
-            librosa.output.write_wav(path+f, y, sr)
+        if f in instruments:
+            instrument_path = os.path.join(path, f)
+            for sample in os.listdir(instrument_path):
+                n = sample.split('.')[0].split('-')[:3]
+                if n not in m:
+                    m.append(n)
+                    i = n[0]+'-'+n[1]+'-'+n[2]
+                    inx[i] = cmt
+                    cmt += 1
+                sample_path = os.path.join(instrument_path, sample)
+                y, sr = librosa.load(sample_path, sr=None)
+                if len(y) < time*sr:
+                    add = np.zeros((1, time*sr-len(y)), dtype=np.float32)
+                    y = np.append(y, add)
+                    librosa.output.write_wav(path+f, y, sr)
 
     f = open('class.index', 'w')
 
@@ -249,7 +258,7 @@ def stat_test_db():
         stat_result[key] = 0
 
     testset = OrchDataSet(
-        my_data_path, 'testset', transforms.ToTensor())
+        featurized_data_path, 'test', transforms.ToTensor())
     test_load = torch.utils.data.DataLoader(dataset=testset,
                                             batch_size=1,
                                             shuffle=False)
@@ -394,4 +403,5 @@ def draw_acc_comp():
 
 
 if __name__ == "__main__":
-    show_all_class_num()
+    # random_combine()
+    stat_test_db()

@@ -10,7 +10,7 @@ import json
 import os
 
 from model import OrchMatchNet
-from process_OrchDB import ins, decode, N, out_num
+from process_OrchDB import instruments, decode, N, out_num, stat_test_db
 from dataset import OrchDataSet
 
 
@@ -21,8 +21,10 @@ server_model_path = '/home/data/happipub/gradpro_l/model/three'
 my_data_path = './data/five'
 featurized_data_path = './featurized_data/'
 
-db = {'Vc': 3560.0, 'Fl': 2831.0, 'Va': 3469.0, 'Vn': 3328.0, 'Ob': 2668.0, 'BTb': 2565.0,
-      'Cb': 3305.0, 'ClBb': 2960.0, 'Hn': 3271.0, 'TpC': 2245.0, 'Bn': 2944.0, 'Tbn': 2854.0}
+# db = {'Vc': 3560.0, 'Fl': 2831.0, 'Va': 3469.0, 'Vn': 3328.0, 'Ob': 2668.0, 'BTb': 2565.0,
+#       'Cb': 3305.0, 'ClBb': 2960.0, 'Hn': 3271.0, 'TpC': 2245.0, 'Bn': 2944.0, 'Tbn': 2854.0}
+
+db = stat_test_db()
 
 
 def arg_parse():
@@ -107,9 +109,11 @@ def train(model, optimizer, train_load, test_load, start_epoch):
     weight_decay = 0.01
 
     for epoch in range(start_epoch, epoch_num):
+        print("Epoch {}".format(epoch))
         model.train()
 
         for i, (trains, labels) in enumerate(train_load):
+            # print("Step {}".format(i))
             trains = trains.to(device)
             labels = labels.to(device)
 
@@ -226,7 +230,7 @@ def evaluate(pret, grot):
     inx = json.load(open('class.index', 'r'))
     acc_num = {}
     stat_result = {}
-    for i in ins:
+    for i in instruments:
         acc_num[i] = 0
 
     for i in inx.keys():
@@ -234,7 +238,7 @@ def evaluate(pret, grot):
         id = inx[i]
         acc_num[ins_type] += pt_pos[id]
 
-    for i in ins:
+    for i in instruments:
         print("{}: {}/{} = {:.3f}% ".format(i,
                                             acc_num[i], db[i], 100.0*acc_num[i]/db[i]))
     # compute the instance-based accuracy

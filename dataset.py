@@ -17,7 +17,6 @@ class OrchDataSet(data.Dataset):
         self.audio_feature = []
         self.labels = []
         self.mix = []
-        num = 1
 
         for dir in os.listdir(root):
             if dir.startswith(mode):
@@ -49,5 +48,11 @@ class OrchDataSet(data.Dataset):
 
 if __name__ == '__main__':
     root = './featurized_data'
-    training_data = OrchDataSet(root, 'training', transforms.ToTensor())
+    training = OrchDataSet(root, 'training', transforms.ToTensor())
+    testing = OrchDataSet(root, 'test', transforms.ToTensor())
+    print("training set size: {}".format(len(training)))
+    print("testing set size: {}".format(len(testing)))
+
+    print("training set sample feature shape: {}".format(training[0][0].shape))
+    # print("testing set  feature shape: {}".format(testing[0].shape))
 
