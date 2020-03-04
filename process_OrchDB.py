@@ -10,23 +10,30 @@ import pickle
 import os
 
 from dataset import OrchDataSet
+from augment import wav_augment
 
+# original dataset
+path = './TinySOL_0.6/TinySOL'
+# generated dataset
+my_data_path = './data/'
 
-"""
-Create random combinations of instruments, making the training and testing data
-"""
-
-path = './StaticSOL_ord/'
-ins = ['Vc', 'Fl', 'Va', 'Vn', 'Ob', 'BTb',
+instruments = ['Vc', 'Fl', 'Va', 'Vn', 'Ob', 'BTb',
        'Cb', 'ClBb', 'Hn', 'TpC', 'Bn', 'Tbn']
-N = 3
+
+# number of mixture
+N = 2
+# time duration
 time = 4
-MAX_NUM = 60000
+# max sample number
+MAX_NUM = 400
+# class number
 out_num = 505
-my_data_path = './data/three/'
 
 
 def random_combine():
+    '''
+        call this function to generate dataset and devide it into training set and test set
+    '''
     all_class = []
     all_mixture = []
     inx = json.load(open('class.index', 'r'))
@@ -54,6 +61,7 @@ def random_combine():
             idx = inx[f]
 
             if str(idx) in labellist:
+                # ignore the difference of dynamics
                 flag = True
 
             labellist.append(str(idx))
@@ -72,12 +80,16 @@ def random_combine():
         if init % 100 == 0:
             print("{} / {} have finished".format(init, MAX_NUM))
 
-        # distributed data
+    if os.path.exists(my_data_path) == False:
+        os.makedirs(my_data_path)
+
     division = int(0.8*len(all_mix))
     pickle.dump(all_mix[:division], open(
-        './data/three/trainset.pkl', 'wb'))
+        my_data_path+'trainset.pkl', 'wb'))
     pickle.dump(all_mix[division:], open(
-        './data/three/testset.pkl', 'wb'))
+        my_data_path+'testset.pkl', 'wb'))
+
+    # divide the data into sevaral parts when its size is large
     # if init % 50000 == 0:
     #     # save in disk
     #     num = int(init/50000)
@@ -90,13 +102,13 @@ def random_combine():
     #     print("store "+str(num))
 
 
-# combine(N)
 def combine(soundlist, labellist):
     mixed_file = np.zeros((1, 1))
     sr = 0
     for sound in soundlist:
         sfile, sr = librosa.load(sound, sr=None)
         if len(sfile) > time*sr:
+            # randomly select one part of the raw audio
             n = np.random.randint(0, len(sfile)-time*sr)
             sfile = sfile[n:n+time*sr]
         # add augment
@@ -144,6 +156,9 @@ def deal_mix(mix):
 
 
 def show_all_class_num():
+    '''
+        get all index and class num from the dataset
+    '''
     cmt = 0
     m = []
     inx = {}
@@ -152,6 +167,7 @@ def show_all_class_num():
             continue
 
         n = f.split('.')[0].split('-')[:3]
+        print(n)
         if n not in m:
             m.append(n)
             i = n[0]+'-'+n[1]+'-'+n[2]
@@ -167,38 +183,38 @@ def show_all_class_num():
     f = open('class.index', 'w')
 
     json.dump(inx, f)
-    print(cmt)
+    print('class num: ', cmt)
 
     return cmt
 
 
-def remove():
-    c = 0
-    for f in os.listdir(path):
-        if f.startswith("."):
-            continue
-        y, sr = librosa.load(path+f, sr=None)
-        if len(y) < sr*time:
-            add = np.zeros((1, sr*time-len(y)))
-            y = np.append(y, add)
+# def remove():
+#     c = 0
+#     for f in os.listdir(path):
+#         if f.startswith("."):
+#             continue
+#         y, sr = librosa.load(path+f, sr=None)
+#         if len(y) < sr*time:
+#             add = np.zeros((1, sr*time-len(y)))
+#             y = np.append(y, add)
 
 
-def crop_data(mode):
-    root = '/home/data/happipub/gradpro_l/five'
+# def crop_data(mode):
+#     root = '/home/data/happipub/gradpro_l/five'
 
-    mix = []
-    for data in os.listdir(root):
-        if data.startswith(mode):
-            new_path = os.path.join(root, data)
-            print(new_path)
-            inp = pickle.load(open(new_path, 'rb'))
-            for i, x in enumerate(inp):
-                x[0] = torch.tensor(
-                    [np.vstack((x[0][0].numpy(), x[0][1].numpy()))])
-                mix.append(x)
+#     mix = []
+#     for data in os.listdir(root):
+#         if data.startswith(mode):
+#             new_path = os.path.join(root, data)
+#             print(new_path)
+#             inp = pickle.load(open(new_path, 'rb'))
+#             for i, x in enumerate(inp):
+#                 x[0] = torch.tensor(
+#                     [np.vstack((x[0][0].numpy(), x[0][1].numpy()))])
+#                 mix.append(x)
 
-            pickle.dump(mix, open(new_path+'new.pkl', 'wb'))
-            mix = []
+#             pickle.dump(mix, open(new_path+'new.pkl', 'wb'))
+#             mix = []
 
 
 def show_all_instru_num():
@@ -221,11 +237,15 @@ def show_all_instru_num():
 
 
 def stat_test_db():
+    '''
+        get the numbers of files for each instrument
+        return a dictionary
+    '''
     inx = json.load(open('class.index', 'r'))
     t = np.array(out_num*[0], dtype=np.float32)
 
     stat_result = {}
-    for key in ins:
+    for key in instruments:
         stat_result[key] = 0
 
     testset = OrchDataSet(
@@ -368,24 +388,10 @@ def draw_acc_comp():
     y = [88.99, 84.21, 65.98]
     plt.bar(x=range(len(x)), height=y, width=0.4, label='accuracy',
             color='steelblue', tick_label=x, alpha=0.8)
-    # for x1, yy in zip(x, y):
-    #     plt.text(x1, yy + 1, str(yy), ha='center',
-    #              va='bottom', fontsize=10, rotation=0)
 
-    # # 设置标题
-    # plt.title("")
-    # # 为两条坐标轴设置名称
-    # plt.xlabel("mixture number")
-    # plt.ylabel("accuracy")
-    # # 显示图例
-    # plt.legend()
-    # # 画折线图
-    # plt.plot(x, y, "r", marker='*', ms=10, label="a")
-    # plt.xticks(rotation=45)
-    # plt.legend(loc="upper right")
     plt.savefig('./exp/acc_comp.png')
     plt.show()
 
 
 if __name__ == "__main__":
-    random_combine()
+    show_all_class_num()
