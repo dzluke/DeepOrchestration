@@ -35,6 +35,10 @@ time = 4
 MAX_NUM = 400
 # class number
 out_num = 505
+# number of samples between successive frames in librosa.melspectrogram
+mel_hop_length = 512
+
+
 
 
 def random_combine():
@@ -150,10 +154,16 @@ def deal_mix(mix):
     y = mix[0]
     sr = mix[1]
     label = mix[2]
-
-    feature = librosa.feature.melspectrogram(y=y, sr=sr)
+    mel_length = ((sr * time) // mel_hop_length) + 1
+    
+    feature = librosa.feature.melspectrogram(y=y, sr=sr, 
+                                             hop_length=mel_hop_length)
 
     # (1, 128, 345)
+    if (feature.shape[1] != mel_length):
+        zeroes_needed = mel_length - feature.shape[1]
+        padding = np.zeros((feature.shape[0], zeroes_needed), dtype=np.float32)
+        feature = np.concatenate([feature, padding], axis=1)
     feature = np.split(feature, 1)
     feature = torch.tensor(feature)
 
@@ -403,5 +413,6 @@ def draw_acc_comp():
 
 
 if __name__ == "__main__":
-    # random_combine()
-    stat_test_db()
+    show_all_class_num()
+    random_combine()
+    # stat_test_db()
