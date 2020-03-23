@@ -55,17 +55,6 @@ time = 4
 mel_hop_length = 44100
 
 
-def encode(labels):
-    # assert len(labels) == 2, "Right now this only works for 2 labels"
-    # cantor pairing function ensures unique mapping
-    # a = int(labels[0])
-    # b = int(labels[1])
-    # return 0.5 * (a + b) * (a + b + 1) + b
-    label = np.zeros(out_num, dtype=np.float32)
-    for index in labels:
-        label[int(index)] = float(1)
-    return label
-
 def mix(fa, fb):
     diff = len(fa) - len(fb)
 
@@ -197,7 +186,7 @@ def generate_data(orchestra, n, num_samples):
 #                'Cb', 'ClBb', 'Hn', 'TpC', 'Bn', 'Tbn']
 
 
-X, y = generate_data(orchestra=['Fl', 'Vn', 'Cb'], n=2, num_samples=10000)
+X, y = generate_data(orchestra=['Fl', 'Vn', 'Cb'], n=2, num_samples=1000)
 
 print(X.shape)
 print(y.shape)
