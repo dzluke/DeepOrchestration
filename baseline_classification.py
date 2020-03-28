@@ -182,59 +182,152 @@ def generate_data(orchestra, n, num_samples):
     return X, y
 
 
-# orchestra = ['Vc', 'Fl', 'Va', 'Vn', 'Ob', 'BTb',
-#                'Cb', 'ClBb', 'Hn', 'TpC', 'Bn', 'Tbn']
+def train_and_test(X, y):
+
+    X_train, X_test, y_train, y_test = train_test_split(X,
+                                                    y,
+                                                    test_size = 0.4,
+                                                    random_state = 42,
+                                                    shuffle=True)
+
+    # print('X train: ', X_train.shape)
+    # print('X test: ', X_test.shape)
+    # print('y train: ', y_train.shape)
+    # print('y test: ', y_test.shape)
+
+    clfs = []
+
+    clf = SVC(kernel='rbf')
+    clf = MultiOutputClassifier(clf)
+    clfs.append(clf)
+
+    # clf = KNeighborsClassifier()
+    # clf = MultiOutputClassifier(clf)
+    # clfs.append(clf)
+
+    # clf = RandomForestClassifier()
+    # clf = MultiOutputClassifier(clf)
+    # clfs.append(clf)
+
+    test_scores = []
+
+    print ("\nRunning classifications...")
+    for classifier in clfs:
+        pipeline = Pipeline([
+            ('normalizer', StandardScaler()),
+            ('clf', classifier)
+        ])
+        print('---------------------------------')
+        print(str(classifier))
+        print('---------------------------------')
+        shuffle = KFold (n_splits=5, random_state=5, shuffle=True)
+        scores = cross_val_score (pipeline, X, y, cv=shuffle)
+
+        print("model scores: ", scores)
+        print("average training score: ", scores.mean ())
+
+        pipeline.fit (X_train, y_train)
+        ncvscore = pipeline.score(X_test, y_test)
+        print("test accuracy: ", ncvscore)
+
+        test_scores.append(ncvscore)
+
+    return test_scores
+
+def make_plot(scores, n):
+    num_samples = list(scores.keys())
+    accuracies = list(scores.values())
+ 
+    plt.plot(num_samples, accuracies, marker='o')
+
+    plt.ylim((0, 1))
+
+    for x, y in scores.items():
+        plt.annotate(str(y),  # this is the text
+                    (x, y),  # this is the point to label
+                    textcoords="offset points",  # how to position the text
+                    xytext=(0, 10),  # distance from text to points (x,y)
+                    ha='center')  # horizontal alignment can be left, right or center
+
+    plt.xlabel("Number of samples used to train and test")
+    plt.ylabel("Accuracy")
+    plt.title("Accuracy of SVM classifying combinations of {} instruments".format(n))
+    plt.show()
 
 
-X, y = generate_data(orchestra=['Fl', 'Vn', 'Cb'], n=2, num_samples=1000)
-
-print(X.shape)
-print(y.shape)
-
-X_train, X_test, y_train, y_test = train_test_split(X,
-                                                   y,
-                                                   test_size = 0.2,
-                                                   random_state = 42,
-                                                   shuffle=True)
-
-print('X train: ', X_train.shape)
-print('X test: ', X_test.shape)
-print('y train: ', y_train.shape)
-print('y test: ', y_test.shape)
+orchestra = ['Vc', 'Fl', 'Va', 'Vn', 'Ob', 'BTb',
+               'Cb', 'ClBb', 'Hn', 'TpC', 'Bn', 'Tbn']
 
 
-clfs = []
+n = 4
 
+data = []
+labels = []
+num_samples_generated = 0 # the number of samples generated so far
+scores = {}
 
-clf = SVC(kernel='rbf')
-clf = MultiOutputClassifier(clf)
-clfs.append(clf)
+for num_samples in [1000, 10000, 30000, 50000]:
+    X, y = generate_data(orchestra, n, num_samples - num_samples_generated)
+    data.append(X)
+    labels.append(y)
+    num_samples_generated += X.shape[0]
 
-clf = KNeighborsClassifier()
-clf = MultiOutputClassifier(clf)
-clfs.append(clf)
+    all_data = np.concatenate(data, axis=0)
+    all_labels = np.concatenate(labels, axis=0)
 
-clf = RandomForestClassifier()
-clf = MultiOutputClassifier(clf)
-clfs.append(clf)
+    score = train_and_test(all_data, all_labels)
+    scores[num_samples] = score[0]
 
-print ("\nRunning classifications...")
-for classifier in clfs:
-    pipeline = Pipeline([
-        ('normalizer', StandardScaler()),
-        ('clf', classifier)
-    ])
     print('---------------------------------')
-    print(str(classifier))
+    print("Orchestra size: ", len(orchestra))
+    print("n: ", n)
+    print("number of samples: ", num_samples)
+    print("All scores from this run: ", score)
     print('---------------------------------')
-    shuffle = KFold (n_splits=5, random_state=5, shuffle=True)
-    scores = cross_val_score (pipeline, X, y, cv=shuffle)
 
-    print("model scores: ", scores)
-    print("average score: ", scores.mean ())
+print('*****************')
+print("All training complete")
+for num_sample, score in scores.items():
+    print("Number of samples: {}, score: {}".format(num_sample, score))
+print('*****************')
 
-    pipeline.fit (X_train, y_train)
-    ncvscore = pipeline.score(X_test, y_test)
-    print("non cross-validated score: ", ncvscore)
+make_plot(scores, n)
+
+def make_plot_multiple_lines(all_scores):
+    '''
+    scores is a nested dictionary that maps a value of n to a dictionary of samples and scores
+    '''
+    for n in all_scores.keys():
+        scores = all_scores[n]
+        num_samples = list(scores.keys())
+        accuracies = list(scores.values())
+
+        plt.plot(num_samples, accuracies, label="combinations of {} instruments".format(n), marker='o')
+
+        
+
+        for x, y in scores.items():
+            plt.annotate(str(y),  # this is the text
+                        (x, y),  # this is the point to label
+                        textcoords="offset points",  # how to position the text
+                        xytext=(0, 10),  # distance from text to points (x,y)
+                        ha='center')  # horizontal alignment can be left, right or center
+    
+
+    plt.ylim((0, 0.6))
+    plt.legend()
+
+    plt.xlabel("Number of samples used to train and test")
+    plt.ylabel("Accuracy")
+    plt.title("Accuracy of SVM classifying combinations of instruments".format(n))
+    plt.show()
+
+# two = {1000: 0.09, 10000: 0.38, 30000: 0.51, 50000: 0.55}
+# three = {1000: 0.01, 10000: 0.117, 30000: 0.164, 50000: 0.193}
+# four = {1000: 0.0075, 10000: 0.047, 30000: 0.066, 50000: 0.075}
+
+# s = {2: two, 3: three, 4: four}
+# make_plot_multiple_lines(s)
+
 
 #eof
