@@ -38,6 +38,7 @@ import json
 import os
 import random
 import sys
+from time import process_time
 
 # raw dataset
 # file hierarchy: (note that folders Brass, Winds, Strings are not present)
@@ -118,19 +119,6 @@ def create_binary_label(instruments, orchestra):
         label[index] = 1.0
     return label
 
-# def create_index_label(instruments):
-#     '''
-#         given a list of instruments, return a vector of length n where each value is an index
-#         of an instrument used
-#     '''
-#     assert len(instruments) == n
-#     label = np.zeros(n, dtype=np.float32)
-#     for i in range(n):
-#         instrument = instruments[i]
-#         index = orchestra.index(instrument)
-#         label[i] = float(index)
-#     return label
-
 def generate_data(orchestra, n, num_samples):
     '''
         create combinations of n instruments using only the instruments defined in 'orchestra'
@@ -201,18 +189,11 @@ def train_and_test(X, y):
     clf = MultiOutputClassifier(clf)
     clfs.append(clf)
 
-    # clf = KNeighborsClassifier()
-    # clf = MultiOutputClassifier(clf)
-    # clfs.append(clf)
-
-    # clf = RandomForestClassifier()
-    # clf = MultiOutputClassifier(clf)
-    # clfs.append(clf)
-
     test_scores = []
 
     print ("\nRunning classifications...")
     for classifier in clfs:
+        start_time = process_time()
         pipeline = Pipeline([
             ('normalizer', StandardScaler()),
             ('clf', classifier)
@@ -229,29 +210,31 @@ def train_and_test(X, y):
         pipeline.fit (X_train, y_train)
         ncvscore = pipeline.score(X_test, y_test)
         print("test accuracy: ", ncvscore)
-
+        print("time: ", process_time() - start_time)
         test_scores.append(ncvscore)
 
     return test_scores
 
-def make_plot(scores, n):
-    num_samples = list(scores.keys())
-    accuracies = list(scores.values())
- 
-    plt.plot(num_samples, accuracies, marker='o')
-
-    plt.ylim((0, 1))
-
-    for x, y in scores.items():
-        plt.annotate(str(y),  # this is the text
-                    (x, y),  # this is the point to label
+def make_plot(x, y):
+    plt.plot(x, y, marker='o')
+    for a, b in zip(x, y):
+        if a < 3:
+            placement = (20, -10)
+        else:
+            placement = (0, 10)
+        plt.annotate(str(b),  # this is the text
+                    (a, b),  # this is the point to label
                     textcoords="offset points",  # how to position the text
-                    xytext=(0, 10),  # distance from text to points (x,y)
+                    xytext=placement,  # distance from text to points (x,y)
                     ha='center')  # horizontal alignment can be left, right or center
 
-    plt.xlabel("Number of samples used to train and test")
+    plt.ylim((0, 1))
+    plt.xticks(range(1, max(x) + 1))
+
+    plt.xlabel("Number of instruments combined")
     plt.ylabel("Accuracy")
-    plt.title("Accuracy of SVM classifying combinations of {} instruments".format(n))
+    # plt.title("""Accuracy of non-linear SVM classifying various numbers of instrument combinations \n from an orchestra of 12 instruments using 50,000 samples per combination""")
+    plt.title("classifier: non-linear SVM, classifying: instrument only, \n orchestra size: 12, number of samples: 50,000")
     plt.show()
 
 
@@ -259,39 +242,32 @@ orchestra = ['Vc', 'Fl', 'Va', 'Vn', 'Ob', 'BTb',
                'Cb', 'ClBb', 'Hn', 'TpC', 'Bn', 'Tbn']
 
 
-n = 4
 
-data = []
-labels = []
-num_samples_generated = 0 # the number of samples generated so far
-scores = {}
+# data = []
+# labels = []
+# num_samples = 50000
+# scores = []
 
-for num_samples in [1000, 10000, 30000, 50000]:
-    X, y = generate_data(orchestra, n, num_samples - num_samples_generated)
-    data.append(X)
-    labels.append(y)
-    num_samples_generated += X.shape[0]
+# for n in [1, 2, 3, 5, 10]:
+#     X, y = generate_data(orchestra, n, num_samples)
 
-    all_data = np.concatenate(data, axis=0)
-    all_labels = np.concatenate(labels, axis=0)
+#     score = train_and_test(X, y)[0]
+#     scores.append(score)
 
-    score = train_and_test(all_data, all_labels)
-    scores[num_samples] = score[0]
+#     print('---------------------------------')
+#     print("orchestra size: ", len(orchestra))
+#     print("n: ", n)
+#     print("number of samples: ", num_samples)
+#     print("scores from this run: ", score)
+#     print('---------------------------------')
 
-    print('---------------------------------')
-    print("Orchestra size: ", len(orchestra))
-    print("n: ", n)
-    print("number of samples: ", num_samples)
-    print("All scores from this run: ", score)
-    print('---------------------------------')
+# print('*****************')
+# print("All training complete")
+# for n, score in zip([1, 2, 3, 5, 10], scores):
+#     print("n: {}, score: {}".format(n, score))
+# print('*****************')
 
-print('*****************')
-print("All training complete")
-for num_sample, score in scores.items():
-    print("Number of samples: {}, score: {}".format(num_sample, score))
-print('*****************')
-
-make_plot(scores, n)
+make_plot([1, 2, 3, 5, 10], [0.998, 0.554, 0.166, 0.043, 0.005])
 
 def make_plot_multiple_lines(all_scores):
     '''
