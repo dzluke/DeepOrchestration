@@ -51,7 +51,7 @@ class CNN(nn.Module):
         self.fc3 = nn.Linear(in_features=2048, out_features=out_num)
 
         self.dropout = nn.Dropout(0.5)
-        self.activation = F.softmax
+        self.activation = F.sigmoid
 
     def forward(self, x):
         out = self.layer1(x)
@@ -59,7 +59,7 @@ class CNN(nn.Module):
         out = self.layer3(out)
 
         out = out.view(-1, 43, 16)
-        out, _ = self.lstm(out)
+        #out, _ = self.lstm(out)
 
         out = out.contiguous().view(-1, 32, 43, 16)
         out = self.layer4(out)
@@ -67,7 +67,7 @@ class CNN(nn.Module):
         out = out.contiguous().view(out.size()[0], -1)
         out = self.fc1(out)
         out = self.fc3(out)
-        out = self.activation(out, dim=1)
+        out = self.activation(out)
 
         return out
 

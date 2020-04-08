@@ -17,15 +17,49 @@ from dataset import OrchDataSet
 epoch_num = 200
 batch_size = 16
 my_model_path = './model'
-server_model_path = '/home/data/happipub/gradpro_l/model/three'
+server_model_path = './model'
 my_data_path = './data/five'
 featurized_data_path = './featurized_data/'
+
+TEST_MODEL = True
 
 # db = {'Vc': 3560.0, 'Fl': 2831.0, 'Va': 3469.0, 'Vn': 3328.0, 'Ob': 2668.0, 'BTb': 2565.0,
 #       'Cb': 3305.0, 'ClBb': 2960.0, 'Hn': 3271.0, 'TpC': 2245.0, 'Bn': 2944.0, 'Tbn': 2854.0}
 
 db = stat_test_db()
 
+class Timer:
+    def __init__(self, size_buffer):
+        self.measuring = False
+        self.begin = []
+        self.end = []
+        self.size_buffer = size_buffer
+        
+    def start(self):
+        if not self.measuring:
+            if len(self.begin) == self.size_buffer:
+                self.begin.pop(0)
+            self.begin.append(time.time())
+            self.measuring = True
+            
+    def stop(self):
+        if self.measuring:
+            if len(self.end) == self.size_buffer:
+                self.end.pop(0)
+            self.end.append(time.time())
+            self.measuring = False
+    
+    def estimate(self, remaining):
+        if len(self.end) > 0 and not self.measuring:
+            diff = np.array(self.end)-np.array(self.begin)
+            diff = np.mean(diff)
+            h,r=divmod(diff*remaining,3600)
+            m,s=divmod(r,60)
+            print(diff)
+            print("Estimated remaining time : {}h{}m{}s".format(int(h), int(m), int(s)))
+            
+
+timer = Timer(10)
 
 def arg_parse():
     parser = argparse.ArgumentParser(description='combination of orch')
@@ -61,35 +95,85 @@ def main():
 
     # model construction
     model = OrchMatchNet(out_num, arg.model)
+    
+    if TEST_MODEL:
+        model_resume_path = 'epoch_199.pth'
+        state = torch.load(server_model_path+'/'+model_resume_path)
+        start_epoch = state['epoch']
+        model.load_state_dict(state['state_dict'])
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        optimizer.load_state_dict(state['optimizer'])
+        for state in optimizer.state.values():
+            for k, v in state.items():
+                if isinstance(v, torch.Tensor):
+                    state[k] = v.cuda()
+                    model.eval()
+                    
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        model = model.to(device)
+        criterion = F.binary_cross_entropy
+        pret_tmp = np.zeros((len(test_load)*batch_size, out_num))
+        grod_tmp = np.zeros((len(test_load)*batch_size, out_num))
+        s = 0
 
-    start_epoch = 0
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        for tests, labels in test_load:
+            tests = tests.to(device)
+            labels = labels.to(device)
 
-    # model load
-    if arg.is_resume == 'True':
-        ckpt = os.listdir(server_model_path)
-        ckpts = []
-        for x in ckpt:
-            if x.endswith('.pth'):
-                ckpts.append(int(x.split('.')[0].split('_')[-1]))
+            outputs = model(tests)
+            loss = criterion(outputs, labels/N)
 
-        if len(ckpt) != 0:
-            model_resume_path = 'model_epoch_'+str(max(ckpts))+'.pth'
-            state = torch.load(server_model_path+'/'+model_resume_path)
-            start_epoch = state['epoch']
-            model.load_state_dict(state['state_dict'])
-            optimizer.load_state_dict(state['optimizer'])
-            for state in optimizer.state.values():
-                for k, v in state.items():
-                    if isinstance(v, torch.Tensor):
-                        state[k] = v.cuda()
+            #predicts = get_pred(outputs)
+            predicts = outputs.detach().cpu().clone().numpy()
+            pret_tmp[s:s+batch_size,
+                     :] = predicts.reshape((batch_size, -1))
 
-            print("Load %s successfully! " % model_resume_path)
-        else:
-            print("[Error] no checkpoint ")
+            # pret_tmp[s:s+batch_size,
+            #          :] = outputs.cpu().detach().numpy().reshape((batch_size, -1))
+            grod_tmp[s:s+batch_size,
+                     :] = labels.cpu().detach().numpy().reshape((batch_size, -1))
+            s += batch_size
 
-    # train model
-    train(model, optimizer, train_load, test_load, start_epoch)
+
+            # result_ins = evaluate(predicts, labels, result_ins)
+
+        # pret_tmp[pret_tmp >= 0.05] = 1
+        # pret_tmp[pret_tmp < 0.05] = 0
+        result = evaluate(pret_tmp, grod_tmp)
+        a = 5
+
+        #print("Test Loss: {:.6f}".format(out_num*test_loss/len(test_load)))
+        #total_acc = 100*float(result['a'][-1])/len(test_load)
+        
+    else:
+        start_epoch = 0
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    
+        # model load
+        if arg.is_resume == 'True':
+            ckpt = os.listdir(server_model_path)
+            ckpts = []
+            for x in ckpt:
+                if x.endswith('.pth'):
+                    ckpts.append(int(x.split('.')[0].split('_')[-1]))
+    
+            if len(ckpt) != 0:
+                model_resume_path = 'model_epoch_'+str(max(ckpts))+'.pth'
+                state = torch.load(server_model_path+'/'+model_resume_path)
+                start_epoch = state['epoch']
+                model.load_state_dict(state['state_dict'])
+                optimizer.load_state_dict(state['optimizer'])
+                for state in optimizer.state.values():
+                    for k, v in state.items():
+                        if isinstance(v, torch.Tensor):
+                            state[k] = v.cuda()
+    
+                print("Load %s successfully! " % model_resume_path)
+            else:
+                print("[Error] no checkpoint ")
+    
+        # train model
+        train(model, optimizer, train_load, test_load, start_epoch)
 
 
 def train(model, optimizer, train_load, test_load, start_epoch):
@@ -97,6 +181,8 @@ def train(model, optimizer, train_load, test_load, start_epoch):
     # model = torch.nn.DataParallel(model)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = model.to(device)
+    
+    saved_model = False
 
     criterion = F.binary_cross_entropy
     sig = F.sigmoid
@@ -107,13 +193,18 @@ def train(model, optimizer, train_load, test_load, start_epoch):
     total_loss = 0
 
     weight_decay = 0.01
+    size_train_load = len(train_load)
 
     for epoch in range(start_epoch, epoch_num):
         print("Epoch {}".format(epoch))
         model.train()
 
+        size_train_load = len(train_load)
         for i, (trains, labels) in enumerate(train_load):
-            # print("Step {}".format(i))
+            print("Step {}".format(i))
+            timer.stop()
+            timer.estimate(size_train_load*(epoch_num-epoch-1) + (size_train_load-i-1))
+            timer.start()
             trains = trains.to(device)
             labels = labels.to(device)
 
@@ -166,7 +257,8 @@ def train(model, optimizer, train_load, test_load, start_epoch):
                 end = time.time()
                 loss = criterion(outputs, labels/N)
 
-                predicts = get_pred(outputs)
+                #predicts = get_pred(outputs)
+                predicts = outputs.detach().cpu().clone().numpy()
                 pret_tmp[s:s+batch_size,
                          :] = predicts.reshape((batch_size, -1))
 
@@ -189,6 +281,15 @@ def train(model, optimizer, train_load, test_load, start_epoch):
             print("Average Time: {:2.3f} ms".format(1000*avg_time))
             print("Test Loss: {:.6f}".format(out_num*test_loss/len(test_load)))
             total_acc = 100*float(result['a'][-1])/len(test_load)
+            
+            state = {
+                'epoch': epoch,
+                'optimizer': optimizer.state_dict(),
+                'state_dict': model.state_dict(),
+            }
+            torch.save(state, server_model_path+"/epoch_"+str(epoch)+".pth")
+            saved_model = True
+            print("Model saved")
 
         if total_acc > best_acc:
             best_acc = total_acc
@@ -199,9 +300,18 @@ def train(model, optimizer, train_load, test_load, start_epoch):
                 'state_dict': model.state_dict(),
             }
             torch.save(state, server_model_path+"/epoch_best.pth")
+            saved_model = True
+            print("Model saved")
 
     print("Best test accuracy: {} at epoch: {}".format(best_acc, best_epoch))
-
+    if not saved_model:
+        state = {
+            'epoch': epoch+1,
+            'optimizer': optimizer.state_dict(),
+            'state_dict': model.state_dict(),
+        }
+        torch.save(state, server_model_path+"/epoch_best.pth")
+        print("Model saved")
 
 def evaluate(pret, grot):
     if pret.shape != grot.shape:
@@ -212,11 +322,11 @@ def evaluate(pret, grot):
 
     gt_pos = np.sum((grot == 1).astype(float), axis=0)
     gt_neg = np.sum((grot == 0).astype(float), axis=0)
-    pt_pos = np.sum((pret == 1).astype(float) *
+    pt_pos = np.sum(pret *
                     (grot == 1).astype(float), axis=0)
     pt_neg = np.sum((grot == 0).astype(float) *
                     (pret == 0).astype(float), axis=0)
-    label_pos_acc = 1.0*pt_pos/gt_pos
+    label_pos_acc = 1.0*pt_pos/np.array([max(e,1) for e in gt_pos])
     # label_neg_acc = 1.0*pt_neg/gt_neg
     # label_acc = (label_pos_acc + label_neg_acc)/2
 
@@ -264,7 +374,7 @@ def evaluate(pret, grot):
     instance_precision = np.sum(floatersect_pos/pt_pos)/cnt_eff
     instance_recall = np.sum(floatersect_pos/gt_pos)/cnt_eff
     floatance_F1 = 2*instance_precision*instance_recall / \
-        (instance_precision+instance_recall)
+        max(1,instance_precision+instance_recall)
     result['instance_acc'] = instance_acc
     result['instance_precision'] = instance_precision
     result['instance_recall'] = instance_recall
@@ -300,6 +410,7 @@ def get_pred(output):
     '''
         get Top N prediction
     '''
+
 
     pred = np.zeros(output.shape)
     for k, o in enumerate(output):

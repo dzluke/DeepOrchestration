@@ -62,7 +62,7 @@ class ResidualBlock(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, num_classes=3000, dropout_rate=0.5, output_nonlinearity='softmax'):
+    def __init__(self, num_classes, dropout_rate=0.5, output_nonlinearity='softmax'):
         super(ResNet, self).__init__()
         # Initial input conv
         self.conv1 = nn.Conv2d(
@@ -84,8 +84,8 @@ class ResNet(nn.Module):
         self.block3 = self._create_block(64, 32, stride=2)
         self.block4 = self._create_block(32, 32, stride=2)
         self.bn2 = nn.BatchNorm1d(1408)
-        self.bn3 = nn.BatchNorm1d(1000)
         self.linear1 = nn.Linear(1408, 1000)
+        self.bn3 = nn.BatchNorm1d(1000)
         self.linear2 = nn.Linear(1000, num_classes)
 
         self.dropout = nn.Dropout(dropout_rate)
