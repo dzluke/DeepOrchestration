@@ -135,6 +135,7 @@ def create_label_mapping(orchestra, pitch_instruments):
 
         for instruments in 'pitch_instruments' a key looks like: Fl-C or Vn-G
         for all other instruments, a key is just the instrument name: Fl or Vn or Cb
+        and each of these instruments maps to the same index, because they all fall under the same class
     '''
     assert len(label_mapping) == 0
     i = 0
@@ -146,17 +147,19 @@ def create_label_mapping(orchestra, pitch_instruments):
     for instrument in orchestra:
         if instrument not in pitch_instruments:
             label_mapping[instrument] = i
-            i += 1
 
 def create_binary_label(samples, pitch_instruments, orchestra):
     '''
         given a list of samples, return a binary vector
 
         for N pitch_instruments, the first N * 12 indices correspond to each pitch_instrument and one of 12
-        pitches associated with it. The last indices are for instruments that aren't having pitches classified
+        pitches associated with it.
+        The N * 12 + 1 index corresponds to the class that represents "noise" i.e. the fact that some other
+        instrument that is not a pitch_instrument is present
     '''
-    label_length = (len(pitch_instruments) * 12) + (len(orchestra) - len(pitch_instruments))
-    assert len(label_mapping) == label_length
+    label_length = (len(pitch_instruments) * 12) + 1
+    assert len(set(label_mapping.values())) == label_length
+
     label = np.zeros(label_length, dtype=np.float32)
     for sample in samples:
         instrument, pitch_class = extract_label(sample)
@@ -188,14 +191,13 @@ def generate_data(orchestra, pitch_instruments, n, num_samples):
     X = [] # data
     y = [] # labels
 
-    for i in range(num_samples):
-        # select n instruments
-        instruments = random.sample(orchestra, n)
-
-        # ensure that at least 1 instrument from 'pitch_instruments' is in 'instruments'
-        if not any([instr in pitch_instruments for instr in instruments]):
-            instruments.pop()
-            instruments.append(random.choice(pitch_instruments))
+    i = 0
+    while i < num_samples:
+        instruments = []
+        # select one of 'pitch_instruments'
+        instruments.append(random.choice(pitch_instruments))
+        # select n - 1 instruments
+        instruments.extend(random.sample(orchestra, n - 1))
     
         samples_to_combine = []
         # for each of n chosen instruments, randomly select one sample
@@ -210,6 +212,10 @@ def generate_data(orchestra, pitch_instruments, n, num_samples):
         # create label from the samples that were chosen
         label = create_binary_label(samples_to_combine, pitch_instruments, orchestra)
 
+        # need to have more than 1 label
+        if (np.sum(label) == 1):
+            continue
+
         # since you cant know the dimensions until the features have been computed,
         # you can't make the ndarray until now
         if i == 0:
@@ -222,6 +228,8 @@ def generate_data(orchestra, pitch_instruments, n, num_samples):
 
         if i % 100 == 0:
             print("{} / {} have finished".format(i, num_samples))
+
+        i += 1
 
     return X, y
 
@@ -245,9 +253,13 @@ def train_and_test(X, y):
     clf = MultiOutputClassifier(clf)
     clfs.append(clf)
 
+    # clf = RandomForestClassifier(max_depth=15)
+    # clf = MultiOutputClassifier(clf)
+    # clfs.append(clf)
+
     test_scores = []
 
-    print ("\nRunning classifications...")
+    print("\nRunning classifications...")
     for classifier in clfs:
         start_time = process_time()
         pipeline = Pipeline([
@@ -257,13 +269,13 @@ def train_and_test(X, y):
         print('---------------------------------')
         print(str(classifier))
         print('---------------------------------')
-        shuffle = KFold (n_splits=5, random_state=5, shuffle=True)
-        scores = cross_val_score (pipeline, X, y, cv=shuffle)
+        shuffle = KFold(n_splits=5, random_state=5, shuffle=True)
+        scores = cross_val_score(pipeline, X, y, cv=shuffle)
 
         print("model scores: ", scores)
-        print("average training score: ", scores.mean ())
+        print("average training score: ", scores.mean())
 
-        pipeline.fit (X_train, y_train)
+        pipeline.fit(X_train, y_train)
         ncvscore = pipeline.score(X_test, y_test)
         print("test accuracy: ", ncvscore)
         print("time: ", process_time() - start_time)
@@ -322,36 +334,27 @@ def make_plot_multiple_lines(all_scores):
     plt.show()
 
 
-
 orchestra = ['Vc', 'Fl', 'Va', 'Vn', 'Ob', 'BTb',
                'Cb', 'ClBb', 'Hn', 'TpC', 'Bn', 'Tbn']
 
 
-
-data = []
-labels = []
-num_samples = 50000
+num_samples = 3
 scores = []
 n = 2
 
-pitch_instruments = ['Tbn', 'BTb']
+pitch_instruments = ['Vn', 'Fl']
 X, y = generate_data(orchestra, pitch_instruments, n, num_samples)
 
-score = train_and_test(X, y)[0]
+print("\nNumber of classes: ", y[0].shape)
+
+score = train_and_test(X, y)
 scores.append(score)
 
 print('---------------------------------')
 print("orchestra size: ", len(orchestra))
 print("n: ", n)
 print("number of samples: ", num_samples)
-print("scores from this run: ", score)
+print("scores from this run: ", scores)
 print('---------------------------------')
-
-# print('*****************')
-# print("All training complete")
-# for n, score in zip([1, 2, 3, 5, 10], scores):
-#     print("n: {}, score: {}".format(n, score))
-# print('*****************')
-
 
 #eof
