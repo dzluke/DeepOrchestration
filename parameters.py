@@ -1,0 +1,20 @@
+path = "./TinySOL"
+MEL_HOP_LENGTH = 512
+RATE = 44100
+N_FFT = 2048
+N_MELS = 128
+TIME_LENGTH = 4
+FEATURE_TYPE = 'mel'
+PITCH_REGROUP = False
+
+N = 2
+nb_samples = 40000
+rdm_granularity = 10
+nb_pitch_range = 8
+instr_filter = None
+batch_size = 16
+model_type = 'cnn'
+nb_epoch = 200
+model_path = './model'
+resume_model = False
+train_proportion = 0.8

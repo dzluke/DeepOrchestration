@@ -12,31 +12,13 @@ import os
 import itertools
 import argparse
 from functools import reduce
-from generateDB import generateDBLabels
 import librosa.display
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 from model import OrchMatchNet
+from parameters import N, FEATURE_TYPE, nb_samples, rdm_granularity, nb_pitch_range, instr_filter, batch_size, model_type, nb_epoch, model_path, resume_model, train_proportion
 from OrchDataset import OrchDataSet,RawDatabase,class_encoder
-
-# Stick to the problem of Luke (classify 24 classes)
-# Increase the number of samples
-# Put pitches into bins
-
-path = "./TinySOL"
-N = 2
-nb_samples = 40000
-rdm_granularity = 10
-random_pool_size = 100
-nb_pitch_range = 8
-instr_filter = None
-batch_size = 16
-model_type = 'cnn'
-nb_epoch = 200
-model_path = './model'
-resume_model = False
-train_proportion = 0.8
 
 class Timer:
     def __init__(self, size_buffer):
@@ -101,9 +83,9 @@ def main(rdb = None):
         raw_db = RawDatabase(path, rdm_granularity, instr_filter)
     else:
         raw_db = rdb
-    train_dataset = OrchDataSet(raw_db,class_encoder)
+    train_dataset = OrchDataSet(raw_db,class_encoder, FEATURE_TYPE)
     train_dataset.generate(N,int(train_proportion*nb_samples))
-    test_dataset = OrchDataSet(raw_db,class_encoder)
+    test_dataset = OrchDataSet(raw_db,class_encoder, FEATURE_TYPE)
     test_dataset.generate(N,nb_samples-int(train_proportion*nb_samples))
 
     # load data
@@ -117,7 +99,7 @@ def main(rdb = None):
     print("End loading data")
 
     # model construction
-    model = OrchMatchNet(len(train_dataset.out_classes), model_type)
+    model = OrchMatchNet(len(class_encoder([])), model_type)
     
     start_epoch = 0
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)

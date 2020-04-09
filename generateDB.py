@@ -6,20 +6,18 @@ import librosa
 import numpy as np
 import random
 
-mel_hop_length = 44100
-n_fft = 2048
-time_length = 4
+from parameters import MEL_HOP_LENGTH, N_FFT, TIME_LENGTH
 
 def getSampleMetaData(path,name):
     s = {}
     s['path'] = path
     y,sr=librosa.load(path,sr=None)
-    nb_samples = int(time_length*sr)
+    nb_samples = int(TIME_LENGTH*sr)
     if len(y) < nb_samples:
         y = np.append(y, np.zeros((1,(nb_samples-len(y))), dtype=np.float32))
     else:
         y = y[:nb_samples]
-    s['stft'] = librosa.stft(y=y,hop_length=mel_hop_length,n_fft=n_fft)
+    s['stft'] = librosa.stft(y=y,hop_length=MEL_HOP_LENGTH,n_fft=N_FFT)
     t = name.split('.')[0].split('-')
     s['instrument'] = t[0]
     s['style'] = t[1]
@@ -81,14 +79,3 @@ def generateDBLabels(path, nb_pitch_range = 1, instr_filter=None):
         for j in db[i]:
             random.shuffle(j)
     return db,pr
-
-if __name__ == "__maihn__":
-    
-    parser = argparse.ArgumentParser(description='combination of orch')
-    parser.add_argument('--path', default='.\\TinySOL')
-    parser.add_argument('--is_resume', default='False',
-                        choices=['True', 'False'])
-
-    args = parser.parse_args()
-
-    importDB(args.path)

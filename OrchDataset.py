@@ -1,6 +1,6 @@
 import itertools
 from functools import reduce
-from generateDB import generateDBLabels, n_fft
+from generateDB import generateDBLabels
 import librosa.display
 import random
 import math
@@ -10,8 +10,7 @@ import numpy as np
 import os
 import pickle
 
-RATE = 44100
-HOP_LENGTH = 44100
+from parameters import RATE, N_FFT, N_MELS, PITCH_REGROUP, rdm_granularity, instr_filter
 
 def showSample(s):
     print(s[1])
@@ -67,10 +66,14 @@ class RawDatabase:
         self.instr_filter = instr_filter
         
 class OrchDataSet(data.Dataset):
-    def __init__(self, raw_db, class_encoder):
-        self.mel_basis = librosa.filters.mel(44100, n_fft)
+    def __init__(self, raw_db, class_encoder, feature_type):
+        self.mel_basis = librosa.filters.mel(RATE, N_FFT, n_mels=N_MELS)
         self.db = raw_db.db
         self.pr = raw_db.pr
+        
+        if feature_type not in ['mfcc', 'mel']:
+            raise Exception("Feature type must be mfcc or mel")
+        self.feature_type = feature_type
         
         #Function that takes as an argument the list of samples combined, and returns the corresponding label vector
         self.class_encoder = class_encoder
@@ -151,31 +154,49 @@ class OrchDataSet(data.Dataset):
                 stft += samp['stft']
         stft = stft / self.N
         s = np.real(stft*np.conjugate(stft))
-        mel_spec = librosa.feature.melspectrogram(S=s, sr=RATE)
-        pow_db = librosa.power_to_db(mel_spec)
-        mfcc = librosa.feature.mfcc(S=pow_db)
-        return torch.tensor(np.array([mfcc])), self.class_encoder(list_samp)
-    
-pitch_instruments = ['Vn', 'Fl']
-other_instruments = ['Bn', 'BTb', 'Cb', 'ClBb', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc']
-pitches = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#']
-    
-def class_encoder(list_samp):
-    label = [0 for i in range(34)]
-    for s in list_samp:
-        if s['instrument'] in pitch_instruments:
-            label[12*pitch_instruments.index(s['instrument']) + pitches.index(s['pitch_name'][:-1])] = 1
-        else:
-            label[24+other_instruments.index(s['instrument'])] = 1
-    return np.array(label).astype(np.float32)
+        mel_spec = np.dot(self.mel_basis, s)
+        if self.feature_type == 'mfcc':
+            pow_db = librosa.power_to_db(mel_spec)
+            mfcc = librosa.feature.mfcc(S=pow_db)
+            return torch.tensor(np.array([mfcc])), self.class_encoder(list_samp)
+        elif self.feature_type == 'mel':
+            return torch.tensor(np.array([mel_spec])), self.class_encoder(list_samp)
 
 try:
     rdb
 except NameError:
-    rdb = RawDatabase('./TinySOL', 10, None)
+    rdb = RawDatabase('./TinySOL', rdm_granularity, instr_filter)
 
-#odb = OrchDataSet(rdb, class_encoder)
+
+if PITCH_REGROUP:
+    pitch_instruments = ['Vn', 'Fl']
+    other_instruments = ['Bn', 'BTb', 'Cb', 'ClBb', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc']
+    pitches = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#']
+        
+    def class_encoder(list_samp):
+        label = [0 for i in range(34)]
+        for s in list_samp:
+            if s['instrument'] in pitch_instruments:
+                label[12*pitch_instruments.index(s['instrument']) + pitches.index(s['pitch_name'][:-1])] = 1
+            else:
+                label[24+other_instruments.index(s['instrument'])] = 1
+        return np.array(label).astype(np.float32)
+else:
+    classes = set()
+    for i in rdb.db:
+        for j in rdb.db[i]:
+            for k in j:
+                classes.add((k['instrument'], k['pitch_name']))
+    classes = list(classes)
+    
+    def class_encoder(list_samp):
+        label = [0 for i in range(len(classes))]
+        for s in list_samp:
+            label[classes.index((s['instrument'], s['pitch_name']))] = 1.0
+        return np.array(label).astype(np.float32)
+
+#odb = OrchDataSet(rdb, class_encoder, 'mel')
 #odb.generate(2, 400000)
 #odb.save('./db/400000.pkl')
-#odb2 = OrchDataSet(rdb, class_encoder)
+#odb2 = OrchDataSet(rdb, class_encoder, 'mel')
 #odb2.load('./db/400000.pkl')

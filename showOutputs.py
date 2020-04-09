@@ -17,6 +17,8 @@ ax2 = fig.add_subplot(2,1,2)
 
 loss_array = []
 pred_loss = []
+avg_pred_loss = []
+avg_length = 100
 
 def getPosNMax(l, N):
     ind = [0]
@@ -57,12 +59,15 @@ def load(i):
     N = len([x for x in labels[0] if x > 0.0])
     pred = prediction(outputs, labels, N)
     pred_loss.append(np.sum(pred*labels)/(N*labels.shape[0]))
+    wdw = min(len(pred_loss), avg_length)
+    avg_pred_loss.append(sum(pred_loss[-wdw:])/wdw)
     ax2.imshow(np.vstack([outputs, line, labels, line, pred]), cmap=cmap)
     ax1.plot(loss_array)
     ax1.plot([len(loss_array)-1, len(loss_array)-1], [r.get('loss_min'), loss_array[-1]], marker='o')
     ax1.grid()
     ax1.set_title('BCE with logits loss')
     ax3.plot(pred_loss)
+    ax3.plot(avg_pred_loss)
     ax3.set_title('Accuracy over batch')
     ax3.grid()
     #print(outputs)
