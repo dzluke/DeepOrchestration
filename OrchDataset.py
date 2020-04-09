@@ -7,7 +7,11 @@ import math
 from torch.utils import data
 import torch
 import numpy as np
+import os
 import pickle
+
+RATE = 44100
+HOP_LENGTH = 44100
 
 def showSample(s):
     print(s[1])
@@ -61,92 +65,6 @@ class RawDatabase:
         self.db,self.pr = generateDBLabels(path, random_granularity, instr_filter)
         self.random_granularity = random_granularity
         self.instr_filter = instr_filter
-
-class OrchDataSet_iter(data.IterableDataset):
-    def __init__(self, raw_db, N, nb_samples=None, random_pool_size = 10000, nb_pitch_range = 0):
-        self.db = raw_db.db
-        self.pr = raw_db.pr
-        self.N = N
-        self.nb_pitch_range = nb_pitch_range or len(self.pr)
-        self.nb_samples = sum(reduce((lambda x,y : x*y), [sum(len(e) for e in self.db[i[x]]) for x in range(N)]) for i in itertools.combinations(self.db.keys(), N))
-        print("Total number of possible samples : {}".format(self.nb_samples))
-        self.out_classes = []
-        for i in self.db:
-            set_pitches = set()
-            for j in self.db[i]:
-                for x in j:
-                    set_pitches.add(int(x['pitch']*self.nb_pitch_range/len(self.pr)))
-            self.out_classes.extend([(i,x) for x in set_pitches])
-            
-        print("Total number of classes : {}".format(len(self.out_classes)))
-        if not nb_samples is None:
-            self.nb_samples = min(self.nb_samples,nb_samples)
-        self.random_pool = []
-        self.random_pool_size = min(random_pool_size, self.nb_samples)
-        
-        self.instr_comb = list(itertools.combinations(self.db.keys(), self.N))
-        random.shuffle(self.instr_comb)
-        self.indexes = [IndexIncrementor(N,[len(self.db[i[x]]) for x in range(N)]) for i in self.instr_comb]
-        
-        self.mel_basis = librosa.filters.mel(44100, n_fft)
-        
-        self.output_samples = 0
-        self.index_comb = 0
-    
-    def getNextSample(self):
-        if self.output_samples < self.nb_samples:
-            while True:
-                ii = self.indexes[self.index_comb]
-                pitch_indexes = ii.index
-                sample_list_to_combine = [self.db[self.instr_comb[self.index_comb][x]][pitch_indexes[x]] for x in range(self.N)]
-                
-                samp = sample_list_to_combine[0][random.randint(0,len(sample_list_to_combine[0])-1)]
-                mel_spec = samp['stft']
-                label = np.array(len(self.out_classes)*[0], dtype=np.float32)
-                label[self.out_classes.index((samp['instrument'], int(samp['pitch']*self.nb_pitch_range/len(self.pr))))] = 1.0
-                
-                for x in range(1,self.N):
-                    samp = sample_list_to_combine[x][random.randint(0,len(sample_list_to_combine[x])-1)]
-                    mel_spec += samp['stft']
-                    label[self.out_classes.index((samp['instrument'], int(samp['pitch']*self.nb_pitch_range/len(self.pr))))] = 1.0
-                
-                # Compute mel spectrogram from the sum of stft
-                mel_spec = np.dot(self.mel_basis, np.abs(mel_spec)**2.0)
-                mel_spec /= self.N*self.N
-                    
-                ii.incr()
-                if ii.isOver():
-                    ii.restart()
-                    
-                self.index_comb += 1
-                if self.index_comb == len(self.instr_comb):
-                    self.index_comb = 0
-                    
-                self.output_samples += 1
-                return torch.tensor(np.array([mel_spec])),torch.tensor(label)
-                        
-        else:
-            return None
-                   
-    def reinitialize(self):
-        self.output_samples = 0
-        self.index_comb = 0
-    
-    def __iter__(self):
-        for i in range(self.random_pool_size):
-            self.random_pool.append(self.getNextSample())
-        sz = len(self.random_pool)
-        while sz > 0:
-            i = random.randint(0,sz-1)
-            e = self.getNextSample()
-            if e is None:
-                r = self.random_pool.pop(i)
-                sz -= 1
-            else:
-                r = self.random_pool[i]
-                self.random_pool[i] = e
-            yield r
-        
         
 class OrchDataSet(data.Dataset):
     def __init__(self, raw_db, class_encoder):
@@ -167,7 +85,7 @@ class OrchDataSet(data.Dataset):
             set_pitches = set()
             for j in self.db[i]:
                 for x in j:
-                    set_pitches.add(int(x['pitch']*self.nb_pitch_range/len(self.pr)))
+                    set_pitches.add(int(x['pitch_idx']*self.nb_pitch_range/len(self.pr)))
             self.out_classes.extend([(i,x) for x in set_pitches])
             
         print("Total number of classes : {}".format(len(self.out_classes)))
@@ -213,7 +131,7 @@ class OrchDataSet(data.Dataset):
 
     def load(self, path):
         f = open(path, 'rb')
-        self.data = pickle.load(self.data, f)
+        self.data = pickle.load(f)
         self.nb_samples = len(self.data)
         self.N = len(self.data[0])
         f.close()
@@ -222,17 +140,42 @@ class OrchDataSet(data.Dataset):
         return self.nb_samples
 
     def __getitem__(self, idx):
-        mel_spec = None
+        stft = None
+        list_samp = []
         for i in self.data[idx]:
             samp = self.db[i[0]][i[1]][i[2]]
-            mel_spec = None
-        return self.data[idx]
+            list_samp.append(samp)
+            if stft is None:
+                stft = np.copy(samp['stft'])
+            else:
+                stft += samp['stft']
+        stft = stft / self.N
+        s = np.real(stft*np.conjugate(stft))
+        mel_spec = librosa.feature.melspectrogram(S=s, sr=RATE)
+        pow_db = librosa.power_to_db(mel_spec)
+        mfcc = librosa.feature.mfcc(S=pow_db)
+        return torch.tensor(np.array([mfcc])), self.class_encoder(list_samp)
     
+pitch_instruments = ['Vn', 'Fl']
+other_instruments = ['Bn', 'BTb', 'Cb', 'ClBb', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc']
+pitches = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#']
+    
+def class_encoder(list_samp):
+    label = [0 for i in range(34)]
+    for s in list_samp:
+        if s['instrument'] in pitch_instruments:
+            label[12*pitch_instruments.index(s['instrument']) + pitches.index(s['pitch_name'][:-1])] = 1
+        else:
+            label[24+other_instruments.index(s['instrument'])] = 1
+    return np.array(label).astype(np.float32)
+
 try:
     rdb
 except NameError:
     rdb = RawDatabase('./TinySOL', 10, None)
 
-odb = OrchDataSet(rdb, None)
-odb.generate(2, 40000)
-odb[0]
+#odb = OrchDataSet(rdb, class_encoder)
+#odb.generate(2, 400000)
+#odb.save('./db/400000.pkl')
+#odb2 = OrchDataSet(rdb, class_encoder)
+#odb2.load('./db/400000.pkl')

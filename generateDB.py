@@ -6,7 +6,7 @@ import librosa
 import numpy as np
 import random
 
-mel_hop_length = 512
+mel_hop_length = 44100
 n_fft = 2048
 time_length = 4
 

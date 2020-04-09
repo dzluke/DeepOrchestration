@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 from model import OrchMatchNet
-from OrchDataset import OrchDataSet,RawDatabase,showSample
+from OrchDataset import OrchDataSet,RawDatabase,class_encoder
 
 # Stick to the problem of Luke (classify 24 classes)
 # Increase the number of samples
@@ -101,15 +101,19 @@ def main(rdb = None):
         raw_db = RawDatabase(path, rdm_granularity, instr_filter)
     else:
         raw_db = rdb
-    train_dataset = OrchDataSet(raw_db,N,int(train_proportion*nb_samples),random_pool_size,nb_pitch_range)
-    test_dataset = OrchDataSet(raw_db,N,int((1-train_proportion)*nb_samples),random_pool_size,nb_pitch_range)
+    train_dataset = OrchDataSet(raw_db,class_encoder)
+    train_dataset.generate(N,int(train_proportion*nb_samples))
+    test_dataset = OrchDataSet(raw_db,class_encoder)
+    test_dataset.generate(N,nb_samples-int(train_proportion*nb_samples))
 
     # load data
     train_load = torch.utils.data.DataLoader(dataset=train_dataset,
-                                             batch_size=batch_size)
+                                             batch_size=batch_size,
+                                             shuffle = True)
 
     test_load = torch.utils.data.DataLoader(dataset=test_dataset,
-                                            batch_size=batch_size)
+                                            batch_size=batch_size,
+                                            shuffle = False)
     print("End loading data")
 
     # model construction
@@ -165,9 +169,6 @@ def train(model, optimizer, train_load, test_load, start_epoch, out_num):
     loss_min = None
     
     for epoch in range(start_epoch, nb_epoch):
-        train_load.dataset.reinitialize()
-        test_load.dataset.reinitialize()
-        
         print("Epoch {}".format(epoch))
         model.train()
         
