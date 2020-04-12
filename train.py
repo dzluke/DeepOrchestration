@@ -17,8 +17,9 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 from model import OrchMatchNet
-from parameters import N, FEATURE_TYPE, nb_samples, rdm_granularity, nb_pitch_range, instr_filter, batch_size, model_type, nb_epoch, model_path, resume_model, train_proportion
-from OrchDataset import OrchDataSet,RawDatabase,class_encoder
+from parameters import N, FEATURE_TYPE, PITCH_REGROUP, nb_samples, rdm_granularity, nb_pitch_range, instr_filter, batch_size, model_type, nb_epoch, model_path, model_resume_path, resume_model, train_proportion
+from parameters import load_parameters, save_parameters
+from OrchDataset import OrchDataSet,RawDatabase
 
 class Timer:
     def __init__(self, size_buffer):
@@ -99,21 +100,15 @@ def main(rdb = None):
     print("End loading data")
 
     # model construction
-    model = OrchMatchNet(len(class_encoder([])), model_type)
+    out_num = len(class_encoder([]))
+    model = OrchMatchNet(out_num, model_type)
     
     start_epoch = 0
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     # model load
     if resume_model:
-        ckpt = os.listdir(model_path)
-        ckpts = []
-        for x in ckpt:
-            if x.endswith('.pth'):
-                ckpts.append(int(x.split('.')[0].split('_')[-1]))
-
-        if len(ckpt) != 0:
-            model_resume_path = 'model_epoch_'+str(max(ckpts))+'.pth'
+        if os.path.exists(model_path+'/'+model_resume_path):
             state = torch.load(model_path+'/'+model_resume_path)
             start_epoch = state['epoch']
             model.load_state_dict(state['state_dict'])
@@ -126,11 +121,21 @@ def main(rdb = None):
             print("Load %s successfully! " % model_resume_path)
         else:
             print("[Error] no checkpoint ")
+    else:
+        i = 0
+        for d in os.listdir(model_path):
+            if 'run' in d and i <= int(d[3:]):
+                i = int(d[3:]) + 1
+        save_path = model_path + '/run' + str(i)
+        os.mkdir(save_path)
+        train_dataset.save(save_path+'/trainset.pkl')
+        test_dataset.save(save_path+'/testset.pkl')
+        save_parameters(save_path)
 
     # train model
-    train(model, optimizer, train_load, test_load, start_epoch, len(train_dataset.out_classes))
+    train(model, save_path, optimizer, train_load, test_load, start_epoch, out_num)
     
-def train(model, optimizer, train_load, test_load, start_epoch, out_num):
+def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_num):
     print("Starting training")
     # model = torch.nn.DataParallel(model)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -198,7 +203,7 @@ def train(model, optimizer, train_load, test_load, start_epoch, out_num):
                 end = time.time()
                 loss = criterion(outputs, labels)
 
-                predicts = get_pred(outputs)
+                predicts = prediction(outputs, N)
                 #predicts = outputs.detach().cpu().clone().numpy()
                 pret_tmp = np.vstack([pret_tmp, predicts])
 
@@ -215,16 +220,13 @@ def train(model, optimizer, train_load, test_load, start_epoch, out_num):
             # pret_tmp[pret_tmp >= 0.05] = 1
             # pret_tmp[pret_tmp < 0.05] = 0
             result = evaluate(pret_tmp, grod_tmp)
-
             
-            print("Test Loss: {:.6f}".format(out_num*test_loss/size_test_load))
-        
         state = {
             'epoch': epoch,
             'optimizer': optimizer.state_dict(),
             'state_dict': model.state_dict(),
         }
-        torch.save(state, model_path+"/epoch_"+str(epoch)+".pth")
+        torch.save(state, save_path+"/epoch_"+str(epoch)+".pth")
         print("Model saved")
 
     print("Best test accuracy: {} at epoch: {}".format(best_acc, best_epoch))
@@ -263,7 +265,7 @@ def test(path, raw_db, out_num):
         end = time.time()
         loss = criterion(outputs, labels)
     
-        predicts = get_pred(outputs)
+        predicts = prediction(outputs)
         #predicts = outputs.detach().cpu().clone().numpy()
         pret_tmp = np.vstack([pret_tmp, predicts])
     
@@ -275,49 +277,94 @@ def test(path, raw_db, out_num):
         total_time += float(end-start)
         test_loss += float(loss)
     
-    accurate = pret_tmp*grod_tmp
-    miss = pret_tmp - grod_tmp
-    accuracy = np.sum(accurate,axis=1)/N
-
-    
-
-def evaluate(pret, grot):
-    if pret.shape != grot.shape:
-        print("[Error]: size difference")
-    total_num = pret.shape[0]
-    # compute the label-based accuracy
-    result = {}
-
-    gt_pos = np.sum((grot == 1).astype(float), axis=0)
-    gt_neg = np.sum((grot == 0).astype(float), axis=0)
-    pt_pos = np.sum(pret *
-                    (grot == 1).astype(float), axis=0)
-    pt_neg = np.sum((grot == 0).astype(float) *
-                    (pret == 0).astype(float), axis=0)
-    label_pos_acc = 1.0*pt_pos/np.array([max(e,1) for e in gt_pos])
-
+    result = evaluate(pret_tmp, grod_tmp)
     return result
 
+def getPosNMax(l, N):
+    ind = [0]
+    sort_key=lambda x : l[x]
+    for j in range(1,len(l)):
+        if len(ind) == N:
+            if l[j] > l[ind[0]]:
+                ind[0] = j
+                ind.sort(key=sort_key)
+        else:
+            ind.append(j)
+            ind.sort(key=sort_key)
+    return ind
+            
 
-def get_pred(output):
-    '''
-        get Top N prediction
-    '''
-
-
-    pred = np.zeros(output.shape)
-    for k, o in enumerate(output):
-        preidx = []
-        for i in range(N):
-            idx = o.max(0)[1]
-            preidx.append(idx)
-            o[int(idx)] = -1
-
-        for idx in preidx:
-            pred[k][idx] = 1.0
-
+def prediction(outputs, N):
+    pred = np.zeros(outputs.shape)
+    for i in range(pred.shape[0]):
+        for j in getPosNMax(outputs[i],N):
+            pred[i,j] = 1.0
     return pred
+    
 
 #rdb = RawDatabase(path, rdm_granularity, instr_filter)
 #test('./model/nb_pitch_range_1/epoch_19.pth', rdb, 12)
-main(rdb)
+if __name__=='__main__':
+
+    try:
+        rdb
+    except NameError:
+        rdb = RawDatabase('./TinySOL', rdm_granularity, instr_filter)
+    
+    
+    if PITCH_REGROUP:
+        pitch_instruments = ['Vn', 'Fl']
+        other_instruments = ['Bn', 'BTb', 'Cb', 'ClBb', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc']
+        pitches = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#']
+            
+        def class_encoder(list_samp):
+            label = [0 for i in range(34)]
+            for s in list_samp:
+                if s['instrument'] in pitch_instruments:
+                    label[12*pitch_instruments.index(s['instrument']) + pitches.index(s['pitch_name'][:-1])] = 1
+                else:
+                    label[24+other_instruments.index(s['instrument'])] = 1
+            return np.array(label).astype(np.float32)
+        
+        def evaluate(preds, labels):
+            if preds.shape != labels.shape:
+                print("[Error]: size difference")
+            total_num = preds.shape[0]
+            # compute the label-based accuracy
+            result = {}
+        
+            result['acc'] = np.sum(preds*labels)/(N*total_num)
+            pitch_acc = {}
+            j=0
+            for i in pitch_instruments:
+                f = np.zeros(preds.shape, dtype = np.float32)
+                f[:,j:j+12] = 1.0
+                f = labels*f
+                pitch_acc[i] = np.sum(preds*f)/max(1.0, np.sum(f))
+                j+=12
+            result['pitch_acc'] = pitch_acc
+            
+            instr_acc = {}
+            for i in other_instruments:
+                f = np.zeros(preds.shape, dtype = np.float32)
+                f[:,j] = 1.0
+                f = labels*f
+                instr_acc[i] = np.sum(preds*f)/max(1.0, np.sum(f))
+                j+=1
+            result['instr_acc'] = instr_acc
+        
+            return result
+    else:
+        classes = set()
+        for i in rdb.db:
+            for j in rdb.db[i]:
+                for k in j:
+                    classes.add((k['instrument'], k['pitch_name']))
+        classes = list(classes)
+        
+        def class_encoder(list_samp):
+            label = [0 for i in range(len(classes))]
+            for s in list_samp:
+                label[classes.index((s['instrument'], s['pitch_name']))] = 1.0
+            return np.array(label).astype(np.float32)
+    main(rdb)
