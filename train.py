@@ -7,17 +7,17 @@ from torch.utils import data
 import numpy as np
 import argparse
 import time
-import json
+import pickle
 import os
-import itertools
-import argparse
 from functools import reduce
 import librosa.display
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 from model import OrchMatchNet
-from parameters import N, FEATURE_TYPE, PITCH_REGROUP, nb_samples, rdm_granularity, nb_pitch_range, instr_filter, batch_size, model_type, nb_epoch, model_path, model_resume_path, resume_model, train_proportion
+from parameters import N, FEATURE_TYPE, PITCH_REGROUP
+from parameters import nb_samples, rdm_granularity, nb_pitch_range, instr_filter, batch_size, model_type, nb_epoch, model_path, model_resume_path, resume_model, train_proportion
+from parameters import coeff_freq_shift_data_augment, prop_zero_col, prop_zero_row
 from parameters import load_parameters, save_parameters
 from OrchDataset import OrchDataSet,RawDatabase
 
@@ -53,6 +53,9 @@ class Timer:
             
 
 class DataSaver:
+    '''
+        Class used to write data for visualization (see showOutputs.py)
+    '''
     def __init__(self, path_file):
         self.path = path_file
         self.count = 0
@@ -101,7 +104,8 @@ def main(rdb = None):
 
     # model construction
     out_num = len(class_encoder([]))
-    model = OrchMatchNet(out_num, model_type)
+    features_shape = train_dataset[0][0].shape[1:]
+    model = OrchMatchNet(out_num, model_type, features_shape)
     
     start_epoch = 0
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -220,6 +224,9 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
             # pret_tmp[pret_tmp >= 0.05] = 1
             # pret_tmp[pret_tmp < 0.05] = 0
             result = evaluate(pret_tmp, grod_tmp)
+            f = open(save_path + '/result{}.pkl'.format(epoch), 'wb')
+            pickle.dump(result, f)
+            f.close()
             
         state = {
             'epoch': epoch,
@@ -310,61 +317,46 @@ if __name__=='__main__':
         rdb
     except NameError:
         rdb = RawDatabase('./TinySOL', rdm_granularity, instr_filter)
+        
+    # Create dictionary for label indexing
+    lab_class = {}
+    tot_size = 0
+    for k in rdb.db:
+        lab_class[k] = {}
+        a = set()
+        for l in rdb.db[k]:
+            for e in l:
+                a.add(e['pitch_name'])
+        for p in rdb.pr:
+            if p in a:
+                lab_class[k][p] = tot_size
+                tot_size += 1
+        
+    def class_encoder(list_samp):
+        label = [0 for i in range(tot_size)]
+        for s in list_samp:
+            label[lab_class[s['instrument']][s['pitch_name']]] = 1
+        return np.array(label).astype(np.float32)
     
+    def evaluate(preds, labels):
+        if preds.shape != labels.shape:
+            print("[Error]: size difference")
+        total_num = preds.shape[0]
+        # compute the label-based accuracy
+        result = {}
     
-    if PITCH_REGROUP:
-        pitch_instruments = ['Vn', 'Fl']
-        other_instruments = ['Bn', 'BTb', 'Cb', 'ClBb', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc']
-        pitches = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#']
-            
-        def class_encoder(list_samp):
-            label = [0 for i in range(34)]
-            for s in list_samp:
-                if s['instrument'] in pitch_instruments:
-                    label[12*pitch_instruments.index(s['instrument']) + pitches.index(s['pitch_name'][:-1])] = 1
-                else:
-                    label[24+other_instruments.index(s['instrument'])] = 1
-            return np.array(label).astype(np.float32)
+        result['acc'] = np.sum(preds*labels)/max(1.0, np.sum(labels))
+        pitch_acc = {}
+        j=0
+        for i in lab_class:
+            l = [lab_class[i][x] for x in lab_class[i]]
+            f = np.zeros(preds.shape, dtype = np.float32)
+            f[:,min(l):max(l)+1] = 1.0
+            f = labels*f
+            pitch_acc[i] = np.sum(preds*f)/max(1.0, np.sum(f))
+            j+=12
+        result['pitch_acc'] = pitch_acc
+    
+        return result
         
-        def evaluate(preds, labels):
-            if preds.shape != labels.shape:
-                print("[Error]: size difference")
-            total_num = preds.shape[0]
-            # compute the label-based accuracy
-            result = {}
-        
-            result['acc'] = np.sum(preds*labels)/(N*total_num)
-            pitch_acc = {}
-            j=0
-            for i in pitch_instruments:
-                f = np.zeros(preds.shape, dtype = np.float32)
-                f[:,j:j+12] = 1.0
-                f = labels*f
-                pitch_acc[i] = np.sum(preds*f)/max(1.0, np.sum(f))
-                j+=12
-            result['pitch_acc'] = pitch_acc
-            
-            instr_acc = {}
-            for i in other_instruments:
-                f = np.zeros(preds.shape, dtype = np.float32)
-                f[:,j] = 1.0
-                f = labels*f
-                instr_acc[i] = np.sum(preds*f)/max(1.0, np.sum(f))
-                j+=1
-            result['instr_acc'] = instr_acc
-        
-            return result
-    else:
-        classes = set()
-        for i in rdb.db:
-            for j in rdb.db[i]:
-                for k in j:
-                    classes.add((k['instrument'], k['pitch_name']))
-        classes = list(classes)
-        
-        def class_encoder(list_samp):
-            label = [0 for i in range(len(classes))]
-            for s in list_samp:
-                label[classes.index((s['instrument'], s['pitch_name']))] = 1.0
-            return np.array(label).astype(np.float32)
     main(rdb)

@@ -50,10 +50,15 @@ def getPitchRange(d):
 
 def generateDBLabels(path, nb_pitch_range = 1, instr_filter=None):
     '''
-        Generates the dataset labels and organizes all samples in those labels.
-        Outputs the labels as a dictionary along with the list of pitch ranges used.
-        Labels are generated using all possible combinations of N instruments (among instr_filter if set) using pitches within same pitch ranges and nuances.
-        If nb_pitch_range is set, the whole pitch range will be split in nb_pitch_range subsets.
+        Generates the short term fourier transforms for each sample of the data base.
+        In order to ensure a good repartition of the pitches when generating the combinations,
+        the set is divided into pitch_bins (the total number of bins amond the pitch range is defined
+        by nb_pitch_range).
+        If instr_filter is not None, the generated set will contain only samples of the instruments
+        specified by instr_filter.
+        
+        Note that if the global paramaters MEL_HOP_LENGTH, N_FFT or TIME_LENGTH are modified,
+        this function needs to be called again
     '''
     l = recursiveSearch(path)
     if not instr_filter is None:

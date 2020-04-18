@@ -1,26 +1,37 @@
 import pickle
 
 path = "./TinySOL"
-MEL_HOP_LENGTH = 44100
+MEL_HOP_LENGTH = 2048
 RATE = 44100
 N_FFT = 2048
 N_MELS = 128
 TIME_LENGTH = 4
-FEATURE_TYPE = 'mfcc'
+FEATURE_TYPE = 'mel'
 PITCH_REGROUP = True
 
 N = 2
-nb_samples = 40000
+nb_samples = 100000
 rdm_granularity = 10
 nb_pitch_range = 8
 instr_filter = None
 batch_size = 16
 model_type = 'cnn'
-nb_epoch = 200
+nb_epoch = 80
 model_path = './model'
 model_resume_path = 'epoch_199.pth'
 resume_model = False
 train_proportion = 0.8
+
+coeff_freq_shift_data_augment = 0.005 # For data augmentation, proportional change to sampling rate
+delay_offset_avg = 0.005 # Average of offset applied to delay filters (ie the position of the first impulse)
+delay_period_avg = 0.002 # Average of the period of the impulses for delaying
+delay_feedback_avg = 0.5 # Average of the feedback factor of delay impulses
+prop_zero_row = 0.01
+prop_zero_col = 0.01
+noise_kernel_var = 0.0001
+
+
+
 
 def load_parameters(path):
     global MEL_HOP_LENGTH

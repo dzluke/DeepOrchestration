@@ -48,14 +48,14 @@ def load(i):
         line[0,-1] = 0.0
         N = len([x for x in labels[0] if x > 0.0])
         pred = prediction(outputs, N)
-        pred_loss.append(np.sum(pred*labels)/(N*labels.shape[0]))
+        pred_loss.append(np.sum(pred*labels)/max(1.0,np.sum(labels)))
         wdw = min(len(pred_loss), avg_length)
-        avg_pred_loss.append(sum(pred_loss[-wdw:])/wdw)
-        ax2.imshow(np.vstack([outputs, line, labels, line, pred]), cmap=cmap)
         ax1.plot(loss_array)
         ax1.plot([len(loss_array)-1, len(loss_array)-1], [r.get('loss_min'), loss_array[-1]], marker='o')
         ax1.grid()
         ax1.set_title('BCE with logits loss')
+        avg_pred_loss.append(sum(pred_loss[-wdw:])/wdw)
+        ax2.imshow(np.vstack([outputs, line, labels, line, pred]), cmap=cmap)
         ax3.plot(pred_loss)
         ax3.plot(avg_pred_loss)
         ax3.set_title('Accuracy over batch')
@@ -70,3 +70,10 @@ anim = FuncAnimation(plt.gcf(), load, interval=500)
 
 plt.tight_layout()
 plt.show()
+
+import pickle
+def fr(run, n):
+    f = open("./model/run{}/result{}.pkl".format(run, n), 'rb')
+    r = pickle.load(f)
+    f.close()
+    return r
