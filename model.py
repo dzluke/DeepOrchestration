@@ -35,8 +35,9 @@ class CNN(nn.Module):
             nn.MaxPool2d(kernel_size=2)
         )
         shape_input = (shape_input[0]//2, shape_input[1]//2)
+        self.lstm_shape = (shape_input[0], shape_input[1])
 
-        #self.lstm = nn.LSTM(input_size=16, hidden_size=16, batch_first=True)
+        self.lstm = nn.LSTM(input_size=shape_input[1], hidden_size=shape_input[1], batch_first=True)
 
         self.layer4 = nn.Sequential(
             nn.Conv2d(in_channels=32, out_channels=32,
@@ -67,11 +68,12 @@ class CNN(nn.Module):
         out = self.layer3(out)
         #print(out.shape)
 
-#        out = out.view(-1, 43, 16)
-#        out, _ = self.lstm(out)
+        out = out.view(-1, self.lstm_shape[0], self.lstm_shape[1])
+        #print(out.shape)
+        out, _ = self.lstm(out)
 
-#        print(out.shape)
-#        out = out.contiguous().view(-1, 32, 43, 16)
+        #print(out.shape)
+        out = out.view(-1, 32, self.lstm_shape[0], self.lstm_shape[1])
 #        print(out.shape)
         out = self.layer4(out)
         #print(out.shape)

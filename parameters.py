@@ -7,19 +7,15 @@ N_FFT = 2048
 N_MELS = 128
 TIME_LENGTH = 4
 FEATURE_TYPE = 'mel'
-PITCH_REGROUP = True
 
-N = 2
+N = 4
 nb_samples = 100000
 rdm_granularity = 10
 nb_pitch_range = 8
-instr_filter = None
+instr_filter = ['Hn','Ob','Vn','Va']
 batch_size = 16
 model_type = 'cnn'
 nb_epoch = 80
-model_path = './model'
-model_resume_path = 'epoch_199.pth'
-resume_model = False
 train_proportion = 0.8
 
 coeff_freq_shift_data_augment = 0.005 # For data augmentation, proportional change to sampling rate
@@ -31,6 +27,11 @@ prop_zero_col = 0.01
 noise_kernel_var = 0.0001
 
 
+
+resume_model = True
+model_path = './model'
+model_run_resume = 1
+model_epoch_resume = 53
 
 
 def load_parameters(path):
@@ -50,10 +51,15 @@ def load_parameters(path):
     global batch_size
     global model_type
     global nb_epoch
-    global model_path
-    global model_resume_path
-    global resume_model
     global train_proportion
+    
+    global coeff_freq_shift_data_augment
+    global delay_offset_avg
+    global delay_period_avg
+    global delay_feedback_avg
+    global noise_kernel_var
+    global prop_zero_row
+    global prop_zero_col
     
     f = open(path + '/params.pkl', 'rb')
     params = pickle.load(f)
@@ -65,7 +71,6 @@ def load_parameters(path):
     N_MELS = params['N_MELS']
     TIME_LENGTH = params['TIME_LENGTH']
     FEATURE_TYPE = params['FEATURE_TYPE']
-    PITCH_REGROUP = params['PITCH_REGROUP']
     
     N = params['N']
     nb_samples = params['nb_samples']
@@ -75,10 +80,15 @@ def load_parameters(path):
     batch_size = params['batch_size']
     model_type = params['model_type']
     nb_epoch = params['nb_epoch']
-    model_path = params['model_path']
-    model_resume_path = params['model_resume_path']
-    resume_model = params['resume_model']
     train_proportion = params['train_proportion']
+    
+    coeff_freq_shift_data_augment = params['coeff_freq_shift_data_augment']
+    delay_offset_avg = params['delay_offset_avg']
+    delay_period_avg = params['delay_period_avg']
+    delay_feedback_avg = params['delay_feedback_avg']
+    noise_kernel_var = params['noise_kernel_var']
+    prop_zero_row = params['prop_zero_row']
+    prop_zero_col = params['prop_zero_col']
 
 def save_parameters(path):
     params={}
@@ -98,10 +108,16 @@ def save_parameters(path):
     params['batch_size'] = batch_size
     params['model_type'] = model_type
     params['nb_epoch'] = nb_epoch
-    params['model_path'] = model_path
-    params['model_resume_path'] = model_resume_path
-    params['resume_model'] = resume_model
     params['train_proportion'] = train_proportion
+    
+    
+    params['coeff_freq_shift_data_augment'] = coeff_freq_shift_data_augment
+    params['delay_offset_avg'] = delay_offset_avg
+    params['delay_period_avg'] = delay_period_avg
+    params['delay_feedback_avg'] = delay_feedback_avg
+    params['noise_kernel_var'] = noise_kernel_var
+    params['prop_zero_row'] = prop_zero_row
+    params['prop_zero_col'] = prop_zero_col
     
     f = open(path + '/params.pkl', 'wb')
     pickle.dump(params, f)

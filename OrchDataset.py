@@ -11,7 +11,7 @@ import os
 import pickle
 import random
 
-from parameters import RATE, N_FFT, MEL_HOP_LENGTH, N_MELS, PITCH_REGROUP, rdm_granularity, instr_filter
+from parameters import RATE, N_FFT, MEL_HOP_LENGTH, N_MELS, rdm_granularity, instr_filter
 from parameters import coeff_freq_shift_data_augment, prop_zero_col, prop_zero_row, noise_kernel_var, delay_feedback_avg, delay_offset_avg, delay_period_avg
 
 def showSample(s):

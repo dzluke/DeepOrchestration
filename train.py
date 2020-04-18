@@ -15,10 +15,11 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 from model import OrchMatchNet
-from parameters import N, FEATURE_TYPE, PITCH_REGROUP
-from parameters import nb_samples, rdm_granularity, nb_pitch_range, instr_filter, batch_size, model_type, nb_epoch, model_path, model_resume_path, resume_model, train_proportion
+from parameters import N, FEATURE_TYPE
+from parameters import nb_samples, rdm_granularity, nb_pitch_range, instr_filter, batch_size, model_type, nb_epoch, train_proportion
 from parameters import coeff_freq_shift_data_augment, prop_zero_col, prop_zero_row
 from parameters import load_parameters, save_parameters
+from parameters import model_path, model_run_resume, model_epoch_resume, resume_model
 from OrchDataset import OrchDataSet,RawDatabase
 
 class Timer:
@@ -112,8 +113,10 @@ def main(rdb = None):
 
     # model load
     if resume_model:
-        if os.path.exists(model_path+'/'+model_resume_path):
-            state = torch.load(model_path+'/'+model_resume_path)
+        mpath = model_path+'/run{}/epoch_{}.pth'.format(model_run_resume, model_epoch_resume)
+        save_path = model_path+'/run{}'.format(model_run_resume)
+        if os.path.exists(mpath):
+            state = torch.load(mpath)
             start_epoch = state['epoch']
             model.load_state_dict(state['state_dict'])
             optimizer.load_state_dict(state['optimizer'])
@@ -122,7 +125,7 @@ def main(rdb = None):
                     if isinstance(v, torch.Tensor):
                         state[k] = v.cuda()
 
-            print("Load %s successfully! " % model_resume_path)
+            print("Load %s successfully! " % mpath)
         else:
             print("[Error] no checkpoint ")
     else:
@@ -198,7 +201,7 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
             grod_tmp = np.zeros((0, out_num))
             s = 0
 
-            for tests, labels in test_load:
+            for k, (tests, labels) in enumerate(test_load):
                 tests = tests.to(device)
                 labels = labels.to(device)
 
@@ -215,6 +218,9 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
                 #          :] = outputs.cpu().detach().numpy().reshape((batch_size, -1))
                 grod_tmp = np.vstack([grod_tmp, labels.cpu().detach().numpy().reshape(predicts.shape)])
                 s += batch_size
+                
+                if k%100 == 0:
+                    print("Test set {}/{}".format(k, len(test_load)))
 
                 total_time += float(end-start)
                 test_loss += float(loss)
