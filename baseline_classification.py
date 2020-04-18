@@ -57,6 +57,8 @@ mel_hop_length = 44100
 
 pitch_classes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#']
 
+# maps an instrument or instrument-pitch to a class #
+label_mapping = {}
 
 def mix(fa, fb):
     diff = len(fa) - len(fb)
@@ -76,12 +78,6 @@ def combine_sounds(soundlist):
     for sound in soundlist:
         sound_path = os
         sfile, sr = librosa.load(sound, sr=None)
-
-        # mfcc = librosa.feature.mfcc(y=sfile, sr=sr, hop_length=mel_hop_length)
-        # librosa.display.specshow(mfcc)
-        # plt.title(sound)
-        # plt.show()
-
         if len(sfile) > time*sr:
             # randomly select one part of the raw audio
             n = np.random.randint(0, len(sfile)-time*sr)
@@ -90,11 +86,6 @@ def combine_sounds(soundlist):
         # sfile = wav_augment(sfile, sr)
         mixed_file = mix(mixed_file, sfile)
     mixed_file = mixed_file/len(soundlist)
-
-    # mfcc = librosa.feature.mfcc(y=sfile, sr=sr, hop_length=mel_hop_length)
-    # librosa.display.specshow(mfcc)
-    # plt.title('mix')
-    # plt.show()
     
     return [mixed_file, sr]
 
@@ -127,7 +118,6 @@ def extract_label(sample):
     pitch_class = pitch[:-1]
     return [instrument, pitch_class]
 
-label_mapping = {}
 
 def create_label_mapping(orchestra, pitch_instruments):
     '''
@@ -157,7 +147,12 @@ def create_binary_label(samples, pitch_instruments, orchestra):
         The N * 12 + 1 index corresponds to the class that represents "noise" i.e. the fact that some other
         instrument that is not a pitch_instrument is present
     '''
-    label_length = (len(pitch_instruments) * 12) + 1
+    if set(pitch_instruments) == set(orchestra):
+        # if these lists are identical, then we have N*12 classes
+        label_length = (len(pitch_instruments) * 12)
+    else:
+        # else we assume len(pitch_instruments) < len(orchestra), and we have N*12 + 1 classes
+        label_length = (len(pitch_instruments) * 12) + 1
     assert len(set(label_mapping.values())) == label_length
 
     label = np.zeros(label_length, dtype=np.float32)
@@ -194,8 +189,12 @@ def generate_data(orchestra, pitch_instruments, n, num_samples):
     i = 0
     while i < num_samples:
         instruments = []
-        # select one of 'pitch_instruments'
-        instruments.append(random.choice(pitch_instruments))
+        if (len(pitch_instruments) > 0):
+            # select one of 'pitch_instruments'
+            instruments.append(random.choice(pitch_instruments))
+        else:
+            instruments.append(random.choice(orchestra))
+
         # select n - 1 instruments
         instruments.extend(random.sample(orchestra, n - 1))
     
@@ -211,10 +210,6 @@ def generate_data(orchestra, pitch_instruments, n, num_samples):
         features = calculate_features(mixture, sr)
         # create label from the samples that were chosen
         label = create_binary_label(samples_to_combine, pitch_instruments, orchestra)
-
-        # need to have more than 1 label
-        if (np.sum(label) == 1):
-            continue
 
         # since you cant know the dimensions until the features have been computed,
         # you can't make the ndarray until now
@@ -283,66 +278,21 @@ def train_and_test(X, y):
 
     return test_scores
 
-def make_plot(x, y):
-    plt.plot(x, y, marker='o')
-    for a, b in zip(x, y):
-        if a < 3:
-            placement = (20, -10)
-        else:
-            placement = (0, 10)
-        plt.annotate(str(b),  # this is the text
-                    (a, b),  # this is the point to label
-                    textcoords="offset points",  # how to position the text
-                    xytext=placement,  # distance from text to points (x,y)
-                    ha='center')  # horizontal alignment can be left, right or center
-
-    plt.ylim((0, 1))
-    plt.xticks(range(1, max(x) + 1))
-
-    plt.xlabel("Number of instruments combined")
-    plt.ylabel("Accuracy")
-    # plt.title("""Accuracy of non-linear SVM classifying various numbers of instrument combinations \n from an orchestra of 12 instruments using 50,000 samples per combination""")
-    plt.title("classifier: non-linear SVM, classifying: instrument only, \n orchestra size: 12, number of samples: 50,000")
-    plt.show()
-
-
-def make_plot_multiple_lines(all_scores):
-    '''
-    scores is a nested dictionary that maps a value of n to a dictionary of samples and scores
-    '''
-    for n in all_scores.keys():
-        scores = all_scores[n]
-        num_samples = list(scores.keys())
-        accuracies = list(scores.values())
-
-        plt.plot(num_samples, accuracies,
-                 label="combinations of {} instruments".format(n), marker='o')
-
-        for x, y in scores.items():
-            plt.annotate(str(y),  # this is the text
-                         (x, y),  # this is the point to label
-                         textcoords="offset points",  # how to position the text
-                         xytext=(0, 10),  # distance from text to points (x,y)
-                         ha='center')  # horizontal alignment can be left, right or center
-
-    plt.ylim((0, 0.6))
-    plt.legend()
-
-    plt.xlabel("Number of samples used to train and test")
-    plt.ylabel("Accuracy")
-    plt.title("Accuracy of SVM classifying combinations of instruments".format(n))
-    plt.show()
-
 
 orchestra = ['Vc', 'Fl', 'Va', 'Vn', 'Ob', 'BTb',
                'Cb', 'ClBb', 'Hn', 'TpC', 'Bn', 'Tbn']
 
 
-num_samples = 3
-scores = []
-n = 2
+string_duo = ['Vn', 'Vc']
+brass_trio = ['Hn', 'TpC', 'Tbn']
+string_quartet = ['Vn', 'Va', 'Vc', 'Cb']
 
-pitch_instruments = ['Vn', 'Fl']
+num_samples = 50000
+scores = []
+n = 3
+
+orchestra = brass_trio
+pitch_instruments = brass_trio
 X, y = generate_data(orchestra, pitch_instruments, n, num_samples)
 
 print("\nNumber of classes: ", y[0].shape)
