@@ -12,10 +12,10 @@ N = 4
 nb_samples = 100000
 rdm_granularity = 10
 nb_pitch_range = 8
-instr_filter = ['Hn','Ob','Vn','Va']
+instr_filter = ['Hn','Ob','Vn','Va', 'Vc']
 batch_size = 16
 model_type = 'cnn'
-nb_epoch = 80
+nb_epoch = 50
 train_proportion = 0.8
 
 coeff_freq_shift_data_augment = 0.005 # For data augmentation, proportional change to sampling rate
@@ -28,10 +28,10 @@ noise_kernel_var = 0.0001
 
 
 
-resume_model = True
+resume_model = False
 model_path = './model'
-model_run_resume = 1
-model_epoch_resume = 53
+model_run_resume = 4
+model_epoch_resume = 23
 
 
 def load_parameters(path):
@@ -98,7 +98,6 @@ def save_parameters(path):
     params['N_MELS'] = N_MELS
     params['TIME_LENGTH'] = TIME_LENGTH
     params['FEATURE_TYPE'] = FEATURE_TYPE
-    params['PITCH_REGROUP'] = PITCH_REGROUP
     
     params['N'] = N
     params['nb_samples'] = nb_samples
