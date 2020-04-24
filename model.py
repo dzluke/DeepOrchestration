@@ -97,7 +97,7 @@ class OrchMatchNet(nn.Module):
         if model_select == 'cnn':
             self.net = CNN(out_num, features_dim)
         elif model_select == 'resnet':
-            self.net = ResNet(num_classes=out_num)
+            self.net = ResNet(num_classes=out_num, features_dim=features_dim)
 
     def forward(self, x):
         out = self.net(x)

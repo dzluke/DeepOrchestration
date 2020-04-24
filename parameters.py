@@ -9,13 +9,13 @@ TIME_LENGTH = 4
 FEATURE_TYPE = 'mel'
 
 N = 4
-nb_samples = 100000
+nb_samples = 200000
 rdm_granularity = 10
 nb_pitch_range = 8
-instr_filter = ['Hn','Ob','Vn','Va', 'Vc']
+instr_filter = ['Hn','Ob','Vn','Va', 'Vc', 'Fl', 'Tbn', 'Bn', 'TpC', 'ClBb'][:N]
 batch_size = 16
-model_type = 'cnn'
-nb_epoch = 50
+model_type = 'resnet'
+nb_epoch = 100
 train_proportion = 0.8
 
 coeff_freq_shift_data_augment = 0.005 # For data augmentation, proportional change to sampling rate
@@ -27,11 +27,23 @@ prop_zero_col = 0.01
 noise_kernel_var = 0.0001
 
 
+# Plot learning rate vs epochs
+# Also plot loss function vs epochs
+# This is to understand why there's a drop in
+
+# Train 4-10 with RNN
+# Get a static target, generate feature, feed it into the network and get the best N instruments
+# We need to synthesize the solution with TinySOL samples (for velocities we use prob of outputs)
+# Listen to the solutions to evaluate
+# Also evaluate it using the cost function of Carmine OrchIdea
+
+# For SampleRNN, try to put everything in place so it generates samples
+
 
 resume_model = False
 model_path = './model'
-model_run_resume = 4
-model_epoch_resume = 23
+model_run_resume = 9
+model_epoch_resume = 28
 
 
 def load_parameters(path):

@@ -200,52 +200,21 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
             grod_tmp = np.zeros((0, out_num))
             s = 0
 
-            print("Starting test")
-            poi = 0
-            t1 = time.time()
             for k, (tests, labels) in enumerate(test_load):
-                print("Checkpoint {}; {}".format(poi, time.time()-t1))
-                poi += 1
-                t1 = time.time()
-                
                 tests = tests.to(device)
                 labels = labels.to(device)
-                
-                print("Checkpoint {}; {}".format(poi, time.time()-t1))
-                poi += 1
-                t1 = time.time()
 
                 outputs = model(tests)
                 
-                print("Checkpoint {}; {}".format(poi, time.time()-t1))
-                poi += 1
-                t1 = time.time()
-                
                 loss = criterion(outputs, labels)
-                
-                print("Checkpoint {}; {}".format(poi, time.time()-t1))
-                poi += 1
-                t1 = time.time()
 
                 predicts = prediction(outputs.detach().cpu().clone().numpy(), N)
-                
-                print("Checkpoint {}; {}".format(poi, time.time()-t1))
-                poi += 1
-                t1 = time.time()
                 #predicts = outputs.detach().cpu().clone().numpy()
                 pret_tmp = np.vstack([pret_tmp, predicts])
-                
-                print("Checkpoint {}; {}".format(poi, time.time()-t1))
-                poi += 1
-                t1 = time.time()
 
                 # pret_tmp[s:s+batch_size,
                 #          :] = outputs.cpu().detach().numpy().reshape((batch_size, -1))
                 grod_tmp = np.vstack([grod_tmp, labels.cpu().detach().numpy().reshape(predicts.shape)])
-                
-                print("Checkpoint {}; {}".format(poi, time.time()-t1))
-                poi += 1
-                t1 = time.time()
                 
                 s += batch_size
                 
@@ -299,59 +268,44 @@ def prediction(outputs, N):
 #test('./model/nb_pitch_range_1/epoch_19.pth', rdb, 12)
 
 if __name__=='__main__':
-
-    try:
-        rdb
-    except NameError:
-        rdb = RawDatabase('./TinySOL', rdm_granularity, instr_filter)
+    rdb = RawDatabase('./TinySOL', rdm_granularity, instr_filter)
+    
+    # Create dictionary for label indexing
+    lab_class = {}
+    tot_size = 0
+    for k in rdb.db:
+        lab_class[k] = {}
+        a = set()
+        for l in rdb.db[k]:
+            for e in l:
+                a.add(e['pitch_name'])
+        for p in rdb.pr:
+            if p in a:
+                lab_class[k][p] = tot_size
+                tot_size += 1
         
-    list_instr_filter = ['Hn','Ob','Vn','Va', 'Vc', 'Cb', 'Fl', 'Tbn', 'Bn', 'TpC', 'ClBb', 'BTb']
-    for n_orchestra in range(6,12):
-        
-        instr_filter = list_instr_filter[:n_orchestra]
-        N = n_orchestra
-        rdb = RawDatabase('./TinySOL', rdm_granularity, instr_filter)
-        
-        # Create dictionary for label indexing
-        lab_class = {}
-        tot_size = 0
-        for k in rdb.db:
-            lab_class[k] = {}
-            a = set()
-            for l in rdb.db[k]:
-                for e in l:
-                    a.add(e['pitch_name'])
-            for p in rdb.pr:
-                if p in a:
-                    lab_class[k][p] = tot_size
-                    tot_size += 1
-            
-        def class_encoder(list_samp):
-            label = [0 for i in range(tot_size)]
-            for s in list_samp:
-                label[lab_class[s['instrument']][s['pitch_name']]] = 1
-            return np.array(label).astype(np.float32)
-        
-        def evaluate(preds, labels):
-            if preds.shape != labels.shape:
-                print("[Error]: size difference")
-            # compute the label-based accuracy
-            result = {}
-        
-            result['acc'] = np.sum(preds*labels)/max(1.0, np.sum(labels))
-            pitch_acc = {}
-            for i in lab_class:
-                l = [lab_class[i][x] for x in lab_class[i]]
-                f = np.zeros(preds.shape, dtype = np.float32)
-                f[:,min(l):max(l)+1] = 1.0
-                f = labels*f
-                pitch_acc[i] = np.sum(preds*f)/max(1.0, np.sum(f))
-            result['pitch_acc'] = pitch_acc
-        
-            return result
-        
-        if n_orchestra == 6:
-            resume_model = True
-        else:
-            resume_model = False
-        main(rdb)
+    def class_encoder(list_samp):
+        label = [0 for i in range(tot_size)]
+        for s in list_samp:
+            label[lab_class[s['instrument']][s['pitch_name']]] = 1
+        return np.array(label).astype(np.float32)
+    
+    def evaluate(preds, labels):
+        if preds.shape != labels.shape:
+            print("[Error]: size difference")
+        # compute the label-based accuracy
+        result = {}
+    
+        result['acc'] = np.sum(preds*labels)/max(1.0, np.sum(labels))
+        pitch_acc = {}
+        for i in lab_class:
+            l = [lab_class[i][x] for x in lab_class[i]]
+            f = np.zeros(preds.shape, dtype = np.float32)
+            f[:,min(l):max(l)+1] = 1.0
+            f = labels*f
+            pitch_acc[i] = np.sum(preds*f)/max(1.0, np.sum(f))
+        result['pitch_acc'] = pitch_acc
+    
+        return result
+    
+    main(rdb)
