@@ -125,30 +125,25 @@ def get_classes(indices):
 
 
 # load a sample at the given path and return the melspectrogram  and duration of the sample
-def load_sample(path, mel_basis):
+def load_sample(path):
     
     y, sr = librosa.load(path, sr=None)
     duration = librosa.get_duration(y=y, sr=sr)
     mel_hop_length = sr * duration / (87 - 1) # based on training data size
     mel_hop_length = int(mel_hop_length)
-    stft = librosa.stft(y=y, hop_length=mel_hop_length, n_fft=N_FFT)
-
-    s = np.real(stft*np.conjugate(stft))
-    mel_spec = np.dot(mel_basis[random.randint(0, len(mel_basis)-1)], s)
+   
+    mel_spec = librosa.feature.melspectrogram(y=y, sr=sr, hop_length=mel_hop_length)
     return torch.tensor(np.array([mel_spec])), duration
 
 # load in a folder of data and return a list of melspectrograms
 def load_data(folder_path):
-    mel_basis = []
-    for i in np.linspace(-coeff_freq_shift_data_augment, coeff_freq_shift_data_augment, 100):
-        mel_basis.append(librosa.filters.mel(RATE*(1+i), N_FFT, n_mels=N_MELS))
     
     data = []
     targets = []
     for entry in os.listdir(folder_path):
         if (entry.endswith('.wav')):
             full_path = os.path.join(folder_path, entry)
-            mel_spec, duration = load_sample(full_path, mel_basis)
+            mel_spec, duration = load_sample(full_path)
             data.append(mel_spec)
             targets.append({'name': entry[:-4], 'duration': duration})
     print("Loaded {} target samples".format(len(data)))
