@@ -47,6 +47,9 @@ state_path = '{}_n={}.pth'.format(model_type, len(instr_filter))
 # number of samples to be used in solution
 n = 10
 
+# if sanity_check, then targets are TinySOL combinations instead of real targets to be orchestrated
+sanity_check = False
+
 
 def test(model, state_path, data, targets):
     device = torch.device('cpu')    
@@ -57,8 +60,9 @@ def test(model, state_path, data, targets):
     outputs = model(data)
     outputs = outputs.detach().cpu().clone().numpy()
 
-    accuracy = evaluate(outputs, labels)
-    print(accuracy)
+    if sanity_check:
+        accuracy = evaluate(outputs, labels)
+        print(accuracy)
 
     # text file to write solutions to
     f = open(solutions_path + '/orchestration_results.txt', 'w+')
@@ -69,7 +73,7 @@ def test(model, state_path, data, targets):
         # get indices of top n probabilities
         indices = getPosNMax(output, n)
         # turn indices into [instr, pitch]
-        classes = get_classes(indices) # returns (instr, pitch)
+        classes = get_classes(indices)
         # get top n probabiltiies
         probs = [output[i] for i in indices]
         # turn probabilities into dynamic markings (pp, mf, ff)
@@ -88,9 +92,11 @@ def test(model, state_path, data, targets):
         file_name = solutions_path + '/orchestrated_' + target['name'] + '.wav'
         sf.write(file_name, mixed_file, sr)
 
-        # target['distance'] = compute_distance(target, mixed_file)
-        target['distance'] = 0
-
+        if sanity_check:
+            target['distance'] = 0
+        else:
+            target['distance'] = compute_distance(target, mixed_file)
+        
         # write to text file
         f.write('Target: {}; Distance: {:,.2f}\nSamples used: {}\n'.format(target['name'], target['distance'], target['classes']))
 
@@ -308,9 +314,11 @@ if __name__ == "__main__":
     
     model = OrchMatchNet(num_classes, model_type, features_shape)
     
-    # data, targets = load_data(target_path)
-
-    data, targets, labels = make_fake_targets(num_classes)
+    
+    if sanity_check:
+        data, targets, labels = make_fake_targets(num_classes)
+    else:
+        data, targets = load_data(target_path)
 
     test(model, state_path, data, targets)
     print('Done.')
