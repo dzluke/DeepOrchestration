@@ -6,6 +6,7 @@ import pickle
 import librosa
 import os
 from augment import spec_augment
+import librosa.display
 
 
 class OrchDataSet(data.Dataset):

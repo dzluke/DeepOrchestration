@@ -1,101 +1,228 @@
 import torch
-import torch.nn as nn
-import torchvision.transforms as transforms
-import torch.nn.functional as F
-from torch.autograd import Variable
 import numpy as np
 import librosa
-import argparse
-import time
-import json
-import pickle
+import librosa.display
 import os
+import random
+import soundfile as sf
 
 from model import OrchMatchNet
-# from process_TinySOL import show_all_class_num, show_all_instru_num, stat_test_db, decode, N
-from dataset import OrchDataSet
+from OrchDataset import RawDatabase
+from train import getPosNMax
+from parameters import GLOBAL_PARAMS, SimParams
 
-out_num = 3674
-time = 4
-N = 5
+""" 
+To run this file:
+- You need a folder of targets to be orchestrated, and set 'target_path' to point to this
+- You need to create a folder to store the orchestrated solutions, and set 'solutions_path'
+to be the path to this folder
+- You need a trained model saved as a .pth file, and set 'state_path' to point to this
 
+- Set 'tinysol_path' to point to your TinySOL database
+- Set model_type, instr_filter, and n
 
-def get_data():
-    target_path = '/home/data/happipub/gradpro_l/target'
-    features = []
-    for x in os.listdir(target_path):
-        y, sr = librosa.load(os.path.join(target_path, x), sr=None)
-
-        feature = librosa.feature.melspectrogram(y, sr).T
-
-        if feature.shape[0] <= 256:
-            # add zero
-            zero = np.zeros((256-feature.shape[0], 128), dtype=np.float32)
-            feature = np.vstack((feature, zero))
-        else:
-            feature = feature[:256]
-            # feature = feature[:-1*(feature.shape[0] % 128)]
-
-        num_chunk = feature.shape[0]/128
-        feature = np.split(feature, num_chunk)
-        features.append([torch.tensor([feature]), x])
-
-    return features
+"""
 
 
-def test():
-    server_model_path = '/home/data/happipub/gradpro_l/model/three'
-    state = torch.load(server_model_path+"/epoch_best.pth")
-    model = OrchMatchNet(out_num, 'cnn')
+# path to TinySOL data
+tinysol_path = './TinySOL'
+
+# cnn or resnet
+model_type = 'cnn'
+
+# number of samples to be used in solution
+n = 4
+
+# instruments to be used (all instruments will be used)
+instr_filter = ['Hn', 'Ob', 'Vn', 'Va',
+                'Vc', 'Fl', 'Tbn', 'Bn', 'TpC', 'ClBb']
+
+# path to target samples
+target_path = './target_samples'
+
+# path to store solutions as .wav
+solutions_path = './orchestrated_targets/{}_n={}'.format(model_type, n)
+
+# The argument must be the folder where the params.pkl file is
+GLOBAL_PARAMS.load_parameters('./orchestrated_targets/params_{}'.format(model_type))
+
+# path to a trained version of the model
+if model_type == 'cnn':
+    state_path = './orchestrated_targets/params_cnn/epoch_49.pth'
+else:
+    state_path = './orchestrated_targets/params_resnet/epoch_24.pth'
+
+
+# if true, doesn't orchestrate targets but instead creates combinations of TinySOL samples to input to the model
+sanity_check = False
+
+
+def test(model, state_path, data, targets):
+    device = torch.device('cpu')
+    state = torch.load(state_path, map_location=device)
     model.load_state_dict(state['state_dict'])
-
-    datas = get_data()
-    model = model.float()
     model.eval()
-    for data, x in datas:
-        print('--------------------------')
-        print('target: ', x)
-        out = model(data.float())
-        get_pred_file(out)
 
+    outputs = model(data)
+    outputs = outputs.detach().cpu().clone().numpy()
 
-def synthesize():
-    f = open('./exp/five/five.txt')
-    path = './new_OrchDB_ord'
-    lines = f.readlines()
-    name = ''
-    soundlist = []
-    f_inx = {}
-    for f in os.listdir(path):
-        if f.split('.')[0].endswith('c'):
-            f_inx[f.split('.')[0][:-3]] = os.path.join(path, f)
+    if sanity_check:
+        accuracy = evaluate(outputs, labels)
+        print(accuracy)
+
+    # text file to write solutions to
+    f = open(solutions_path + '/orchestration_results.txt', 'w+')
+
+    for i in range(len(outputs)):
+        output = outputs[i]
+        target = targets[i]
+        # get indices of top n probabilities
+        indices = getPosNMax(output, n)
+        # turn indices into [instr, pitch]
+        classes = get_classes(indices)
+        # get top n probabiltiies
+        probs = [output[i] for i in indices]
+        # turn probabilities into dynamic markings (pp, mf, ff)
+        dynamics = prob_to_dynamic(probs)
+        # combine into (instr, pitch, dynamic)
+        for j in range(len(classes)):
+            classes[j].append(dynamics[j])
+        
+        # turn (instr, pitch, dynamic) into list of actual TinySOL sample paths
+        sample_paths = find_sample_paths(classes)
+        target['classes'] = classes
+
+        # combine samples
+        mixed_file, sr = combine(sample_paths, target)
+        # write wav
+        file_name = solutions_path + '/orchestrated_' + target['name'] + '.wav'
+        sf.write(file_name, mixed_file, sr)
+
+        if sanity_check:
+            target['distance'] = 0
         else:
-            f_inx[f.split('.')[0]] = os.path.join(path, f)
+            target['distance'] = compute_distance(target, mixed_file)
+        
+        # write to text file
+        f.write('Target: {}; Distance: {:,.2f}\nSamples used: {}\n\n'.format(target['name'], target['distance'], target['classes']))
 
-    for i in range(len(lines)):
-        line = lines[i]
-        if line.startswith('target:'):
-            name = line.strip().split(':')[-1][2:]
-            for j in range(N):
-                soundlist.append(f_inx[lines[i+2+j][:-1]])
-            print(name, soundlist)
-            combine(soundlist, name)
-            soundlist = []
+    # compute avg distance
+    sum = 0
+    for target in targets:
+        sum += target['distance']
+    sum /= len(targets)
+    f.write('Average distance: {:,.2f}'.format(sum))
+    f.close()
+
+        
+def find_sample_paths(classes):
+    '''
+    classes is a list where each element is a list like this: [instr, pitch, dynamic]
+    '''
+    samples = []
+    for c in classes:
+        instr, pitch, dynamic = c
+        instr_samples = rdb.db[instr]
+        for lst in instr_samples:
+            for sample in lst:
+                if sample['instrument'] == instr and sample['pitch_name'] == pitch and sample['nuance'] == dynamic:
+                    samples.append(sample['path'])
+                    break
+    return samples
+
+'''
+converts a list of probabilities to a list of dynamics
+0 - 0.33 -> pp
+0.34 - 0.66 -> mf
+0.67 - 1 -> ff
+'''
+def prob_to_dynamic(probs):
+    dynamics = []
+    pp = 0.33
+    mf = 0.66
+    for prob in probs:
+        if prob > mf:
+            dynamics.append('ff')
+        elif prob > pp:
+            dynamics.append('mf')
+        else:
+            dynamics.append('pp')
+    return dynamics    
+
+# given a list of indices, return the corresponding [instrument, pitch] in lab_class
+def get_classes(indices):
+    classes = [None for i in indices]
+    for instrument, pitch_dict in lab_class.items():
+        for pitch, class_number in pitch_dict.items():
+            if class_number in indices:
+                index = indices.index(class_number)
+                classes[index] = [instrument, pitch]
+    assert len(indices) == len(classes)
+    return classes
+
+# load a sample at the given path and return the melspectrogram  and duration of the sample
+def load_sample(path):
+    y, sr = librosa.load(path, sr=None)
+    duration = librosa.get_duration(y=y, sr=sr)
+    mel_hop_length = sr * duration / (87 - 1) # based on training data size
+    mel_hop_length = int(mel_hop_length)
+   
+    mel_spec = librosa.feature.melspectrogram(y=y, sr=sr, hop_length=mel_hop_length)
+    return torch.tensor(np.array([mel_spec])), duration
 
 
-def combine(soundlist, n):
+# load in a folder of data and return a list of melspectrograms
+def load_data(folder_path):
+    data = []
+    targets = []
+    for entry in os.listdir(folder_path):
+        if entry.endswith('.wav'):
+            full_path = os.path.join(folder_path, entry)
+            mel_spec, duration = load_sample(full_path)
+            data.append(mel_spec)
+            targets.append({'name': entry[:-4], 'duration': duration, 'path': full_path})
+    print("Loaded {} target samples".format(len(data)))
+
+    return torch.stack(data), targets
+
+
+def combine(soundlist, target):
     mixed_file = np.zeros((1, 1))
-    sr = 0
     for sound in soundlist:
         sfile, sr = librosa.load(sound, sr=None)
         mixed_file = mix(mixed_file, sfile)
     mixed_file = mixed_file/len(soundlist)
-    mixed_file = mixed_file[:time*sr]
 
-    name = './exp/five/' + n
-    librosa.output.write_wav(name, y=mixed_file, sr=sr)
-    print('finish')
-    # return [mixed_file, sr, mixed_label]
+    # trim to target length
+    trim_index = int(target['duration']*sr)
+    mixed_file = mixed_file[:trim_index]
+
+    return mixed_file, sr
+
+
+def compute_distance(target, solution):
+    target, _ = librosa.load(target['path'], sr=None)
+
+    # if the target is longer than the solution, must trim the target
+    if (target.size > solution.size):
+        target = target[:solution.size]
+
+    target_fft = np.fft.fft(target)
+    solution_fft = np.fft.fft(solution)
+
+    lambda_1 = 1
+    lambda_2 = 1
+
+    sum_1 = 0
+    sum_2 = 0
+    for i in range(target_fft.size):
+        a = target_fft[i]
+        b = solution_fft[i]
+        if a - b < 0:
+            sum_1 += a - b
+            sum_2 += abs(a - b)
+    distance = lambda_1 * sum_1 + lambda_2 * sum_2
+    return float(distance)
 
 
 def mix(fa, fb):
@@ -111,28 +238,98 @@ def mix(fa, fb):
     return fa+fb
 
 
-def get_pred_file(output):
-    '''
-        get Top N prediction
-        or set a threshold
-    '''
+def make_fake_targets(num_classes):
+    num_targets = 10
+    data = []
+    targets = []
+    labels = []
+    for i in range(num_targets):
+        samples = random.sample(range(num_classes), n)
+        labels.append(samples)
+        samples = get_classes(samples)
+        dynamics = [random.choice(['pp', 'mf', 'ff']) for _ in range(n)]
+        for j in range(len(samples)):
+            samples[j].append(dynamics[j])
+        paths = find_sample_paths(samples)
+        mixed_file, _ = combine(paths, {'duration':4})
+        mel_spec = librosa.feature.melspectrogram(y=mixed_file,sr=44100,hop_length=GLOBAL_PARAMS.MEL_HOP_LENGTH)[:128,:87]
+        data.append(torch.tensor([mel_spec]))
+        
+        name = ''
+        for l in samples:
+            name += l[0] + l[1] + '_'
+        target = {'name':name[:-1], 'duration':4}
+        targets.append(target)
 
-    pred = np.zeros(output.shape)
-    inx = json.load(open('class.index', 'r'))
+    encoded_labels = []
+    for label in labels:
+        l = np.zeros(num_classes, dtype=np.float32)
+        for x in label:
+            l[x] = 1.0
+        encoded_labels.append(l)
+    encoded_labels = np.array(encoded_labels)
 
-    preidx = []
-    print("orch:")
-    for i, p in enumerate(output[0]):
-        if p > 0.01:
-            preidx.append(i)
-            orch_file = list(inx.keys())[list(inx.values()).index(i)]
-            print(round(float(p), 3), orch_file)
+    print('Created {} fake data targets'.format(num_targets))
 
-        # for i in range(N):
-        #     idx = output.max(1, keepdim=True)[1]
-        #     preidx.append(idx)
-        #     output[0][idx] = -1
+    return torch.stack(data), targets, encoded_labels
 
 
 if __name__ == "__main__":
-    test()
+    print('--------------------------')
+    print('MODEL TYPE:', model_type)
+    print('NUMBER OF INSTRUMENTS:', len(instr_filter))
+    print('N:', n)
+    print('--------------------------')
+
+
+    rdb = RawDatabase(tinysol_path, GLOBAL_PARAMS.rdm_granularity, instr_filter)
+
+    lab_class = GLOBAL_PARAMS.lab_class
+
+    # calculate num classes
+    num_classes = 0
+    for k in rdb.db:
+        a = set()
+        for l in rdb.db[k]:
+            for e in l:
+                a.add(e['pitch_name'])
+        for p in rdb.pr:
+            if p in a:
+                num_classes += 1
+
+    
+    def class_encoder(list_samp):
+        label = [0 for i in range(num_classes)]
+        for s in list_samp:
+            label[lab_class[s['instrument']][s['pitch_name']]] = 1
+        return np.array(label).astype(np.float32)
+
+    def evaluate(preds, labels):
+        if preds.shape != labels.shape:
+            print("[Error]: size difference")
+        # compute the label-based accuracy
+        result = {}
+
+        result['acc'] = np.sum(preds*labels)/max(1.0, np.sum(labels))
+        pitch_acc = {}
+        for i in lab_class:
+            l = [lab_class[i][x] for x in lab_class[i]]
+            f = np.zeros(preds.shape, dtype=np.float32)
+            f[:, min(l):max(l)+1] = 1.0
+            f = labels*f
+            pitch_acc[i] = np.sum(preds*f)/max(1.0, np.sum(f))
+        result['pitch_acc'] = pitch_acc
+
+        return result
+    
+    features_shape = [128, 87] # the dim of the data used to train the network
+    
+    model = OrchMatchNet(num_classes, model_type, features_shape)
+    
+    if sanity_check:
+        data, targets, labels = make_fake_targets(num_classes)
+    else:
+        data, targets = load_data(target_path)
+
+    test(model, state_path, data, targets)
+    print('Done.')

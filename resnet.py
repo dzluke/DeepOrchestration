@@ -62,9 +62,10 @@ class ResidualBlock(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, num_classes=3000, dropout_rate=0.5, output_nonlinearity='softmax'):
+    def __init__(self, num_classes, features_dim, dropout_rate=0.5, output_nonlinearity='sigmoid'):
         super(ResNet, self).__init__()
         # Initial input conv
+        shape_input = features_dim
         self.conv1 = nn.Conv2d(
             in_channels=1, out_channels=32, kernel_size=(3, 3),
             stride=1, padding=1, bias=False
@@ -81,12 +82,17 @@ class ResNet(nn.Module):
 
         self.block1 = self._create_block(32, 32, stride=1)
         self.block2 = self._create_block(32, 64, stride=2)
+        shape_input = ((shape_input[0]+1)//2, (shape_input[1]+1)//2)
         self.block3 = self._create_block(64, 32, stride=2)
+        shape_input = ((shape_input[0]+1)//2, (shape_input[1]+1)//2)
         self.block4 = self._create_block(32, 32, stride=2)
-        self.bn2 = nn.BatchNorm1d(1408)
-        self.bn3 = nn.BatchNorm1d(1000)
-        self.linear1 = nn.Linear(1408, 1000)
-        self.linear2 = nn.Linear(1000, num_classes)
+        shape_input = ((shape_input[0]+1)//2, (shape_input[1]+1)//2)
+        
+        lin_input = 32*(shape_input[0]//2)*(shape_input[1]//2)
+        self.bn2 = nn.BatchNorm1d(lin_input)
+        self.linear1 = nn.Linear(lin_input, int(0.6*lin_input))
+        self.bn3 = nn.BatchNorm1d(int(0.6*lin_input))
+        self.linear2 = nn.Linear(int(0.6*lin_input), num_classes)
 
         self.dropout = nn.Dropout(dropout_rate)
 
@@ -103,7 +109,7 @@ class ResNet(nn.Module):
         out = self.block2(out)
         out = self.block3(out)
         out = self.block4(out)
-        out = nn.AvgPool2d(4)(out)
+        out = nn.AvgPool2d(2)(out)
         out = out.view(out.size(0), -1)
         out = self.bn2(out)
         out = self.dropout(out)
@@ -112,7 +118,7 @@ class ResNet(nn.Module):
         out = self.dropout(out)
         out = F.relu(out)
         out = self.linear2(out)
-        out = self.output_nonlinearity(out, dim=1)
+        out = self.output_nonlinearity(out)
         return out
 
     def set_device(self, device):

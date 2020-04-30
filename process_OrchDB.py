@@ -19,7 +19,7 @@ from augment import wav_augment
 #   ----Cb
 #   ----Va
 #   etc...
-path = './TinySOL_0.6/TinySOL'
+path = './TinySOL'
 
 # generated dataset were picklized files will be stored
 featurized_data_path = './featurized_data/'
@@ -32,7 +32,7 @@ N = 2
 # time duration
 time = 4
 # max sample number
-MAX_NUM = 400
+MAX_NUM = 5040
 # class number
 out_num = 505
 # number of samples between successive frames in librosa.melspectrogram
@@ -50,11 +50,12 @@ def random_combine():
     inx = json.load(open('class.index', 'r'))
 
     for instrument in instruments:
-        instrument_path = os.path.join(path, instrument)
+        instrument_path = os.path.join(os.path.join(path, instrument), "ordinario")
         for sample in os.listdir(instrument_path):
             sample_path = os.path.join(instrument_path, sample)
             all_samples.append(sample_path)
 
+    print(all_samples)
     # combine
     all_selects = []
     all_mix = []
@@ -67,7 +68,7 @@ def random_combine():
         labellist = []
 
         for num in selects:
-            f = all_samples[num].split('/')[-1].split('-')[:3]
+            f = os.path.split(all_samples[num])[1].split('-')[:3]
             f = f[0]+'-'+f[1]+'-'+f[2]
             idx = inx[f]
 
@@ -184,7 +185,7 @@ def show_all_class_num():
         if f.startswith("."):
             continue
         if f in instruments:
-            instrument_path = os.path.join(path, f)
+            instrument_path = os.path.join(os.path.join(path, f), "ordinario")
             for sample in os.listdir(instrument_path):
                 n = sample.split('.')[0].split('-')[:3]
                 if n not in m:
