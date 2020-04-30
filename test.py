@@ -23,6 +23,7 @@ to be the path to this folder
 - Set model_type, instr_filter, and n
 
 """
+# The argument must be the folder where the params.pkl file is
 GLOBAL_PARAMS.load_parameters('./model/run6')
 
 # path to TinySOL data
