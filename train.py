@@ -15,11 +15,8 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 from model import OrchMatchNet
-from parameters import N, FEATURE_TYPE
-from parameters import nb_samples, rdm_granularity, nb_pitch_range, instr_filter, batch_size, model_type, nb_epoch, train_proportion
-from parameters import coeff_freq_shift_data_augment, prop_zero_col, prop_zero_row
-from parameters import load_parameters, save_parameters
-from parameters import model_path, model_run_resume, model_epoch_resume, resume_model
+from parameters import GLOBAL_PARAMS
+from parameters import resume_model, model_epoch_resume, model_path, model_run_resume
 from OrchDataset import OrchDataSet,RawDatabase
 
 class Timer:
@@ -85,39 +82,41 @@ def main(rdb = None):
     print("Start loading data -----")
 
     if rdb is None:
-        raw_db = RawDatabase(path, rdm_granularity, instr_filter)
+        raw_db = RawDatabase(GLOBAL_PARAMS.path, GLOBAL_PARAMS.rdm_granularity, GLOBAL_PARAMS.instr_filter)
     else:
         raw_db = rdb
-    train_dataset = OrchDataSet(raw_db,class_encoder, FEATURE_TYPE)
-    train_dataset.generate(N,int(train_proportion*nb_samples))
-    test_dataset = OrchDataSet(raw_db,class_encoder, FEATURE_TYPE)
-    test_dataset.generate(N,nb_samples-int(train_proportion*nb_samples))
+    train_dataset = OrchDataSet(raw_db,class_encoder, GLOBAL_PARAMS.FEATURE_TYPE)
+    train_dataset.generate(GLOBAL_PARAMS.N,int(GLOBAL_PARAMS.train_proportion*GLOBAL_PARAMS.nb_samples))
+    test_dataset = OrchDataSet(raw_db,class_encoder, GLOBAL_PARAMS.FEATURE_TYPE)
+    test_dataset.generate(GLOBAL_PARAMS.N,GLOBAL_PARAMS.nb_samples-int(GLOBAL_PARAMS.train_proportion*GLOBAL_PARAMS.nb_samples))
 
     # load data
     train_load = torch.utils.data.DataLoader(dataset=train_dataset,
-                                             batch_size=batch_size,
+                                             batch_size=GLOBAL_PARAMS.batch_size,
                                              shuffle = True)
 
     test_load = torch.utils.data.DataLoader(dataset=test_dataset,
-                                            batch_size=batch_size,
+                                            batch_size=GLOBAL_PARAMS.batch_size,
                                             shuffle = False)
     print("End loading data")
 
     # model construction
     out_num = len(class_encoder([]))
     features_shape = train_dataset[0][0].shape[1:]
-    model = OrchMatchNet(out_num, model_type, features_shape)
+    model = OrchMatchNet(out_num, GLOBAL_PARAMS.model_type, features_shape)
     
     start_epoch = 0
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     # model load
     if resume_model:
+        GLOBAL_PARAMS.load_parameters(model_path+'/run{}'.format(model_run_resume))
+        
         mpath = model_path+'/run{}/epoch_{}.pth'.format(model_run_resume, model_epoch_resume)
         save_path = model_path+'/run{}'.format(model_run_resume)
         if os.path.exists(mpath):
             state = torch.load(mpath)
-            start_epoch = state['epoch']
+            start_epoch = state['epoch'] + 1
             model.load_state_dict(state['state_dict'])
             optimizer.load_state_dict(state['optimizer'])
             for state in optimizer.state.values():
@@ -137,7 +136,7 @@ def main(rdb = None):
         os.mkdir(save_path)
         train_dataset.save(save_path+'/trainset.pkl')
         test_dataset.save(save_path+'/testset.pkl')
-        save_parameters(save_path)
+        GLOBAL_PARAMS.save_parameters(save_path)
 
     # train model
     train(model, save_path, optimizer, train_load, test_load, start_epoch, out_num)
@@ -157,19 +156,19 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
     total_loss = 0
 
     weight_decay = 0.01
-    size_train_load = int(train_proportion*nb_samples/batch_size)
-    size_test_load = int((1-train_proportion)*nb_samples/batch_size)
+    size_train_load = int(train_proportion*GLOBAL_PARAMS.nb_samples/GLOBAL_PARAMS.batch_size)
+    size_test_load = int((1-GLOBAL_PARAMS.train_proportion)*GLOBAL_PARAMS.nb_samples/GLOBAL_PARAMS.batch_size)
     
     loss_min = None
     
-    for epoch in range(start_epoch, nb_epoch):
+    for epoch in range(start_epoch, GLOBAL_PARAMS.nb_epoch):
         print("Epoch {}".format(epoch))
         model.train()
         
         for i, (trains, labels) in enumerate(train_load):
             print("Step {}".format(i))
             timer.stop()
-            timer.estimate(size_train_load*(nb_epoch-epoch-1) + (size_train_load-i-1))
+            timer.estimate(size_train_load*(GLOBAL_PARAMS.nb_epoch-epoch-1) + (size_train_load-i-1))
             timer.start()
             trains = trains.to(device)
             labels = labels.to(device)
@@ -189,7 +188,7 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
 
             if (i+1) % 50 == 0:
                 print('Epoch:[{}/{}], Step:[{}/{}], Loss:{:.6f} '.format(
-                    epoch + 1, nb_epoch, i+1, size_train_load, out_num*total_loss/50))
+                    epoch + 1, GLOBAL_PARAMS.nb_epoch, i+1, size_train_load, out_num*total_loss/50))
                 total_loss = 0
 
         if (epoch+1) % 5 == 0:
@@ -208,7 +207,7 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
                 
                 loss = criterion(outputs, labels)
 
-                predicts = prediction(outputs.detach().cpu().clone().numpy(), N)
+                predicts = prediction(outputs.detach().cpu().clone().numpy(), GLOBAL_PARAMS.N)
                 #predicts = outputs.detach().cpu().clone().numpy()
                 pret_tmp = np.vstack([pret_tmp, predicts])
 
@@ -216,7 +215,7 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
                 #          :] = outputs.cpu().detach().numpy().reshape((batch_size, -1))
                 grod_tmp = np.vstack([grod_tmp, labels.cpu().detach().numpy().reshape(predicts.shape)])
                 
-                s += batch_size
+                s += GLOBAL_PARAMS.batch_size
                 
                 if k%100 == 0:
                     print("Test set {}/{}".format(k, len(test_load)))
@@ -264,30 +263,104 @@ def prediction(outputs, N):
     return pred
     
 
+def getAccuracyLoadedModel(model_dir, epoch, raw_db = None, tst = True):
+    if os.path.exists(model_dir):
+        GLOBAL_PARAMS.load_parameters(model_dir)
+        print('Parameters loaded successfully')
+        
+        if raw_db is None or GLOBAL_PARAMS.rdm_granularity != raw_db.random_granularity or not (all(x in GLOBAL_PARAMS.instr_filter for x in raw_db.instr_filter) and all(x in raw_db.instr_filter for x in GLOBAL_PARAMS.instr_filter)):
+            rdb = RawDatabase(GLOBAL_PARAMS.path, GLOBAL_PARAMS.rdm_granularity, GLOBAL_PARAMS.instr_filter)
+        else:
+            rdb = raw_db
+            
+        lab_class = {}
+        tot_size = 0
+        for k in rdb.db:
+            lab_class[k] = {}
+            a = set()
+            for l in rdb.db[k]:
+                for e in l:
+                    a.add(e['pitch_name'])
+            for p in rdb.pr:
+                if p in a:
+                    lab_class[k][p] = tot_size
+                    tot_size += 1
+        
+        def class_encoder(list_samp):
+            label = [0 for i in range(tot_size)]
+            for s in list_samp:
+                label[lab_class[s['instrument']][s['pitch_name']]] = 1
+            return np.array(label).astype(np.float32)
+        
+        def evaluate(preds, labels):
+            if preds.shape != labels.shape:
+                print("[Error]: size difference")
+            # compute the label-based accuracy
+            result = {}
+        
+            result['acc'] = np.sum(preds*labels)/max(1.0, np.sum(labels))
+            pitch_acc = {}
+            for i in lab_class:
+                l = [lab_class[i][x] for x in lab_class[i]]
+                f = np.zeros(preds.shape, dtype = np.float32)
+                f[:,min(l):max(l)+1] = 1.0
+                f = labels*f
+                pitch_acc[i] = np.sum(preds*f)/max(1.0, np.sum(f))
+            result['pitch_acc'] = pitch_acc
+            
+        dataset = OrchDataSet(rdb,class_encoder, GLOBAL_PARAMS.FEATURE_TYPE)
+        if tst:
+            dataset.load(model_dir+'/trainset.pkl')
+        else:
+            dataset.load(model_dir+'/testset.pkl')
+        
+        dataset_load = torch.utils.data.DataLoader(dataset=dataset,
+                                            batch_size=GLOBAL_PARAMS.batch_size,
+                                            shuffle = False)
+        
+        out_num = len(class_encoder([]))
+        features_shape = dataset[0][0].shape[1:]
+        model = OrchMatchNet(out_num, GLOBAL_PARAMS.model_type, features_shape)
+        
+        state = torch.load(model_dir+'/epoch_{}.pth'.format(epoch))
+        model.load_state_dict(state['state_dict'])
+        
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        model = model.to(device)
+    
+        criterion = nn.BCELoss()
+        s = 0
+        
+        for k, (samps, labels) in enumerate(dataset_load):
+            samps = samps.to(device)
+            labels = labels.to(device)
+
+            outputs = model(samps)
+            
+            loss = criterion(outputs, labels)
+
+            predicts = prediction(outputs.detach().cpu().clone().numpy(), N)
+            
+            s += 1
+            
+            if k%100 == 0:
+                print("Test set {}/{}".format(k, len(dataset_load)))
+
+
 #rdb = RawDatabase(path, rdm_granularity, instr_filter)
 #test('./model/nb_pitch_range_1/epoch_19.pth', rdb, 12)
 
+
 if __name__=='__main__':
-    rdb = RawDatabase('./TinySOL', rdm_granularity, instr_filter)
     
-    # Create dictionary for label indexing
-    lab_class = {}
-    tot_size = 0
-    for k in rdb.db:
-        lab_class[k] = {}
-        a = set()
-        for l in rdb.db[k]:
-            for e in l:
-                a.add(e['pitch_name'])
-        for p in rdb.pr:
-            if p in a:
-                lab_class[k][p] = tot_size
-                tot_size += 1
+    rdb = RawDatabase('./TinySOL', GLOBAL_PARAMS.rdm_granularity, GLOBAL_PARAMS.instr_filter)
+    
+    tot_size = sum(len(GLOBAL_PARAMS.lab_class[k]) for k in GLOBAL_PARAMS.lab_class)
         
     def class_encoder(list_samp):
         label = [0 for i in range(tot_size)]
         for s in list_samp:
-            label[lab_class[s['instrument']][s['pitch_name']]] = 1
+            label[GLOBAL_PARAMS.lab_class[s['instrument']][s['pitch_name']]] = 1
         return np.array(label).astype(np.float32)
     
     def evaluate(preds, labels):
@@ -298,8 +371,8 @@ if __name__=='__main__':
     
         result['acc'] = np.sum(preds*labels)/max(1.0, np.sum(labels))
         pitch_acc = {}
-        for i in lab_class:
-            l = [lab_class[i][x] for x in lab_class[i]]
+        for i in GLOBAL_PARAMS.lab_class:
+            l = [GLOBAL_PARAMS.lab_class[i][x] for x in GLOBAL_PARAMS.lab_class[i]]
             f = np.zeros(preds.shape, dtype = np.float32)
             f[:,min(l):max(l)+1] = 1.0
             f = labels*f

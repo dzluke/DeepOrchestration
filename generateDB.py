@@ -6,18 +6,18 @@ import librosa
 import numpy as np
 import random
 
-from parameters import MEL_HOP_LENGTH, N_FFT, TIME_LENGTH
+from parameters import GLOBAL_PARAMS
 
 def getSampleMetaData(path,name):
     s = {}
     s['path'] = path
     y,sr=librosa.load(path,sr=None)
-    nb_samples = int(TIME_LENGTH*sr)
+    nb_samples = int(GLOBAL_PARAMS.TIME_LENGTH*sr)
     if len(y) < nb_samples:
         y = np.append(y, np.zeros((1,(nb_samples-len(y))), dtype=np.float32))
     else:
         y = y[:nb_samples]
-    s['stft'] = librosa.stft(y=y,hop_length=MEL_HOP_LENGTH,n_fft=N_FFT)
+    s['stft'] = librosa.stft(y=y,hop_length=GLOBAL_PARAMS.MEL_HOP_LENGTH,n_fft=GLOBAL_PARAMS.N_FFT)
     t = name.split('.')[0].split('-')
     s['instrument'] = t[0]
     s['style'] = t[1]

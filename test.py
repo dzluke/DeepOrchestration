@@ -9,8 +9,7 @@ import soundfile as sf
 from model import OrchMatchNet
 from OrchDataset import RawDatabase
 from train import getPosNMax
-from parameters import rdm_granularity
-from parameters import  MEL_HOP_LENGTH
+from parameters import GLOBAL_PARAMS
 
 
 """ 
@@ -24,6 +23,7 @@ to be the path to this folder
 - Set model_type, instr_filter, and n
 
 """
+GLOBAL_PARAMS.load_parameters('./model/run6')
 
 # path to TinySOL data
 tinysol_path = './TinySOL'
@@ -42,17 +42,17 @@ target_path = './target_samples'
 solutions_path = './orchestrated_targets/{}_n={}'.format(model_type, len(instr_filter))
 
 # path to a trained version of the model
-state_path = '{}_n={}.pth'.format(model_type, len(instr_filter))
+state_path = 'model/run6/epoch_24.pth'
 
 # number of samples to be used in solution
 n = 10
 
 # if sanity_check, then targets are TinySOL combinations instead of real targets to be orchestrated
-sanity_check = False
+sanity_check = True
 
 
 def test(model, state_path, data, targets):
-    device = torch.device('cpu')    
+    device = torch.device('cpu')
     state = torch.load(state_path, map_location=device)
     model.load_state_dict(state['state_dict'])
     model.eval()
@@ -246,7 +246,7 @@ def make_fake_targets(num_classes):
             samples[j].append(dynamics[j])
         paths = find_sample_paths(samples)
         mixed_file, _ = combine(paths, {'duration':4})
-        mel_spec = librosa.feature.melspectrogram(y=mixed_file,sr=44100,hop_length=MEL_HOP_LENGTH)[:128,:87]
+        mel_spec = librosa.feature.melspectrogram(y=mixed_file,sr=44100,hop_length=GLOBAL_PARAMS.MEL_HOP_LENGTH)[:128,:87]
         data.append(torch.tensor([mel_spec]))
         
         name = ''
@@ -269,7 +269,7 @@ def make_fake_targets(num_classes):
 
 
 if __name__ == "__main__":
-    rdb = RawDatabase(tinysol_path, rdm_granularity, instr_filter)
+    rdb = RawDatabase(tinysol_path, GLOBAL_PARAMS.rdm_granularity, instr_filter)
 
     # Create dictionary for label indexing
     lab_class = {}

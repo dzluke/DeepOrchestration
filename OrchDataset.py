@@ -11,8 +11,7 @@ import os
 import pickle
 import random
 
-from parameters import RATE, N_FFT, MEL_HOP_LENGTH, N_MELS, rdm_granularity, instr_filter
-from parameters import coeff_freq_shift_data_augment, prop_zero_col, prop_zero_row, noise_kernel_var, delay_feedback_avg, delay_offset_avg, delay_period_avg
+from parameters import GLOBAL_PARAMS
 
 def showSample(s):
     print(s[1])
@@ -100,21 +99,21 @@ class OrchDataSet(data.Dataset):
         # For data augmentation, a set of mel basis is generated, using slightly shifted
         # sample rates. This ensures frequency variation of the selected samples.
         self.mel_basis = []
-        for i in np.linspace(-coeff_freq_shift_data_augment,coeff_freq_shift_data_augment,100):
-            self.mel_basis.append(librosa.filters.mel(RATE*(1+i), N_FFT, n_mels=N_MELS))
+        for i in np.linspace(-GLOBAL_PARAMS.coeff_freq_shift_data_augment,GLOBAL_PARAMS.coeff_freq_shift_data_augment,100):
+            self.mel_basis.append(librosa.filters.mel(GLOBAL_PARAMS.RATE*(1+i), GLOBAL_PARAMS.N_FFT, n_mels=GLOBAL_PARAMS.N_MELS))
             
         # Create delay filters for data augmentation
         # Delay is a periodic geometric decaying sequence of impulses with an offset
         self.delay_filters = []
         for i in range(100):
-            s = np.zeros((N_FFT,), dtype = np.float32)
+            s = np.zeros((GLOBAL_PARAMS.N_FFT,), dtype = np.float32)
             s[0] = 1.0
             k = 1
             
             # Allow 10% of variability around given averages
-            off_delay = int(RATE*delay_offset_avg*(1 + 0.1*(1-2*random.random())))
-            per_delay = int(RATE*delay_period_avg*(1 + 0.1*(1-2*random.random())))
-            fdb_delay = delay_feedback_avg*(1 + 0.1*(1-2*random.random()))
+            off_delay = int(GLOBAL_PARAMS.RATE*GLOBAL_PARAMS.delay_offset_avg*(1 + 0.1*(1-2*random.random())))
+            per_delay = int(GLOBAL_PARAMS.RATE*GLOBAL_PARAMS.delay_period_avg*(1 + 0.1*(1-2*random.random())))
+            fdb_delay = GLOBAL_PARAMS.delay_feedback_avg*(1 + 0.1*(1-2*random.random()))
             for t in range(1,len(s)):
                 if t >= off_delay and (t-off_delay) % per_delay == 0:
                     s[t] = fdb_delay**k
@@ -231,8 +230,8 @@ class OrchDataSet(data.Dataset):
         s = np.real(stft*np.conjugate(stft))
         mel_spec = np.dot(self.mel_basis[random.randint(0,len(self.mel_basis)-1)], s)
         
-        zero_row = np.random.rand(mel_spec.shape[0]) < prop_zero_row
-        zero_col = np.random.rand(mel_spec.shape[1]) < prop_zero_col
+        zero_row = np.random.rand(mel_spec.shape[0]) < GLOBAL_PARAMS.prop_zero_row
+        zero_col = np.random.rand(mel_spec.shape[1]) < GLOBAL_PARAMS.prop_zero_col
         mel_spec[zero_row] = 0.
         mel_spec[:,zero_col] = 0.
         
