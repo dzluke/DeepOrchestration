@@ -1,0 +1,43 @@
+# Deep learning approaches on musical assisted-orchestration: an evaluation study
+
+C. E. Cella, Luke, Alejandro, Hong Fu, Hélène-Camille Crayencour
+
+
+## Introduction
+- what is assisted orchestration, history and previous results
+- state-of-the-art systems (Orchidea)
+
+## Our model
+- deep learning trained for classification and then used for orchestraion
+- changing number of instruments
+### Baseline
+- SVM, RF, ....
+
+### CNN + LSTM
+
+### ResNet
+
+- SVM was good but CNN was better and ResNet was best
+- review all experiments we did and choose key plots
+
+## Orchestration experiments
+- set of 10 targets
+- orchestra fix to 10
+- qualitative evaluation: acoustic inspection of the solutions
+- quantitative evaluation: distance in feature space
+- comparison table between Orchidea and our model
+
+## Evaluation/conclusions
+- the approach seems promising for orchestration
+- many things used in Orchidea are not implemented here (symbolic constraints, sparsity,...)
+- CNN seems better for timbre
+- ResNet seems better for pitch (what are timbre and pitch??)
+### Interpreting the latent space
+- the system finds filters like...
+
+## Future steps
+- using conditioning to impose symbolic constraints
+- variable size solutions
+- joint networks for orchestral size detection and orchestral families (see paper)
+
+
