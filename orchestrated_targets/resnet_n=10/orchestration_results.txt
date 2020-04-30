@@ -1,0 +1,46 @@
+Target: mix_ObA4_BnC#3; Distance: 705,608.62
+Samples used: [['Fl', 'C7', 'pp'], ['TpC', 'G#4', 'pp'], ['Tbn', 'D#3', 'pp'], ['Va', 'F3', 'pp'], ['Tbn', 'F4', 'pp'], ['Bn', 'C#3', 'ff'], ['Hn', 'C#5', 'ff'], ['Tbn', 'G#4', 'ff'], ['ClBb', 'A5', 'ff'], ['ClBb', 'E6', 'ff']]
+
+Target: Bn-ord-C#3-pp; Distance: 164,780.09
+Samples used: [['TpC', 'D#4', 'pp'], ['Fl', 'C7', 'pp'], ['TpC', 'A#3', 'pp'], ['Va', 'F3', 'pp'], ['Tbn', 'C5', 'pp'], ['ClBb', 'G#4', 'pp'], ['ClBb', 'F5', 'mf'], ['Tbn', 'F4', 'ff'], ['Bn', 'C#3', 'ff'], ['Hn', 'C#5', 'ff']]
+
+Target: bass_clarinet; Distance: 444,939.14
+Samples used: [['Hn', 'C5', 'pp'], ['Tbn', 'D2', 'pp'], ['Tbn', 'C#2', 'pp'], ['Hn', 'G#4', 'pp'], ['Tbn', 'C5', 'pp'], ['Tbn', 'A#1', 'pp'], ['Bn', 'C#5', 'pp'], ['ClBb', 'C5', 'pp'], ['Tbn', 'D#2', 'pp'], ['Fl', 'C7', 'ff']]
+
+Target: archeos-bell; Distance: 207,800.09
+Samples used: [['TpC', 'C#4', 'pp'], ['Tbn', 'A#1', 'pp'], ['ClBb', 'D4', 'pp'], ['Vn', 'E5', 'mf'], ['Bn', 'C#3', 'mf'], ['Tbn', 'D2', 'mf'], ['Va', 'C#3', 'mf'], ['Tbn', 'D#2', 'mf'], ['Fl', 'C7', 'ff'], ['Hn', 'C4', 'ff']]
+
+Target: WinchesterBell; Distance: 247,920.46
+Samples used: [['TpC', 'C6', 'pp'], ['TpC', 'G#4', 'pp'], ['Tbn', 'A#1', 'pp'], ['Tbn', 'E4', 'pp'], ['Tbn', 'C5', 'pp'], ['Vn', 'E5', 'pp'], ['Hn', 'F5', 'ff'], ['ClBb', 'G5', 'ff'], ['Hn', 'C5', 'ff'], ['Fl', 'C7', 'ff']]
+
+Target: YanBn-mul-PG-ST12; Distance: 240,791.86
+Samples used: [['ClBb', 'D3', 'pp'], ['ClBb', 'A4', 'pp'], ['ClBb', 'D#3', 'pp'], ['TpC', 'C#4', 'pp'], ['Vn', 'E5', 'pp'], ['Va', 'A4', 'pp'], ['ClBb', 'D5', 'mf'], ['Tbn', 'A#0', 'mf'], ['Fl', 'D7', 'ff'], ['Fl', 'C7', 'ff']]
+
+Target: car-horn; Distance: 295,307.51
+Samples used: [['Bn', 'G#2', 'pp'], ['TpC', 'C6', 'pp'], ['ClBb', 'D#6', 'pp'], ['Bn', 'E2', 'pp'], ['Tbn', 'A#0', 'mf'], ['Tbn', 'C5', 'ff'], ['Tbn', 'G#4', 'ff'], ['Fl', 'C7', 'ff'], ['Ob', 'G6', 'ff'], ['Hn', 'C5', 'ff']]
+
+Target: boat_docking; Distance: 746,803.16
+Samples used: [['Tbn', 'D3', 'pp'], ['Tbn', 'A3', 'pp'], ['ClBb', 'F4', 'pp'], ['Va', 'G#3', 'pp'], ['Hn', 'E4', 'pp'], ['ClBb', 'D3', 'pp'], ['ClBb', 'C4', 'pp'], ['Vc', 'G#2', 'ff'], ['ClBb', 'B3', 'ff'], ['Vc', 'C#2', 'ff']]
+
+Target: wind-harp; Distance: 235,667.91
+Samples used: [['ClBb', 'D#4', 'pp'], ['ClBb', 'A4', 'pp'], ['ClBb', 'C4', 'pp'], ['Tbn', 'A4', 'pp'], ['ClBb', 'E4', 'pp'], ['Va', 'D#3', 'pp'], ['ClBb', 'B3', 'ff'], ['Hn', 'E4', 'ff'], ['Vn', 'C4', 'ff'], ['Vc', 'G#3', 'ff']]
+
+Target: Beethoven_chord2; Distance: 78,713.86
+Samples used: [['Tbn', 'B4', 'pp'], ['Fl', 'D7', 'pp'], ['ClBb', 'E6', 'mf'], ['TpC', 'G#3', 'mf'], ['Fl', 'B6', 'mf'], ['Hn', 'B3', 'ff'], ['Hn', 'E3', 'ff'], ['Ob', 'E5', 'ff'], ['Fl', 'C7', 'ff'], ['Tbn', 'A#0', 'ff']]
+
+Target: reed_bone; Distance: 45,734.48
+Samples used: [['ClBb', 'D6', 'pp'], ['Fl', 'C7', 'pp'], ['Hn', 'C5', 'pp'], ['TpC', 'D5', 'pp'], ['Tbn', 'G#4', 'pp'], ['Tbn', 'G4', 'pp'], ['Tbn', 'A#4', 'ff'], ['Tbn', 'F#4', 'ff'], ['Tbn', 'D4', 'ff'], ['Ob', 'G6', 'ff']]
+
+Target: Beethoven_chord1; Distance: 58,576.44
+Samples used: [['Ob', 'C4', 'pp'], ['TpC', 'C#5', 'pp'], ['TpC', 'D4', 'pp'], ['ClBb', 'E5', 'pp'], ['TpC', 'A3', 'pp'], ['Tbn', 'B4', 'mf'], ['Vc', 'G#2', 'mf'], ['Hn', 'E3', 'ff'], ['Fl', 'C7', 'ff'], ['Tbn', 'A#0', 'ff']]
+
+Target: gong_c#3; Distance: 94,173.96
+Samples used: [['Hn', 'D#4', 'pp'], ['Tbn', 'E2', 'pp'], ['Tbn', 'A#2', 'pp'], ['Tbn', 'D#2', 'pp'], ['ClBb', 'D3', 'pp'], ['TpC', 'A3', 'pp'], ['TpC', 'A#3', 'pp'], ['Hn', 'E4', 'pp'], ['TpC', 'C#4', 'pp'], ['Bn', 'D#5', 'mf']]
+
+Target: girl-scream; Distance: 470,432.77
+Samples used: [['Tbn', 'A#3', 'pp'], ['Vc', 'D3', 'pp'], ['Vn', 'A3', 'pp'], ['Tbn', 'D#3', 'pp'], ['TpC', 'B4', 'pp'], ['TpC', 'D5', 'pp'], ['Tbn', 'D3', 'pp'], ['Vc', 'D4', 'pp'], ['TpC', 'G#5', 'pp'], ['ClBb', 'B5', 'pp']]
+
+Target: Trompe_attaque-MN; Distance: 172,370.87
+Samples used: [['Va', 'F3', 'pp'], ['TpC', 'G#4', 'pp'], ['Tbn', 'G#4', 'pp'], ['TpC', 'G#3', 'pp'], ['TpC', 'C#5', 'mf'], ['Tbn', 'A4', 'mf'], ['TpC', 'A4', 'mf'], ['Va', 'C#3', 'mf'], ['Tbn', 'C5', 'mf'], ['Tbn', 'A#0', 'ff']]
+
+Average distance: 280,641.41

@@ -1,0 +1,46 @@
+Target: mix_ObA4_BnC#3; Distance: 835,733.89
+Samples used: [['Tbn', 'A4', 'mf'], ['Vn', 'D#4', 'mf'], ['Ob', 'F#5', 'mf'], ['Hn', 'C#5', 'mf'], ['Bn', 'A2', 'mf'], ['Vn', 'A#3', 'mf'], ['Hn', 'F5', 'ff'], ['ClBb', 'E6', 'ff'], ['Ob', 'G4', 'ff'], ['Fl', 'C7', 'ff']]
+
+Target: Bn-ord-C#3-pp; Distance: 143,160.28
+Samples used: [['Fl', 'F5', 'pp'], ['ClBb', 'D#5', 'pp'], ['Tbn', 'A#1', 'pp'], ['Tbn', 'B1', 'pp'], ['Tbn', 'C#2', 'pp'], ['TpC', 'C#4', 'pp'], ['TpC', 'G#4', 'pp'], ['ClBb', 'F5', 'mf'], ['Hn', 'D5', 'mf'], ['Hn', 'C#5', 'mf']]
+
+Target: bass_clarinet; Distance: 506,694.12
+Samples used: [['Bn', 'C#5', 'pp'], ['Va', 'F#3', 'pp'], ['Va', 'F#4', 'pp'], ['Va', 'D3', 'pp'], ['Tbn', 'B4', 'mf'], ['Ob', 'A#4', 'mf'], ['Vn', 'C#4', 'mf'], ['Tbn', 'A4', 'mf'], ['Tbn', 'A#4', 'mf'], ['Vn', 'C4', 'ff']]
+
+Target: archeos-bell; Distance: 228,484.60
+Samples used: [['Vc', 'D#2', 'pp'], ['Va', 'C3', 'pp'], ['ClBb', 'C#4', 'pp'], ['ClBb', 'G#4', 'pp'], ['Vc', 'D2', 'pp'], ['Vn', 'C#4', 'pp'], ['Va', 'E3', 'pp'], ['Hn', 'A4', 'pp'], ['Ob', 'A#3', 'pp'], ['Vn', 'C4', 'ff']]
+
+Target: WinchesterBell; Distance: 280,678.33
+Samples used: [['Tbn', 'G4', 'pp'], ['Vc', 'C3', 'pp'], ['Va', 'F#4', 'pp'], ['TpC', 'C#6', 'pp'], ['Va', 'F#3', 'pp'], ['ClBb', 'A5', 'pp'], ['Bn', 'A3', 'mf'], ['ClBb', 'G5', 'mf'], ['Vn', 'C4', 'mf'], ['Tbn', 'A#4', 'ff']]
+
+Target: YanBn-mul-PG-ST12; Distance: 267,312.50
+Samples used: [['Va', 'F3', 'pp'], ['Va', 'E3', 'pp'], ['ClBb', 'D#5', 'pp'], ['Bn', 'A#2', 'pp'], ['Vn', 'A#3', 'pp'], ['Vc', 'D#3', 'pp'], ['Bn', 'F2', 'pp'], ['Hn', 'E3', 'pp'], ['Bn', 'E2', 'pp'], ['ClBb', 'A#4', 'pp']]
+
+Target: car-horn; Distance: 267,617.90
+Samples used: [['Tbn', 'G#4', 'pp'], ['TpC', 'G#3', 'pp'], ['Bn', 'B3', 'pp'], ['Bn', 'G#2', 'pp'], ['TpC', 'C#4', 'pp'], ['ClBb', 'F5', 'pp'], ['ClBb', 'D#5', 'pp'], ['Hn', 'D5', 'mf'], ['ClBb', 'D5', 'mf'], ['TpC', 'G#4', 'ff']]
+
+Target: boat_docking; Distance: 835,229.09
+Samples used: [['ClBb', 'D3', 'pp'], ['Vc', 'C#2', 'pp'], ['Bn', 'C3', 'pp'], ['Va', 'D#3', 'pp'], ['Va', 'C#3', 'pp'], ['Vn', 'D4', 'pp'], ['Vc', 'F#3', 'pp'], ['Vn', 'C4', 'pp'], ['Bn', 'C2', 'pp'], ['Va', 'A3', 'mf']]
+
+Target: wind-harp; Distance: 224,455.04
+Samples used: [['Vn', 'A3', 'pp'], ['ClBb', 'D#3', 'pp'], ['Va', 'E3', 'pp'], ['Fl', 'F4', 'pp'], ['Tbn', 'E4', 'pp'], ['ClBb', 'D3', 'pp'], ['TpC', 'A#3', 'pp'], ['Va', 'G#3', 'pp'], ['Vn', 'C4', 'mf'], ['Vc', 'D#2', 'ff']]
+
+Target: Beethoven_chord2; Distance: 75,377.50
+Samples used: [['Bn', 'C#2', 'pp'], ['Bn', 'D2', 'mf'], ['Hn', 'E4', 'mf'], ['Bn', 'B2', 'mf'], ['Tbn', 'A4', 'mf'], ['ClBb', 'E5', 'mf'], ['Bn', 'D3', 'mf'], ['Va', 'D3', 'mf'], ['Vc', 'G#2', 'mf'], ['Ob', 'C5', 'ff']]
+
+Target: reed_bone; Distance: 46,432.43
+Samples used: [['TpC', 'C#4', 'pp'], ['TpC', 'G#4', 'pp'], ['Bn', 'F#4', 'pp'], ['Vc', 'G#2', 'pp'], ['Tbn', 'G4', 'pp'], ['Va', 'A4', 'pp'], ['ClBb', 'A4', 'mf'], ['ClBb', 'G#5', 'mf'], ['Bn', 'C#5', 'mf'], ['Vc', 'A2', 'ff']]
+
+Target: Beethoven_chord1; Distance: 57,576.70
+Samples used: [['Tbn', 'F#4', 'pp'], ['Va', 'A3', 'pp'], ['Hn', 'C5', 'pp'], ['Tbn', 'A4', 'mf'], ['Va', 'F4', 'mf'], ['Va', 'G#5', 'mf'], ['Ob', 'C5', 'mf'], ['Vn', 'C4', 'mf'], ['Bn', 'F#4', 'mf'], ['Bn', 'F3', 'mf']]
+
+Target: gong_c#3; Distance: 97,391.45
+Samples used: [['Bn', 'B3', 'pp'], ['Fl', 'B3', 'pp'], ['TpC', 'G#4', 'pp'], ['Tbn', 'B1', 'pp'], ['Tbn', 'C#2', 'pp'], ['Va', 'C3', 'pp'], ['Va', 'A#3', 'pp'], ['ClBb', 'D#3', 'pp'], ['Vn', 'A3', 'pp'], ['Vn', 'C4', 'ff']]
+
+Target: girl-scream; Distance: 466,156.91
+Samples used: [['Tbn', 'F2', 'pp'], ['Tbn', 'B2', 'pp'], ['Tbn', 'B1', 'pp'], ['ClBb', 'D5', 'pp'], ['Tbn', 'A#1', 'pp'], ['TpC', 'F4', 'pp'], ['Tbn', 'C#2', 'pp'], ['Tbn', 'C2', 'pp'], ['TpC', 'D5', 'ff'], ['Fl', 'C#7', 'ff']]
+
+Target: Trompe_attaque-MN; Distance: 173,255.28
+Samples used: [['Tbn', 'F#4', 'pp'], ['Tbn', 'B4', 'pp'], ['Tbn', 'A#0', 'pp'], ['ClBb', 'E5', 'pp'], ['TpC', 'G4', 'pp'], ['Vn', 'A3', 'mf'], ['Tbn', 'G4', 'mf'], ['ClBb', 'A4', 'mf'], ['Vn', 'A#3', 'mf'], ['Tbn', 'A4', 'ff']]
+
+Average distance: 300,370.40

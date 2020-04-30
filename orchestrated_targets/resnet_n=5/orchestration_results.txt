@@ -1,0 +1,46 @@
+Target: mix_ObA4_BnC#3; Distance: 750,519.42
+Samples used: [['Bn', 'C#3', 'ff'], ['Hn', 'C#5', 'ff'], ['Tbn', 'G#4', 'ff'], ['ClBb', 'A5', 'ff'], ['ClBb', 'E6', 'ff']]
+
+Target: Bn-ord-C#3-pp; Distance: 159,445.09
+Samples used: [['ClBb', 'G#4', 'pp'], ['ClBb', 'F5', 'mf'], ['Tbn', 'F4', 'ff'], ['Bn', 'C#3', 'ff'], ['Hn', 'C#5', 'ff']]
+
+Target: bass_clarinet; Distance: 488,198.87
+Samples used: [['Tbn', 'A#1', 'pp'], ['Bn', 'C#5', 'pp'], ['ClBb', 'C5', 'pp'], ['Tbn', 'D#2', 'pp'], ['Fl', 'C7', 'ff']]
+
+Target: archeos-bell; Distance: 250,604.61
+Samples used: [['Tbn', 'D2', 'mf'], ['Va', 'C#3', 'mf'], ['Tbn', 'D#2', 'mf'], ['Fl', 'C7', 'ff'], ['Hn', 'C4', 'ff']]
+
+Target: WinchesterBell; Distance: 286,734.99
+Samples used: [['Vn', 'E5', 'pp'], ['Hn', 'F5', 'ff'], ['ClBb', 'G5', 'ff'], ['Hn', 'C5', 'ff'], ['Fl', 'C7', 'ff']]
+
+Target: YanBn-mul-PG-ST12; Distance: 348,092.34
+Samples used: [['Va', 'A4', 'pp'], ['ClBb', 'D5', 'mf'], ['Tbn', 'A#0', 'mf'], ['Fl', 'D7', 'ff'], ['Fl', 'C7', 'ff']]
+
+Target: car-horn; Distance: 297,227.01
+Samples used: [['Tbn', 'C5', 'ff'], ['Tbn', 'G#4', 'ff'], ['Fl', 'C7', 'ff'], ['Ob', 'G6', 'ff'], ['Hn', 'C5', 'ff']]
+
+Target: boat_docking; Distance: 754,898.18
+Samples used: [['ClBb', 'D3', 'pp'], ['ClBb', 'C4', 'pp'], ['Vc', 'G#2', 'ff'], ['ClBb', 'B3', 'ff'], ['Vc', 'C#2', 'ff']]
+
+Target: wind-harp; Distance: 308,289.14
+Samples used: [['Va', 'D#3', 'pp'], ['ClBb', 'B3', 'ff'], ['Hn', 'E4', 'ff'], ['Vn', 'C4', 'ff'], ['Vc', 'G#3', 'ff']]
+
+Target: Beethoven_chord2; Distance: 84,730.90
+Samples used: [['Hn', 'B3', 'ff'], ['Hn', 'E3', 'ff'], ['Ob', 'E5', 'ff'], ['Fl', 'C7', 'ff'], ['Tbn', 'A#0', 'ff']]
+
+Target: reed_bone; Distance: 47,183.40
+Samples used: [['Tbn', 'G4', 'pp'], ['Tbn', 'A#4', 'ff'], ['Tbn', 'F#4', 'ff'], ['Tbn', 'D4', 'ff'], ['Ob', 'G6', 'ff']]
+
+Target: Beethoven_chord1; Distance: 69,125.21
+Samples used: [['Tbn', 'B4', 'mf'], ['Vc', 'G#2', 'mf'], ['Hn', 'E3', 'ff'], ['Fl', 'C7', 'ff'], ['Tbn', 'A#0', 'ff']]
+
+Target: gong_c#3; Distance: 105,785.43
+Samples used: [['TpC', 'A3', 'pp'], ['TpC', 'A#3', 'pp'], ['Hn', 'E4', 'pp'], ['TpC', 'C#4', 'pp'], ['Bn', 'D#5', 'mf']]
+
+Target: girl-scream; Distance: 476,385.98
+Samples used: [['TpC', 'D5', 'pp'], ['Tbn', 'D3', 'pp'], ['Vc', 'D4', 'pp'], ['TpC', 'G#5', 'pp'], ['ClBb', 'B5', 'pp']]
+
+Target: Trompe_attaque-MN; Distance: 177,753.03
+Samples used: [['Tbn', 'A4', 'mf'], ['TpC', 'A4', 'mf'], ['Va', 'C#3', 'mf'], ['Tbn', 'C5', 'mf'], ['Tbn', 'A#0', 'ff']]
+
+Average distance: 306,998.24

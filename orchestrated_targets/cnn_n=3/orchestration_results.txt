@@ -1,0 +1,46 @@
+Target: mix_ObA4_BnC#3; Distance: 816,313.76
+Samples used: [['ClBb', 'E6', 'ff'], ['Ob', 'G4', 'ff'], ['Fl', 'C7', 'ff']]
+
+Target: Bn-ord-C#3-pp; Distance: 207,693.52
+Samples used: [['ClBb', 'F5', 'mf'], ['Hn', 'D5', 'mf'], ['Hn', 'C#5', 'mf']]
+
+Target: bass_clarinet; Distance: 585,326.36
+Samples used: [['Tbn', 'A4', 'mf'], ['Tbn', 'A#4', 'mf'], ['Vn', 'C4', 'ff']]
+
+Target: archeos-bell; Distance: 341,286.43
+Samples used: [['Hn', 'A4', 'pp'], ['Ob', 'A#3', 'pp'], ['Vn', 'C4', 'ff']]
+
+Target: WinchesterBell; Distance: 356,008.81
+Samples used: [['ClBb', 'G5', 'mf'], ['Vn', 'C4', 'mf'], ['Tbn', 'A#4', 'ff']]
+
+Target: YanBn-mul-PG-ST12; Distance: 196,267.64
+Samples used: [['Hn', 'E3', 'pp'], ['Bn', 'E2', 'pp'], ['ClBb', 'A#4', 'pp']]
+
+Target: car-horn; Distance: 314,532.42
+Samples used: [['Hn', 'D5', 'mf'], ['ClBb', 'D5', 'mf'], ['TpC', 'G#4', 'ff']]
+
+Target: boat_docking; Distance: 810,957.45
+Samples used: [['Vn', 'C4', 'pp'], ['Bn', 'C2', 'pp'], ['Va', 'A3', 'mf']]
+
+Target: wind-harp; Distance: 342,893.36
+Samples used: [['Va', 'G#3', 'pp'], ['Vn', 'C4', 'mf'], ['Vc', 'D#2', 'ff']]
+
+Target: Beethoven_chord2; Distance: 105,340.71
+Samples used: [['Va', 'D3', 'mf'], ['Vc', 'G#2', 'mf'], ['Ob', 'C5', 'ff']]
+
+Target: reed_bone; Distance: 48,938.50
+Samples used: [['ClBb', 'G#5', 'mf'], ['Bn', 'C#5', 'mf'], ['Vc', 'A2', 'ff']]
+
+Target: Beethoven_chord1; Distance: 64,807.38
+Samples used: [['Vn', 'C4', 'mf'], ['Bn', 'F#4', 'mf'], ['Bn', 'F3', 'mf']]
+
+Target: gong_c#3; Distance: 134,874.18
+Samples used: [['ClBb', 'D#3', 'pp'], ['Vn', 'A3', 'pp'], ['Vn', 'C4', 'ff']]
+
+Target: girl-scream; Distance: 485,852.25
+Samples used: [['Tbn', 'C2', 'pp'], ['TpC', 'D5', 'ff'], ['Fl', 'C#7', 'ff']]
+
+Target: Trompe_attaque-MN; Distance: 177,816.38
+Samples used: [['ClBb', 'A4', 'mf'], ['Vn', 'A#3', 'mf'], ['Tbn', 'A4', 'ff']]
+
+Average distance: 332,593.94
