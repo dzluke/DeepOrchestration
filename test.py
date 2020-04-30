@@ -9,8 +9,7 @@ import soundfile as sf
 from model import OrchMatchNet
 from OrchDataset import RawDatabase
 from train import getPosNMax
-from parameters import GLOBAL_PARAMS
-
+from parameters import GLOBAL_PARAMS, SimParams
 
 """ 
 To run this file:
@@ -23,14 +22,16 @@ to be the path to this folder
 - Set model_type, instr_filter, and n
 
 """
-# The argument must be the folder where the params.pkl file is
-GLOBAL_PARAMS.load_parameters('./model/run6')
+
 
 # path to TinySOL data
 tinysol_path = './TinySOL'
 
 # cnn or resnet
-model_type = 'resnet'
+model_type = 'cnn'
+
+# number of samples to be used in solution
+n = 4
 
 # instruments to be used (all instruments will be used)
 instr_filter = ['Hn', 'Ob', 'Vn', 'Va',
@@ -40,16 +41,20 @@ instr_filter = ['Hn', 'Ob', 'Vn', 'Va',
 target_path = './target_samples'
 
 # path to store solutions as .wav
-solutions_path = './orchestrated_targets/{}_n={}'.format(model_type, len(instr_filter))
+solutions_path = './orchestrated_targets/{}_n={}'.format(model_type, n)
+
+# The argument must be the folder where the params.pkl file is
+GLOBAL_PARAMS.load_parameters('./orchestrated_targets/params_{}'.format(model_type))
 
 # path to a trained version of the model
-state_path = 'model/run6/epoch_24.pth'
+if model_type == 'cnn':
+    state_path = './orchestrated_targets/params_cnn/epoch_49.pth'
+else:
+    state_path = './orchestrated_targets/params_resnet/epoch_24.pth'
 
-# number of samples to be used in solution
-n = 10
 
-# if sanity_check, then targets are TinySOL combinations instead of real targets to be orchestrated
-sanity_check = True
+# if true, doesn't orchestrate targets but instead creates combinations of TinySOL samples to input to the model
+sanity_check = False
 
 
 def test(model, state_path, data, targets):
@@ -99,7 +104,7 @@ def test(model, state_path, data, targets):
             target['distance'] = compute_distance(target, mixed_file)
         
         # write to text file
-        f.write('Target: {}; Distance: {:,.2f}\nSamples used: {}\n'.format(target['name'], target['distance'], target['classes']))
+        f.write('Target: {}; Distance: {:,.2f}\nSamples used: {}\n\n'.format(target['name'], target['distance'], target['classes']))
 
     # compute avg distance
     sum = 0
@@ -270,24 +275,31 @@ def make_fake_targets(num_classes):
 
 
 if __name__ == "__main__":
+    print('--------------------------')
+    print('MODEL TYPE:', model_type)
+    print('NUMBER OF INSTRUMENTS:', len(instr_filter))
+    print('N:', n)
+    print('--------------------------')
+
+
     rdb = RawDatabase(tinysol_path, GLOBAL_PARAMS.rdm_granularity, instr_filter)
 
-    # Create dictionary for label indexing
-    lab_class = {}
-    tot_size = 0
+    lab_class = GLOBAL_PARAMS.lab_class
+
+    # calculate num classes
+    num_classes = 0
     for k in rdb.db:
-        lab_class[k] = {}
         a = set()
         for l in rdb.db[k]:
             for e in l:
                 a.add(e['pitch_name'])
         for p in rdb.pr:
             if p in a:
-                lab_class[k][p] = tot_size
-                tot_size += 1
+                num_classes += 1
+
     
     def class_encoder(list_samp):
-        label = [0 for i in range(tot_size)]
+        label = [0 for i in range(num_classes)]
         for s in list_samp:
             label[lab_class[s['instrument']][s['pitch_name']]] = 1
         return np.array(label).astype(np.float32)
@@ -310,11 +322,9 @@ if __name__ == "__main__":
 
         return result
     
-    num_classes = len(class_encoder([]))
     features_shape = [128, 87] # the dim of the data used to train the network
     
     model = OrchMatchNet(num_classes, model_type, features_shape)
-    
     
     if sanity_check:
         data, targets, labels = make_fake_targets(num_classes)
