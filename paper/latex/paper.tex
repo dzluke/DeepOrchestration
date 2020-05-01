@@ -84,6 +84,8 @@ The abstract should be placed at the top left column and should contain about 15
 \section{Introduction}\label{sec:introduction}
 
 \section{Our model}
+- deep learning trained for classification and then used for orchestraion
+- changing number of instruments
 
 \subsection{Baseline}
 In order to have a baseline to compare our results against, we attempted to solve the classification problem using various linear classifiers. The classifiers we tested were Support Vector Machine (SVM), Random Forest, and K-Nearest Neighbors. We used the implementations provided in the scikit-learn library for each classifier. For SVM, we used SVC with an RBF kernel. For Random Forest, we set the maximum depth of each tree to be 15. Each classifier was wrapped in a MultiOutputClassifier to achieve the multi-label nature of this problem. We found SVM to have the highest accuracy of the three classifiers across all experiments. All of the following baselin experiments used 50,000 generated samples with a train-test split of 60/40. Each sample is a combination of one or more instruments and is four seconds in length. The features used are the mel frequency cepstral coefficients (MFCCs) of the resulting combination, with a total of 100 coefficients per sample.
@@ -102,20 +104,33 @@ This was still a simplified version of the problem, as we were identifying only 
 \subsection{CNN with LSTM}
 
 \subsection{ResNet}
+- SVM was good but CNN was better and ResNet was best
+- review all experiments we did and choose key plots
 
 \section{Orchestration experiments}
-List of experiments:
+- set of 10 targets
+- orchestra fix to 10
+- qualitative evaluation: acoustic inspection of the solutions
+- quantitative evaluation: distance in feature space
+- comparison table between Orchidea and our model
 
-- CNN with varying n
+We performed experiments varying the number instruments used to form combinations, and varying the number of instruments used in each combination. (insert table of data showing the results of CNN with 2,3,4 etc instruments). An arbitrary number of samples can be used in the solution, since the $n$ highest probabilities can be taken from the output, leading to $n$ samples in the solution.
 
-- ResNet with n=10
+We tested our models using 15 targets for orchestration. These targets are not made from combinations of the input data, and some are not even recordings of instruments. Among the targets are recordings of bells, a car horn, a gong, and an environmental recording of a boat docking. By passing these samples into a model, an orchestration of the target is created from the TinySOL samples that were used to train the network.  
 
 \section{Evaluation and Conclusions}
+- the approach seems promising for orchestration
+- many things used in Orchidea are not implemented here (symbolic constraints, sparsity,...)
+- CNN seems better for timbre
+- ResNet seems better for pitch (what are timbre and pitch??)
 
 \subsection{Interpreting the Latent Space}
+- the system finds filters like...
 
 \section{Future steps}
-
+- using conditioning to impose symbolic constraints
+- variable size solutions
+- joint networks for orchestral size detection and orchestral families (see paper)
 
 \section{Citations}
 
