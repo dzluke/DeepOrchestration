@@ -116,12 +116,19 @@ This was still a simplified version of the problem, as we were identifying only 
 - quantitative evaluation: distance in feature space
 - comparison table between Orchidea and our model
 
-We performed experiments varying the number instruments used to form combinations, and varying the number of instruments used in each combination. (insert table of data showing the results of CNN with 2,3,4 etc instruments). An arbitrary number of samples can be used in the solution, since the $n$ highest probabilities can be taken from the output, leading to $n$ samples in the solution.
+Our final model was trained on data where each input was a combination of ten instruments, but we performed experiments with varying numbers of instruments used in combination. (insert table of data showing the results of CNN with 2,3,4 etc instruments) An arbitrary number of samples can be used in the solution, since the $n$ highest probabilities can be taken from the output, leading to $n$ samples in the solution.
 
 We tested our models using 15 targets for orchestration. Two of the targets were made from TinySOL samples, but the rest are not combinations of input data, and some are not even recordings of instruments. Among the targets are recordings of bells, a car horn, a gong, and a recording of a boat docking. By passing these samples into a model, an orchestration of the target is created from the TinySOL samples that were used to train the network. For orchestrating these targets, we used both the CNN and ResNet models, each trained on combinations of 10 instruments from a possible 10 instruments. The CNN was trained for 49 epochs and the ResNet for 24.
 
 We evaluated our orchestrations both qualitatively and quantitatively. Qualitative inspection was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution. For example, one of the samples of a bell had partials that represented a C sharp minor chord. The ResNet . For a target that contained specific notes, the solution from ResNet contained both the note in the target and its partials: a sample that was two octaves higher, the fifth an octave up, and a minor third two octaves up (mix\_ObA4\_BnC3).
 
+For quantitative evaluation, we orchestrated the same targets with OrchIdea, then compared the distance between our solutions and the targets and OrchIdea's solutions and the targets. The distance metric we used was 
+$$d(x^t, \tilde{x}^t) =\lambda_1 \sum_k \delta_k^t(x_k^t - \tilde{x	}_k^t) + \sum_k \delta_k^t|x_k^t - \tilde{x	}_k^t|$$
+$$\delta_k^t = 
+\begin{cases}
+1, \text{if} (x_k - \tilde{x}_k) < 0 \\
+0, \text{otherwise}
+\end{cases} $$
 \section{Evaluation and Conclusions}
 - the approach seems promising for orchestration
 - many things used in Orchidea are not implemented here (symbolic constraints, sparsity,...)
@@ -135,6 +142,12 @@ We evaluated our orchestrations both qualitatively and quantitatively. Qualitati
 - using conditioning to impose symbolic constraints
 - variable size solutions
 - joint networks for orchestral size detection and orchestral families (see paper)
+
+Future steps in this project include implementing various methods that are present in OrchIdea. 
+
+Our current model orchestrates all targets using the same number of samples, and this does not take into account the density of different targets. The solution to this is to allow sparse solutions in which the model decides how many samples should be used to best represent the target. This allows a small number of samples to be used for sonically sparse sounds and many to be used for sonically dense sounds. 
+
+Partial filtering is a method that would aid our model in orchestrating the harmonics of a target. The dominant harmonic partials of the target are identified, and the search space is limited to only include samples of those pitches. For example, if the target is a recording of an instrument playing a C4, then the partials identified may be C4, C5, G5, and E6. The model would then only consider samples of these pitches to be used in the solution. This leads to a solution whose harmonics are much closer to the target, which is an important part of aural similarity.
 
 \section{Citations}
 
