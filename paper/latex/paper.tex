@@ -83,11 +83,16 @@ The abstract should be placed at the top left column and should contain about 15
 %
 \section{Introduction}\label{sec:introduction}
 
+\section{Data generation}
+We used the TinySOL database to create our input data. \textbf{(Should we talk more about TinySOL here?)} When training a model, the number of samples $n$ to be used in each combination is specified. To create the training data, $n$ instruments are randomly selected from the list of specified instruments, and then a TinySOL sample is randomly selected for each chosen instrument. These samples are then combined to play simultaneously. This melspectrogram is then taken of this combinations, creating the features to be fed to the model. We created the melspectrogram by \textbf{(Alejandro can you write this of how you generated the melspectrograms using the STFT?)}
+
 \section{Our model}
 - deep learning trained for classification and then used for orchestraion
 - changing number of instruments
 
-We did not train our model to classify the dynamics of a sample despite TinySOL having pp, mf, and ff recordings for each sample. If we had, then each class would have only one data point. Instead, when the model is used for orchestration, the dynamic is determined by the probability of that sample as output by the model. If the model output a probability higher than $0.66$ for a sample, the ff version of the sample was used. If it was between $0.33$ and $0.66$, then the mf version, and if less than $0.33$ the pp dynamic.
+Our idea is perform orchestration using deep neural networks trained for classification. By generating input data that is combinations of different instruments and pitches, the network learns how to take a sound that is a complex combination of notes and timbres and deconstruct it into its original parts. When a target sound is then fed to the network, it attempts to classify which samples are present. By taking the samples that have the highest probability of being in the target, an orchestrated solution can be created. 
+
+We did not train our model to classify the dynamics of a sample despite TinySOL having pianissimo, mezzo forte, and fortissimo recordings for each sample. If we had, then each class would have only one data point. Instead, when the model is used for orchestration, the dynamic is determined by the probability of that sample as output by the model. If the model output a probability higher than $0.66$ for a sample, the fortissimo version of the sample was used. If it was between $0.33$ and $0.66$, then the mezzo forte version, and if less than $0.33$ the pianissimo dynamic.
 
 \subsection{Baseline}
 In order to have a baseline to compare our results against, we attempted to solve the classification problem using various linear classifiers. The classifiers we tested were Support Vector Machine (SVM), Random Forest, and K-Nearest Neighbors. We used the implementations provided in the scikit-learn library for each classifier. For SVM, we used SVC with an RBF kernel. For Random Forest, we set the maximum depth of each tree to be 15. Each classifier was wrapped in a MultiOutputClassifier to achieve the multi-label nature of this problem. We found SVM to have the highest accuracy of the three classifiers across all experiments. All of the following baselin experiments used 50,000 generated samples with a train-test split of 60/40. Each sample is a combination of one or more instruments and is four seconds in length. The features used are the mel frequency cepstral coefficients (MFCCs) of the resulting combination, with a total of 100 coefficients per sample.
@@ -118,7 +123,6 @@ Given that audio is one kind of sequential data, it is easy to consider Long Sho
 
 To make our setting more reasonable, we took the well-known deep residual network(ResNet) as backbone in our experiments. Specifically, we used 18-layer ResNet. Besides, to make the model more suitable to our problem, we reset the output channel numbers of each block with 32, 64, 32, 32 respectively. 
 
->>>>>>> paper
 \section{Orchestration experiments}
 - set of 10 targets
 - orchestra fix to 10
@@ -130,20 +134,28 @@ Our final model was trained on data where each input was a combination of ten in
 
 We tested our models using 15 targets for orchestration. Two of the targets were made from TinySOL samples, but the rest are not combinations of input data, and some are not even recordings of instruments. Among the targets are recordings of bells, a car horn, a gong, and a recording of a boat docking. By passing these samples into a model, an orchestration of the target is created from the TinySOL samples that were used to train the network. For orchestrating these targets, we used both the CNN and ResNet models, each trained on combinations of 10 instruments from a possible 10 instruments. The CNN was trained for 49 epochs and the ResNet for 24.
 
-We evaluated our orchestrations both qualitatively and quantitatively. Qualitative inspection was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution. For example, one of the samples of a bell had partials that represented a C sharp minor chord. The ResNet . For a target that contained specific notes, the solution from ResNet contained both the note in the target and its partials: a sample that was two octaves higher, the fifth an octave up, and a minor third two octaves up (mix\_ObA4\_BnC3).
+We evaluated our orchestrations both qualitatively and quantitatively. Qualitative inspection was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution. For example, one of the samples of a bell had partials that represented a C sharp minor chord. For a target that contained specific notes, the solution from ResNet contained both the note in the target and its partials: a sample that was two octaves higher, the fifth an octave up, and a minor third two octaves up (mix\_ObA4\_BnC3).
 
 For quantitative evaluation, we orchestrated the same targets with OrchIdea, then compared the distance between our solutions and the targets and OrchIdea's solutions and the targets. The distance metric we used was 
-$$d(x^t, \tilde{x}^t) =\lambda_1 \sum_k \delta_k^t(x_k^t - \tilde{x	}_k^t) + \sum_k \delta_k^t|x_k^t - \tilde{x	}_k^t|$$
+
+$$d(x^t, \tilde{x}^t) =\lambda_1 \sum_k \delta_k^t(x_k^t - \tilde{x}_k^t) + \sum_k \delta_k^t|x_k^t - \tilde{x	}_k^t|$$
 $$\delta_k^t = 
 \begin{cases}
 1, \text{if} (x_k - \tilde{x}_k) < 0 \\
 0, \text{otherwise}
 \end{cases} $$
+
 \section{Evaluation and Conclusions}
 - the approach seems promising for orchestration
 - many things used in Orchidea are not implemented here (symbolic constraints, sparsity,...)
 - CNN seems better for timbre
 - ResNet seems better for pitch (what are timbre and pitch??)
+
+Based on our accuracies from training the model and the results of orchestrating 15 targets, our approach seems promising for orchestration. When comparing our method with OrchIdea, it is important to note that many of processes OrchIdea uses to optimize its solution were not used in our model. This includes important aspects such as sparsity, partial filtering, \textbf{(Carmine any more to add?)}. Our model also lacks the implementation of symbolic constraints, which is an important part of assisted orchestration.
+
+(Alejandro, add how there were certain instruments that performed poorly. Add how ResNet was awful for Flute and always output Flute C4)
+
+We find that the CNN and ResNet give similar accuracies during training, but perform differently when tasked with orchestrating targets. Overall, CNN seems to better emulate the timbre in its orchestrations, where ResNet is better for recreating the pitch(es) of the target. 
 
 \subsection{Interpreting the Latent Space}
 - the system finds filters like...
