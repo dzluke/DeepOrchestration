@@ -105,10 +105,20 @@ This was still a simplified version of the problem, as we were identifying only 
 
 \subsection{CNN with LSTM}
 
+The first deep model we tested was Convolutional Neural Network(CNN). CNN shows good performance on classification assignment for its strong ability to extract spacial features, so we implemented a basic CNN with three convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a 2 * 2  MaxPool layer with a stride of 2. The kernel size is 3 * 3 with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32. This setting is simple but we can make a good comparison between it and the baseline. 
+
+- figure
+
+Given that audio is one kind of sequential data, it is easy to consider Long Short-Term Memory network(LSTM) as test model. In our setting, we added one LSTM layer with 32 outputs units following three convolutional layers. The convolutional layers did not change the sequence relationship. Instead, it scaled down the size of feature maps. After LSTM layer, we reshaped the output into the same size before inputing. Then we implemented another convolutional layer with the same structure and kernel size. Finally, we flattened out the outputs and fed them into fully connected layers with Dropout layer. The probability of an element to be zeroed is 0.5 and we took sigmoid as activation function. We used binary classification for each class and treated them independently.  
+
+
 \subsection{ResNet}
 - SVM was good but CNN was better and ResNet was best
 - review all experiments we did and choose key plots
 
+To make our setting more reasonable, we took the well-known deep residual network(ResNet) as backbone in our experiments. Specifically, we used 18-layer ResNet. Besides, to make the model more suitable to our problem, we reset the output channel numbers of each block with 32, 64, 32, 32 respectively. 
+
+>>>>>>> paper
 \section{Orchestration experiments}
 - set of 10 targets
 - orchestra fix to 10
