@@ -84,13 +84,15 @@ The abstract should be placed at the top left column and should contain about 15
 \section{Introduction}\label{sec:introduction}
 
 \section{Data generation}
-We used the TinySOL database to create our input data. \textbf{(Should we talk more about TinySOL here?)} When training a model, the number of samples $n$ to be used in each combination is specified. To create the training data, $n$ instruments are randomly selected from the list of specified instruments, and then a TinySOL sample is randomly selected for each chosen instrument. These samples are then combined to play simultaneously. This melspectrogram is then taken of this combinations, creating the features to be fed to the model. We created the melspectrogram by \textbf{(Alejandro can you write this of how you generated the melspectrograms using the STFT?)}
+We used the TinySOL database to create our input data. \textbf{(Should we talk more about TinySOL here?)}
+
+When training a model, the number of samples $n$ to be used in each combination is specified. To create the training data, $n$ instruments are randomly selected from the list of specified instruments, and then a TinySOL sample is randomly selected for each chosen instrument. This gives $n$ different samples, each of a different intrument. These samples are combined to form a soundfile that has each sample playing simultaneously. The melspectrogram is taken of this combination, creating the features to be fed to the model. We created the melspectrogram by \textbf{(Alejandro can you write this of how you generated the melspectrograms using the STFT?)}
 
 \section{Our model}
 - deep learning trained for classification and then used for orchestraion
 - changing number of instruments
 
-Our idea is perform orchestration using deep neural networks trained for classification. By generating input data that is combinations of different instruments and pitches, the network learns how to take a sound that is a complex combination of notes and timbres and deconstruct it into its original parts. When a target sound is then fed to the network, it attempts to classify which samples are present. By taking the samples that have the highest probability of being in the target, an orchestrated solution can be created. 
+Our idea is to perform orchestration using deep neural networks trained for classification. By generating input data that is combinations of different instruments and pitches, the network learns how to take a sound that is a complex combination of notes and timbres and deconstruct it into its original parts. When a target sound is then fed to the network, it attempts to classify which samples are present. By taking the samples that have the highest probability of being in the target, an orchestrated solution can be created. 
 
 We did not train our model to classify the dynamics of a sample despite TinySOL having pianissimo, mezzo forte, and fortissimo recordings for each sample. If we had, then each class would have only one data point. Instead, when the model is used for orchestration, the dynamic is determined by the probability of that sample as output by the model. If the model output a probability higher than $0.66$ for a sample, the fortissimo version of the sample was used. If it was between $0.33$ and $0.66$, then the mezzo forte version, and if less than $0.33$ the pianissimo dynamic.
 
@@ -110,7 +112,7 @@ This was still a simplified version of the problem, as we were identifying only 
 
 \subsection{CNN with LSTM}
 
-The first deep model we tested was Convolutional Neural Network(CNN). CNN shows good performance on classification assignment for its strong ability to extract spacial features, so we implemented a basic CNN with three convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a 2 * 2  MaxPool layer with a stride of 2. The kernel size is 3 * 3 with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32. This setting is simple but we can make a good comparison between it and the baseline. 
+The first deep model we tested was a Convolutional Neural Network (CNN). CNN shows good performance on classification assignment for its strong ability to extract spacial features, so we implemented a basic CNN with three convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a 2 * 2  MaxPool layer with a stride of 2. The kernel size is 3 * 3 with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32. This setting is simple but we can make a good comparison between it and the baseline. 
 
 - figure
 
@@ -145,6 +147,8 @@ $$\delta_k^t =
 0, \text{otherwise}
 \end{cases} $$
 
+\textbf{(Add results of quantitatively comparing our results to OrchIdea)}
+
 \section{Evaluation and Conclusions}
 - the approach seems promising for orchestration
 - many things used in Orchidea are not implemented here (symbolic constraints, sparsity,...)
@@ -153,7 +157,7 @@ $$\delta_k^t =
 
 Based on our accuracies from training the model and the results of orchestrating 15 targets, our approach seems promising for orchestration. When comparing our method with OrchIdea, it is important to note that many of processes OrchIdea uses to optimize its solution were not used in our model. This includes important aspects such as sparsity, partial filtering, \textbf{(Carmine any more to add?)}. Our model also lacks the implementation of symbolic constraints, which is an important part of assisted orchestration.
 
-(Alejandro, add how there were certain instruments that performed poorly. Add how ResNet was awful for Flute and always output Flute C4)
+\textbf{(Alejandro, add how there were certain instruments that performed poorly. Add how ResNet was awful for Flute and always output Flute C4)}
 
 We find that the CNN and ResNet give similar accuracies during training, but perform differently when tasked with orchestrating targets. Overall, CNN seems to better emulate the timbre in its orchestrations, where ResNet is better for recreating the pitch(es) of the target. 
 
