@@ -136,16 +136,24 @@ Our final model was trained on data where each input was a combination of ten in
 
 We tested our models using 15 targets for orchestration. Two of the targets were made from TinySOL samples, but the rest are not combinations of input data, and some are not even recordings of instruments. Among the targets are recordings of bells, a car horn, a gong, and a recording of a boat docking. By passing these samples into a model, an orchestration of the target is created from the TinySOL samples that were used to train the network. For orchestrating these targets, we used both the CNN and ResNet models, each trained on combinations of 10 instruments from a possible 10 instruments. The CNN was trained for 49 epochs and the ResNet for 24.
 
+\subsection{Evaluation}
+-evaluation of orchestrations (not evaluation of model)
+
 We evaluated our orchestrations both qualitatively and quantitatively. Qualitative inspection was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution.
 
 For quantitative evaluation, we orchestrated the same targets with OrchIdea, then compared the distance between our solutions and the targets and OrchIdea's solutions and the targets. The distance metric we used was 
 
-$$d(x^t, \tilde{x}^t) =\lambda_1 \sum_k \delta_k^t(x_k^t - \tilde{x}_k^t) + \sum_k \delta_k^t|x_k^t - \tilde{x	}_k^t|$$
-$$\delta_k^t = 
+$$d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k|$$
+
+$$\delta_{k1} = 
 \begin{cases}
-1, \text{if} (x_k - \tilde{x}_k) < 0 \\
+1, \text{if   } x_k > \tilde{x}_k \\
 0, \text{otherwise}
 \end{cases} $$
+
+$$ \delta_{k2} = 1 - \delta_{k1}$$
+
+This metric computes the difference between the FFT of the target and the FFT of the solution. 
 
 \textbf{(Add results of quantitatively comparing our results to OrchIdea)}
 
