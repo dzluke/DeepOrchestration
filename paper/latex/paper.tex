@@ -85,7 +85,7 @@ In this paper we will explore preliminary neural models for the task of computer
 \section{Introduction}\label{sec:introduction}
 
 \section{Data generation}
-We used the TinySOL database to create our input data. \textbf{(Should we talk more about TinySOL here?)}
+We used the TinySOL database to create our input data. TinySOL is a subset of the Studio On Line (SOL) database created by IRCAM. TinySOL contains 2,478 samples from 12 instruments. The instruments come from different orchestral families: strings, woodwinds, and brass are all represented in TinySOL. Each TinySOL sample is one instrument playing one note in the "ordinary" playing style.
 
 When training a model, the number of samples $n$ to be used in each combination is specified. To create the training data, $n$ instruments are randomly selected from the list of specified instruments, and then a TinySOL sample is randomly selected for each chosen instrument. This gives $n$ different samples, each of a different instrument. These samples are combined to form a soundfile that has each sample playing simultaneously. The audio was trimmed to four seconds in length so our data would all be of the same size. The melspectrogram is taken of this combination, creating the features to be fed to the model. We created the melspectrogram by \textbf{(Alejandro can you write this of how you generated the melspectrograms using the STFT?)}. We chose to use the melspectrogram because of its ability to represent timbre, a key part of assisted orchestration.
 
