@@ -158,17 +158,18 @@ To make our setting more reasonable, we took the well-known deep residual networ
 
 Our final model was trained on data where each input was a combination of ten instruments, but we performed experiments with varying numbers of instruments used in combination. (insert table of data showing the results of CNN with 2,3,4 etc instruments) An arbitrary number of samples can be used in the solution, since the $n$ highest probabilities can be taken from the output, leading to $n$ samples in the solution.
 
-We tested our models using 15 targets for orchestration. Two of the targets were made from TinySOL samples, but the rest are not combinations of input data, and some are not even recordings of instruments. Among the targets are recordings of bells, a car horn, a gong, and a recording of a boat docking. By passing these samples into a model, an orchestration of the target is created from the TinySOL samples that were used to train the network. For orchestrating these targets, we used both the CNN and ResNet models, each trained on combinations of 10 instruments from a possible 10 instruments. The CNN was trained for 49 epochs and the ResNet for 24.
+We tested our models using 15 targets for orchestration. Two of the targets were made from TinySOL samples, but the rest are not combinations of input data, and some are not even recordings of instruments. Among the targets are recordings of bells, a car horn, a gong, and a recording of a boat docking. By passing these samples into a model, an orchestration of the target is created from the TinySOL samples that were used to train the network. 
+
+For orchestrating these targets, we used both the CNN and ResNet models. The CNN was trained on 200,000 samples for 49 epochs and the ResNet on 400,000 samples for 24 epochs. The instruments used to train the models are: French Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet, and Clarinet. The resulting orchestrations are made from 10 samples drawn from these instruments.
 
 Although the data we trained the model on was fixed to four seconds of audio, the target samples can be of arbitrary length. By changing the mel hop length, which is the distance between the frames of the melspectrogram, an audio signal of any length can be represented as a matrix of the same size as the training data.
 
 \subsection{Evaluation}
 -evaluation of orchestrations (not evaluation of model)
 
-We evaluated our orchestrations both qualitatively and quantitatively. Qualitative inspection was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution.
+We evaluated our orchestrations both qualitatively and quantitatively. Qualitative evaluation was done through an acoustic inspection of the solution, paying close attention to both timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution.
 
-For quantitative evaluation, we orchestrated the same targets with OrchIdea, then compared the distance between our solutions and the targets and OrchIdea's solutions and the targets. The distance metric we use is defined in \eqref{distance}. 
-
+For quantitative evaluation, we used the distance metric defined in \eqref{distance} to calculate the distance between the target samples and our orchestrated solutions. We then orchestrated the same targets with OrchIdea and calculated the distance for OrchIdea's solutions. A comparison of these results is in Table 2.
 
 \begin{equation}\label{distance}
 d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k| \\
