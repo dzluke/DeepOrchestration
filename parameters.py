@@ -1,9 +1,9 @@
 import pickle
 
-resume_model = False
+resume_model = True
 model_path = './model'
-model_run_resume = 5
-model_epoch_resume = 3
+model_run_resume = 3
+model_epoch_resume = 9
 
 class SimParams:
     def __init__(self):
@@ -15,17 +15,17 @@ class SimParams:
         self.TIME_LENGTH = 4
         self.FEATURE_TYPE = 'mel'
         
-        self.N = 10
+        self.N = 2
         self.nb_samples = 400000
         self.rdm_granularity = 10
         self.nb_pitch_range = 8
-        self.instr_filter = ['Hn','Ob','Vn','Va', 'Vc', 'Fl', 'Tbn', 'Bn', 'TpC', 'ClBb'][:self.N]
+        self.instr_filter = ['Hn','Ob','Vn','Va', 'Vc', 'Fl', 'Tbn', 'Bn', 'TpC', 'ClBb']
         self.batch_size = 16
         self.model_type = 'resnet'
-        self.nb_epoch = 100
-        self.rain_proportion = 0.8
+        self.nb_epoch = 50
+        self.train_proportion = 0.8
         
-        self.coeff_freq_shift_data_augment = 0.005 # For data augmentation, proportional change to sampling rate
+        self.coeff_freq_shift_data_augment = 0.008 # For data augmentation, proportional change to sampling rate
         self.delay_offset_avg = 0.005 # Average of offset applied to delay filters (ie the position of the first impulse)
         self.delay_period_avg = 0.002 # Average of the period of the impulses for delaying
         self.delay_feedback_avg = 0.5 # Average of the feedback factor of delay impulses

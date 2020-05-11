@@ -17,7 +17,7 @@ from matplotlib.animation import FuncAnimation
 from model import OrchMatchNet
 from parameters import GLOBAL_PARAMS
 from parameters import resume_model, model_epoch_resume, model_path, model_run_resume
-from OrchDataset import OrchDataSet,RawDatabase
+from OrchDataset_2 import OrchDataSet,RawDatabase
 
 class Timer:
     def __init__(self, size_buffer):
@@ -68,8 +68,6 @@ class DataSaver:
         r['loss_min'] = loss_min
         np.save(self.path, r)
         self.count += 1
-        
-ds = DataSaver('./outputs.npy')
 
 timer = Timer(1000)
 
@@ -86,9 +84,16 @@ def main(rdb = None):
     else:
         raw_db = rdb
     train_dataset = OrchDataSet(raw_db,class_encoder, GLOBAL_PARAMS.FEATURE_TYPE)
-    train_dataset.generate(GLOBAL_PARAMS.N,int(GLOBAL_PARAMS.train_proportion*GLOBAL_PARAMS.nb_samples))
+    if resume_model:
+        train_dataset.load(model_path+'/run{}/trainset.pkl'.format(model_run_resume))
+    else:
+        train_dataset.generate(GLOBAL_PARAMS.N,int(GLOBAL_PARAMS.train_proportion*GLOBAL_PARAMS.nb_samples))
     test_dataset = OrchDataSet(raw_db,class_encoder, GLOBAL_PARAMS.FEATURE_TYPE)
-    test_dataset.generate(GLOBAL_PARAMS.N,GLOBAL_PARAMS.nb_samples-int(GLOBAL_PARAMS.train_proportion*GLOBAL_PARAMS.nb_samples))
+    
+    if resume_model:
+        test_dataset.load(model_path+'/run{}/testset.pkl'.format(model_run_resume))
+    else:
+        test_dataset.generate(GLOBAL_PARAMS.N,GLOBAL_PARAMS.nb_samples-int(GLOBAL_PARAMS.train_proportion*GLOBAL_PARAMS.nb_samples))
 
     # load data
     train_load = torch.utils.data.DataLoader(dataset=train_dataset,
@@ -156,10 +161,12 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
     total_loss = 0
 
     weight_decay = 0.01
-    size_train_load = int(train_proportion*GLOBAL_PARAMS.nb_samples/GLOBAL_PARAMS.batch_size)
+    size_train_load = int(GLOBAL_PARAMS.train_proportion*GLOBAL_PARAMS.nb_samples/GLOBAL_PARAMS.batch_size)
     size_test_load = int((1-GLOBAL_PARAMS.train_proportion)*GLOBAL_PARAMS.nb_samples/GLOBAL_PARAMS.batch_size)
     
     loss_min = None
+        
+    ds = DataSaver(save_path + '/outputs.npy')
     
     for epoch in range(start_epoch, GLOBAL_PARAMS.nb_epoch):
         print("Epoch {}".format(epoch))
@@ -353,9 +360,23 @@ def getAccuracyLoadedModel(model_dir, epoch, raw_db = None, tst = True):
 
 if __name__=='__main__':
     
-    rdb = RawDatabase('./TinySOL', GLOBAL_PARAMS.rdm_granularity, GLOBAL_PARAMS.instr_filter)
+    with open('D:/DeepOrchestration/rdb.pkl', 'rb') as f:
+        rdb = pickle.load(f)
     
-    tot_size = sum(len(GLOBAL_PARAMS.lab_class[k]) for k in GLOBAL_PARAMS.lab_class)
+    GLOBAL_PARAMS.lab_class = {}
+    tot_size = 0
+    for i in rdb.db:
+        GLOBAL_PARAMS.lab_class[i] = {}
+        a = set()
+        for k in rdb.db[i]:
+            for j in k:
+                a.add(j['pitch_name'])
+        for x in a:
+            GLOBAL_PARAMS.lab_class[i][x] = tot_size
+            tot_size += 1
+        
+    
+    #tot_size = sum(len(GLOBAL_PARAMS.lab_class[k]) for k in GLOBAL_PARAMS.lab_class)
         
     def class_encoder(list_samp):
         label = [0 for i in range(tot_size)]
@@ -380,5 +401,4 @@ if __name__=='__main__':
         result['pitch_acc'] = pitch_acc
     
         return result
-    
     main(rdb)

@@ -200,15 +200,22 @@ def combine(soundlist, target):
     return mixed_file, sr
 
 
+def next_power_of_2(x):
+    return 1 if x == 0 else 2**(x - 1).bit_length()
+
+
 def compute_distance(target, solution):
     target, _ = librosa.load(target['path'], sr=None)
 
     # if the target is longer than the solution, must trim the target
     if (target.size > solution.size):
         target = target[:solution.size]
+        N = next_power_of_2(target.size)
+    else:
+        N = next_power_of_2(solution.size)
 
-    target_fft = np.fft.fft(target)
-    solution_fft = np.fft.fft(solution)
+    target_fft = np.abs(np.fft.rfft(target, N))
+    solution_fft = np.abs(np.fft.rfft(solution, N))
 
     lambda_1 = 1
     lambda_2 = 1
@@ -216,11 +223,12 @@ def compute_distance(target, solution):
     sum_1 = 0
     sum_2 = 0
     for i in range(target_fft.size):
-        a = target_fft[i]
-        b = solution_fft[i]
-        if a - b < 0:
-            sum_1 += a - b
-            sum_2 += abs(a - b)
+        k_target = target_fft[i]
+        k_solution = solution_fft[i]
+        if k_target >= k_solution:
+            sum_1 += k_target - k_solution
+        else:
+            sum_2 += abs(k_target - k_solution)
     distance = lambda_1 * sum_1 + lambda_2 * sum_2
     return float(distance)
 
