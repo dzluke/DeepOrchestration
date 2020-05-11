@@ -136,18 +136,24 @@ This was still a simplified version of the problem, as we were identifying only 
 
 \subsection{CNN with LSTM}
 
-The first deep model we tested was a Convolutional Neural Network (CNN). CNN shows good performance on classification assignment for its strong ability to extract spatial features, so we implemented a basic CNN with three convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a 2 * 2  MaxPool layer with a stride of 2. The kernel size is 3 * 3 with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32. This setting is simple but we can make a good comparison between it and the baseline. 
+The first deep model we examined was a Convolutional Neural Network (CNN). CNN shows good performance on classification assignment for its strong ability to extract local features, so we implemented a basic CNN with three convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a $2 \times 2$  MaxPool layer with a stride of 2. The kernel size is $3 \times 3$ with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32. This setting is simple but we can make a good comparison between it and the baseline. 
 
-- figure
+\begin{figure*}[ht]
+\centering
+\includegraphics[scale=0.35]{figs/CNN_with_LSTM.png}
+\caption{Model Architecture}
+\label{cnn_lstm}
+\end{figure*}
 
-Given that audio is one kind of sequential data, it is easy to consider Long Short-Term Memory network (LSTM) as test model. In our setting, we added one LSTM layer with 32 outputs units following three convolutional layers. The convolutional layers did not change the sequence relationship. Instead, it scaled down the size of feature maps. After LSTM layer, we reshaped the output into the same size before inputing. Then we implemented another convolutional layer with the same structure and kernel size. Finally, we flattened out the outputs and fed them into fully connected layers with Dropout layer. The probability of an element to be zeroed is 0.5 and we took sigmoid as activation function. We used binary classification for each class and treated them independently.  
+Given that audio is one kind of sequential data, it is easy to consider Long Short-Term Memory network (LSTM) as a choice of modeling sequential data. In our setting, we added one LSTM layer with 32 outputs units following three convolutional layers. The convolutional layers did not change the sequence relationship. Instead, it scaled down the size of feature maps. After LSTM layer, we reshaped the output into the same size before inputing. Then we implemented another convolutional layer with the same structure and kernel size. Finally, we flattened out the outputs and fed them into fully connected layers with Dropout layer. The probability of an element to be zeroed is 0.5 and we took sigmoid as activation function. Since there is no competition relationship between different classes for each class can be classification result equally, it is reasonable for us to take sigmoid activations and used binary classification for each class to treat them independently. We minimize the binary cross entropy(BCE) loss between the predictions and targets. We implemented our neural networks with PyTorch and trained them with Adam optimizer. The model architecture is shown in Figure\ref{cnn_lstm}.  
+
 
 
 \subsection{ResNet}
 - SVM was good but CNN was better and ResNet was best
 - review all experiments we did and choose key plots
 
-To make our setting more reasonable, we took the well-known deep residual network(ResNet) as backbone in our experiments. Specifically, we used 18-layer ResNet. Besides, to make the model more suitable to our problem, we reset the output channel numbers of each block with 32, 64, 32, 32 respectively. 
+To make our setting more reasonable, we took the well-known deep residual network(ResNet) as backbone in our experiments. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. Besides, to make the model more suitable to our problem, we reduce the number of parameters and reset the output channel numbers of each block with 32, 64, 32, 32 respectively. We took the same loss function-BCE and optimizer-Adam as those in training the CNN with LSTM model.
 
 \section{Orchestration experiments}
 - set of 10 targets
