@@ -1,0 +1,80 @@
+Max accuracy achieved at epoch 49
+Accuracy of acc : 0.9742875
+Accuracy of Hn : 0.9736
+Accuracy of Ob : 0.99935
+Accuracy of Va : 0.9825
+Accuracy of Vn : 0.9417
+
+
+
+
+Max accuracy achieved at epoch 44
+Accuracy of acc : 0.91621
+Accuracy of Hn : 0.8817
+Accuracy of Ob : 0.9993
+Accuracy of Va : 0.9335
+Accuracy of Vc : 0.87265
+Accuracy of Vn : 0.8939
+
+
+Max accuracy achieved at epoch 39
+Accuracy of acc : 0.8248166666666666
+Accuracy of Cb : 0.40855
+Accuracy of Hn : 0.8689
+Accuracy of Ob : 0.9995
+Accuracy of Va : 0.9438
+Accuracy of Vc : 0.8414
+Accuracy of Vn : 0.88675
+
+
+Max accuracy achieved at epoch 44
+Accuracy of acc : 0.7555857142857143
+Accuracy of Cb : 0.41605
+Accuracy of Fl : 0.5116
+Accuracy of Hn : 0.8565
+Accuracy of Ob : 0.9972
+Accuracy of Va : 0.9121
+Accuracy of Vc : 0.7557
+Accuracy of Vn : 0.83995
+
+
+
+Max accuracy achieved at epoch 49
+Accuracy of acc : 0.69189375
+Accuracy of Cb : 0.3981
+Accuracy of Fl : 0.4962
+Accuracy of Hn : 0.8029
+Accuracy of Ob : 0.9975
+Accuracy of Tbn : 0.3812
+Accuracy of Va : 0.8982
+Accuracy of Vc : 0.72315
+Accuracy of Vn : 0.8379
+
+
+
+Max accuracy achieved at epoch 49
+Accuracy of acc : 0.6727194444444444
+Accuracy of Bn : 0.93625
+Accuracy of Cb : 0.390325
+Accuracy of Fl : 0.431825
+Accuracy of Hn : 0.675525
+Accuracy of Ob : 0.996625
+Accuracy of Tbn : 0.284225
+Accuracy of Va : 0.8499
+Accuracy of Vc : 0.6796
+Accuracy of Vn : 0.8102
+
+
+
+Max accuracy achieved at epoch 44
+Accuracy of acc : 0.6134775
+Accuracy of Bn : 0.9239
+Accuracy of ClBb : 0.58835
+Accuracy of Fl : 0.372725
+Accuracy of Hn : 0.701525
+Accuracy of Ob : 0.99045
+Accuracy of Tbn : 0.131
+Accuracy of TpC : 0.27045
+Accuracy of Va : 0.76845
+Accuracy of Vc : 0.6645
+Accuracy of Vn : 0.723425

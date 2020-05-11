@@ -242,22 +242,27 @@ Number of epochs and number of samples per epoch used for training each model wi
 
 
 \begin{table}
-\begin{tabular}{|c|l|}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
 \hline
-$N$ & Orchestra\\
+Instruments & \multicolumn{2}{c|}{$N=4$} & \multicolumn{2}{c|}{$N=5$}& \multicolumn{2}{c|}{$N=6$}& \multicolumn{2}{c|}{$N=7$}& \multicolumn{2}{c|}{$N=8$}& \multicolumn{2}{c|}{$N=9$}& \multicolumn{2}{c|}{$N=10$}\\
+\cline{2-3} & C & R & C & R & C & R & C & R & C & R & C & R & C & R\\
 \hline
-4 & Hn, Ob, Vn, Va\\
-5 & Hn, Ob, Vn, Va, Vc\\
-6 & Hn, Ob, Vn, Va, Vc, Fl\\
-7 & Hn, Ob, Vn, Va, Vc, Fl, Tbn\\
-8 & Hn, Ob, Vn, Va, Vc, Fl, Tbn, Bn\\
-9 & Hn, Ob, Vn, Va, Vc, Fl, Tbn, Bn, TpC\\
-10 & Hn, Ob, Vn, Va, Vc, Fl, Tbn, Bn, TpC, ClBb\\
+All & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+Hn & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+Ob & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+Vn & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+Va & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+Vc & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+Fl & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+Tbn & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+Bn & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+TpC & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+ClBb & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
 \hline
 \end{tabular}
 
 \begin{caption}
-Orchestra for each $N$ used in the experiments.
+Best test accuracy obtained for each model and value of $N$ over the total number of epochs. The accuracy is computed using $f$ define in (\ref{eval}). The first row correspond to the overall accuracy of the model, regrouping all the instruments. C is CNN with LSTM, R is ResNet.
 \label{class_res}
 \end{caption}
 \end{table}
@@ -323,6 +328,30 @@ When referring to a document, type the number in square brackets
 When the following words appear in the conference publication titles, please abbreviate them: Proceedings $\rightarrow$ Proc.; Record $\rightarrow$ Rec.; Symposium $\rightarrow$ Symp.; Technical Digest $\rightarrow$ Tech. Dig.; Technical Paper $\rightarrow$ Tech. Paper; First $\rightarrow$ 1st; Second $\rightarrow$ 2nd; Third $\rightarrow$ 3rd; Fourth/nth $\rightarrow$ 4th/nth.
 
 \textcolor{red}{As submission is double blind, refer to your own published work in the third person. That is, use ``In the previous work of \cite{Someone:10},'' not ``In our previous work \cite{Someone:10}.'' If you cite your other papers that are not widely available (e.g., a journal paper under review), use anonymous author names in the citation, e.g., an author of the form ``A. Anonymous.''}
+
+\section{Figures}
+
+\begin{figure}
+\includegraphics[scale=0.6]{figs/CNN4.png}
+\end{figure}
+\begin{figure}
+\includegraphics[scale=0.6]{figs/CNN5.png}
+\end{figure}
+\begin{figure}
+\includegraphics[scale=0.6]{figs/CNN6.png}
+\end{figure}
+\begin{figure}
+\includegraphics[scale=0.6]{figs/CNN7.png}
+\end{figure}
+\begin{figure}
+\includegraphics[scale=0.6]{figs/CNN8.png}
+\end{figure}
+\begin{figure}
+\includegraphics[scale=0.6]{figs/CNN9.png}
+\end{figure}
+\begin{figure}
+\includegraphics[scale=0.6]{figs/CNN10.png}
+\end{figure}
 
 % For bibtex users:
 \bibliography{ISMIRtemplate}
