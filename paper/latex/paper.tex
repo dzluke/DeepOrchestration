@@ -306,9 +306,8 @@ Although the data we trained the model on was fixed to four seconds of audio, th
 
 We evaluated our orchestrations both qualitatively and quantitatively. Qualitative inspection was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution. For example, one of the samples of a bell had partials that represented a C sharp minor chord. For a target that contained specific notes, the solution from ResNet contained both the note in the target and its partials: a sample that was two octaves higher, the fifth an octave up, and a minor third two octaves up (mix\_ObA4\_BnC3).
 
-For quantitative evaluation, we orchestrated the same targets with OrchIdea, then compared the distance between our solutions and the targets and OrchIdea's solutions and the targets. The distance metric we used was 
 
-For quantitative evaluation, we orchestrated the same targets with OrchIdea, then compared the distance between our solutions and the targets and OrchIdea's solutions and the targets. The distance metric we used is defined in Eqn. \eqref{distance}
+For quantitative evaluation, we used the distance metric defined in \eqref{distance} to calculate the distance between the target samples and our orchestrated solutions. We then orchestrated the same targets with OrchIdea and calculated the distance for OrchIdea's solutions. A comparison of these results is in Tab. \ref{orch_eval}.
 
 In order to have comparable solutions, we did not allow OrchIdea to create sparse solutions, meaning that OrchIdea was forced to use all 10 instruments in each solution. This creates a more fair comparison since our model is optimize solutions by using fewer than 10 samples.
 
@@ -336,7 +335,7 @@ This metric computes the difference between the FFT of the target and the FFT of
 
 \begin{table}
   \begin{center}
-    \label{tab:table2}
+    \label{orch_eval}
     \begin{tabular}{|c|c|} 
     	  \hline
       \textbf{Model} & \textbf{Average Distance} \\
