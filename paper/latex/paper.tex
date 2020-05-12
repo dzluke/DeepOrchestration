@@ -286,17 +286,27 @@ We evaluated our orchestrations both qualitatively and quantitatively. Qualitati
 
 For quantitative evaluation, we orchestrated the same targets with OrchIdea, then compared the distance between our solutions and the targets and OrchIdea's solutions and the targets. The distance metric we used was 
 
-For quantitative evaluation, we orchestrated the same targets with OrchIdea, then compared the distance between our solutions and the targets and OrchIdea's solutions and the targets. The distance metric we used was 
+For quantitative evaluation, we orchestrated the same targets with OrchIdea, then compared the distance between our solutions and the targets and OrchIdea's solutions and the targets. The distance metric we used is defined in Eqn. \eqref{distance}
 
-$$d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k|$$
+\begin{equation}\label{distance}
+d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k| \\
+\end{equation}
 
-$$\delta_{k1} = 
+$$
+\delta_{k1} = 
 \begin{cases}
 1, \text{if   } x_k > \tilde{x}_k \\
 0, \text{otherwise}
-\end{cases} $$
+\end{cases} 
+$$
 
-$$ \delta_{k2} = 1 - \delta_{k1}$$
+$$
+\delta_{k2} = 
+\begin{cases}
+1, \text{if   } x_k < \tilde{x}_k \\
+0, \text{otherwise}
+\end{cases} 
+$$
 
 This metric computes the difference between the FFT of the target and the FFT of the solution. 
 
