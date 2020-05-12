@@ -157,7 +157,7 @@ This was still a simplified version of the problem, as we were identifying only 
 \begin{table}
   \begin{center}
     \label{tab:table1}
-    \begin{tabular}{c|c|c|c} 
+    \begin{tabular}{|c|c|c|c|} 
     	  \hline
       \textbf{Instr. 1} & \textbf{Instr. 2} & \textbf{SVM Accuracy} & \textbf{RF Accuracy}\\
       \hline
@@ -310,6 +310,8 @@ For quantitative evaluation, we orchestrated the same targets with OrchIdea, the
 
 For quantitative evaluation, we orchestrated the same targets with OrchIdea, then compared the distance between our solutions and the targets and OrchIdea's solutions and the targets. The distance metric we used is defined in Eqn. \eqref{distance}
 
+In order to have comparable solutions, we did not allow OrchIdea to create sparse solutions, meaning that OrchIdea was forced to use all 10 instruments in each solution. This creates a more fair comparison since our model is optimize solutions by using fewer than 10 samples.
+
 \begin{equation}\label{distance}
 d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k| \\
 \end{equation}
@@ -332,7 +334,23 @@ $$
 
 This metric computes the difference between the FFT of the target and the FFT of the solution. 
 
-\textbf{(Add results of quantitatively comparing our results to OrchIdea)}
+\begin{table}
+  \begin{center}
+    \label{tab:table2}
+    \begin{tabular}{|c|c|} 
+    	  \hline
+      \textbf{Model} & \textbf{Average Distance} \\
+      \hline
+      CNN with LSTM &   \\
+      \hline
+      ResNet &  \\
+      \hline
+      OrchIdea &  \\
+      \hline
+    \end{tabular}
+  \end{center}
+  \caption{Comparison of the orchestration solutions of our two models, CNN with LSTM and ResNet, against OrchIdea's solutions. The distance between the target and solution are calculated for each target using \eqref{distance} and then averaged.}
+\end{table}
 
 \section{Evaluation and Conclusions}
 - the approach seems promising for orchestration
@@ -341,6 +359,8 @@ This metric computes the difference between the FFT of the target and the FFT of
 - ResNet seems better for pitch (what are timbre and pitch??)
 
 Based on our accuracies from training the model and the results of orchestrating 15 targets, our approach seems promising for orchestration. When comparing our method with OrchIdea, it is important to note that many of processes OrchIdea uses to optimize its solution were not used in our model. This includes important aspects such as sparsity, partial filtering, \textbf{(Carmine any more to add?)}. Our model also lacks the implementation of symbolic constraints, which is an important part of assisted orchestration.
+
+
 
 \textbf{(Alejandro, add how there were certain instruments that performed poorly. Add how ResNet was awful for Flute and always output Flute C4)}
 
