@@ -117,7 +117,7 @@ def main(resume_model, rdb = None):
         GLOBAL_PARAMS.load_parameters(resume_model['model_path']+'/run{}'.format(resume_model['model_run_resume']))
         
         mpath = resume_model['model_path']+'/run{}/epoch_{}.pth'.format(resume_model['model_run_resume'], resume_model['model_epoch_resume'])
-        save_path = model_path+'/run{}'.format(resume_model['model_run_resume'])
+        save_path = resume_model['model_path']+'/run{}'.format(resume_model['model_run_resume'])
         if os.path.exists(mpath):
             state = torch.load(mpath)
             start_epoch = state['epoch'] + 1
@@ -360,6 +360,7 @@ def getAccuracyLoadedModel(model_dir, epoch, raw_db = None, tst = True):
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path", help="Path to the directory containing all the data of the runs")
+    parser.add_argument("--samples_path", help="Path to the pkl containing the raw samples. If ")
     parser.add_argument("--N", type=int, help="Number of instruments in combination")
     parser.add_argument("--nb_samples", type=int, help="Number of samples to use per epoch")
     parser.add_argument("--epochs", type=int, help="Total number of epochs")
@@ -383,10 +384,10 @@ if __name__=='__main__':
         print("Number of samples used per epoch : {}".format(GLOBAL_PARAMS.nb_samples))
         print("Total number of epochs : {}".format(GLOBAL_PARAMS.nb_epoch))
     
-    exit()
-    
-    with open('D:/DeepOrchestration/rdb.pkl', 'rb') as f:
+    print("Loading database")
+    with open('../rdb.pkl', 'rb') as f:
         rdb = pickle.load(f)
+    print("Database loaded")
     
     GLOBAL_PARAMS.lab_class = {}
     tot_size = 0
