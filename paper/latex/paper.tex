@@ -186,14 +186,14 @@ The first deep model we tested was a Convolutional Neural Network (CNN). CNN sho
 \caption{Diagram of the CNN with LSTM architecture. \label{cnn_lstm}}
 \end{figure*}
 
-Given that audio is one kind of sequential data, it is easy to consider Long Short-Term Memory network(LSTM) as test model. In our setting, we added one LSTM layer with 32 outputs units following three convolutional layers following the same pattern as the CNN described earlier. After LSTM layer, we reshaped the output into the same size as the output of the last convulational layer, which was fed to another convolutional layer with the same structure and kernel size, yielding a tensor of dimensions $32\times 8 \times 21$. Finally, we flattened out the outputs and fed them into fully a connected layer with Dropout layer, followed by another fully connected layer. Finally, the sigmoid function was applied to th final layer in order to get a probability between 0 and 1 for each individual label.\\
+Given that audio is one kind of sequential data, it is easy to consider Long Short-Term Memory network(LSTM) as test model. In our setting, we added one LSTM layer with 32 outputs units following three convolutional layers following the same pattern as the CNN described earlier. After LSTM layer, we reshaped the output into the same size as the output of the last convulational layer, which was fed to another convolutional layer with the same structure and kernel size, yielding a tensor of dimensions $32\times 8 \times 21$. Finally, we flattened out the outputs and fed them into fully a connected layer with Dropout layer, followed by another fully connected layer. Finally, the sigmoid function was applied to the final layer in order to get a probability between 0 and 1 for each individual label. Since there is no competition relationship between different classes for each class can be classification result equally, it is reasonable for us to take sigmoid activations and used binary classification for each class to treat them independently. We minimize the binary cross entropy(BCE) loss between the predictions and targets. We implemented our neural networks with PyTorch and trained them with Adam optimizer. The model architecture is shown in Figure\ref{cnn_lstm}.\\
 
 
 \subsection{ResNet}
 
 The second deep model that we used was the well known deep residual network ResNet.
 
-To make our setting more reasonable, we took the well-known deep residual network(ResNet) as backbone in our experiments. Specifically, we used 18-layer ResNet. Besides, to make the model more suitable to our problem, we reset the output channel numbers of each block with 32, 64, 32, 32 respectively. 
+To make our setting more reasonable, we took the well-known deep residual network(ResNet) as backbone in our experiments. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. Besides, to make the model more suitable to our problem, we reduce the number of parameters and reset the output channel numbers of each block with 32, 64, 32, 32 respectively. We took the same loss function-BCE and optimizer-Adam as those in training the CNN with LSTM model.
 
 \subsection{Classification results}
 
