@@ -181,10 +181,10 @@ This was still a simplified version of the problem, as we were identifying only 
 
 The first deep model we tested was a Convolutional Neural Network (CNN). CNN shows good performance on classification assignment for its strong ability to extract spacial features, so we implemented a basic CNN with three convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a 2 * 2  MaxPool layer with a stride of 2. The kernel size is 3 * 3 with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32. This setting is simple but we can make a good comparison between it and the baseline. \\
 
-\begin{figure}
+\begin{figure*}
 \includegraphics[scale=0.45]{CNN_LSTM_diagram.png}
 \caption{Diagram of the CNN with LSTM architecture. \label{cnn_lstm}}
-\end{figure}
+\end{figure*}
 
 Given that audio is one kind of sequential data, it is easy to consider Long Short-Term Memory network(LSTM) as test model. In our setting, we added one LSTM layer with 32 outputs units following three convolutional layers following the same pattern as the CNN described earlier. After LSTM layer, we reshaped the output into the same size as the output of the last convulational layer, which was fed to another convolutional layer with the same structure and kernel size, yielding a tensor of dimensions $32\times 8 \times 21$. Finally, we flattened out the outputs and fed them into fully a connected layer with Dropout layer, followed by another fully connected layer. Finally, the sigmoid function was applied to th final layer in order to get a probability between 0 and 1 for each individual label.\\
 
@@ -315,23 +315,23 @@ In order to have comparable solutions, we did not allow OrchIdea to create spars
 d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k| \\
 \end{equation}
 
-$$
+\begin{equation}
 \delta_{k1} = 
 \begin{cases}
 1, \text{if   } x_k > \tilde{x}_k \\
 0, \text{otherwise}
 \end{cases} 
-$$
+\end{equation}
 
-$$
+\begin{equation}
 \delta_{k2} = 
 \begin{cases}
 1, \text{if   } x_k < \tilde{x}_k \\
 0, \text{otherwise}
-\end{cases} 
-$$
+\end{cases}
+\end{equation}
 
-This metric computes the difference between the FFT of the target and the FFT of the solution. 
+This metric takes in the FFT of the target, $x$ and the FFT of the solution $\tilde{x}$ and computes the difference between them at each bin.
 
 \begin{table}
   \begin{center}
