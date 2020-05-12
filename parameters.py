@@ -1,10 +1,5 @@
 import pickle
 
-resume_model = True
-model_path = './model'
-model_run_resume = 3
-model_epoch_resume = 9
-
 class SimParams:
     def __init__(self):
         self.path = "./TinySOL"
@@ -19,10 +14,10 @@ class SimParams:
         self.nb_samples = 400000
         self.rdm_granularity = 10
         self.nb_pitch_range = 8
-        self.instr_filter = ['Hn','Ob','Vn','Va', 'Vc', 'Fl', 'Tbn', 'Bn', 'TpC', 'ClBb']
+        self.instr_filter = ['Hn','Ob','Vn','Va', 'Vc', 'Fl', 'Tbn', 'Bn', 'TpC', 'ClBb'][:10]
         self.batch_size = 16
         self.model_type = 'resnet'
-        self.nb_epoch = 50
+        self.nb_epoch = 100
         self.train_proportion = 0.8
         
         self.coeff_freq_shift_data_augment = 0.008 # For data augmentation, proportional change to sampling rate

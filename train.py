@@ -15,8 +15,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 from model import OrchMatchNet
-from parameters import GLOBAL_PARAMS
-from parameters import resume_model, model_epoch_resume, model_path, model_run_resume
+from parameters import GLOBAL_PARAMS, SimParams
 from OrchDataset_2 import OrchDataSet,RawDatabase
 
 class Timer:
@@ -71,7 +70,7 @@ class DataSaver:
 
 timer = Timer(1000)
 
-def main(rdb = None):
+def main(resume_model, rdb = None):
     #print("Starting parsing -----")
     #arg = arg_parse()
     #print("End parsing")
@@ -85,13 +84,13 @@ def main(rdb = None):
         raw_db = rdb
     train_dataset = OrchDataSet(raw_db,class_encoder, GLOBAL_PARAMS.FEATURE_TYPE)
     if resume_model:
-        train_dataset.load(model_path+'/run{}/trainset.pkl'.format(model_run_resume))
+        train_dataset.load(resume_model['model_path']+'/run{}/trainset.pkl'.format(resume_model['model_run_resume']))
     else:
         train_dataset.generate(GLOBAL_PARAMS.N,int(GLOBAL_PARAMS.train_proportion*GLOBAL_PARAMS.nb_samples))
     test_dataset = OrchDataSet(raw_db,class_encoder, GLOBAL_PARAMS.FEATURE_TYPE)
     
     if resume_model:
-        test_dataset.load(model_path+'/run{}/testset.pkl'.format(model_run_resume))
+        test_dataset.load(resume_model['model_path']+'/run{}/testset.pkl'.format(resume_model['model_run_resume']))
     else:
         test_dataset.generate(GLOBAL_PARAMS.N,GLOBAL_PARAMS.nb_samples-int(GLOBAL_PARAMS.train_proportion*GLOBAL_PARAMS.nb_samples))
 
@@ -115,10 +114,10 @@ def main(rdb = None):
 
     # model load
     if resume_model:
-        GLOBAL_PARAMS.load_parameters(model_path+'/run{}'.format(model_run_resume))
+        GLOBAL_PARAMS.load_parameters(resume_model['model_path']+'/run{}'.format(resume_model['model_run_resume']))
         
-        mpath = model_path+'/run{}/epoch_{}.pth'.format(model_run_resume, model_epoch_resume)
-        save_path = model_path+'/run{}'.format(model_run_resume)
+        mpath = resume_model['model_path']+'/run{}/epoch_{}.pth'.format(resume_model['model_run_resume'], resume_model['model_epoch_resume'])
+        save_path = model_path+'/run{}'.format(resume_model['model_run_resume'])
         if os.path.exists(mpath):
             state = torch.load(mpath)
             start_epoch = state['epoch'] + 1
@@ -134,10 +133,10 @@ def main(rdb = None):
             print("[Error] no checkpoint ")
     else:
         i = 0
-        for d in os.listdir(model_path):
+        for d in os.listdir(resume_model['model_path']):
             if 'run' in d and i <= int(d[3:]):
                 i = int(d[3:]) + 1
-        save_path = model_path + '/run' + str(i)
+        save_path = resume_model['model_path'] + '/run' + str(i)
         os.mkdir(save_path)
         train_dataset.save(save_path+'/trainset.pkl')
         test_dataset.save(save_path+'/testset.pkl')
@@ -359,6 +358,32 @@ def getAccuracyLoadedModel(model_dir, epoch, raw_db = None, tst = True):
 
 
 if __name__=='__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_path", help="Path to the directory containing all the data of the runs")
+    parser.add_argument("--N", type=int, help="Number of instruments in combination")
+    parser.add_argument("--nb_samples", type=int, help="Number of samples to use per epoch")
+    parser.add_argument("--epochs", type=int, help="Total number of epochs")
+    parser.add_argument("--resume", help="If need to resume model", action="store_true")
+    parser.add_argument("--resume_run", type=int, help="Path to the directory containing checkpoint of the model")
+    parser.add_argument("--resume_epoch", type=int, help="Path to the directory containing checkpoint of the model")
+    args = parser.parse_args()
+    if args.resume:
+        resume_model = {"to_resume" : True,
+                        "model_path" : args.model_path,
+                        "model_run_resume" : args.resume_run,
+                        "model_epoch_resume" : args.resume_epoch}
+        print("Resuming model located in {} run {} at epoch {}".format(resume_model['model_path'], resume_model['model_run_resume'], resume_model['model_epoch_resume']))
+    else:
+        resume_model = {"to_resume" : False,
+                        "model_path" : args.model_path}
+        GLOBAL_PARAMS.N = args.N
+        GLOBAL_PARAMS.nb_samples = args.nb_samples
+        GLOBAL_PARAMS.nb_epoch = args.epochs
+        print("Number of instruments per combination : {}".format(GLOBAL_PARAMS.N))
+        print("Number of samples used per epoch : {}".format(GLOBAL_PARAMS.nb_samples))
+        print("Total number of epochs : {}".format(GLOBAL_PARAMS.nb_epoch))
+    
+    exit()
     
     with open('D:/DeepOrchestration/rdb.pkl', 'rb') as f:
         rdb = pickle.load(f)
@@ -401,4 +426,5 @@ if __name__=='__main__':
         result['pitch_acc'] = pitch_acc
     
         return result
-    main(rdb)
+    
+    main(resume_model, rdb)

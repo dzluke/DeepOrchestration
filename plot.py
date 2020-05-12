@@ -1,13 +1,16 @@
 import matplotlib.pyplot as plt
 import pickle
 
-def plot_run(run_nb):
+def plot_run(path, run_nb):
     res = {'acc' : []}
     
-    epochs = list(range(4,50,5))
+    MM = len([x for x in os.listdir('{}/run{}'.format(path, run_nb)) if 'result' in x])
+        
+        
+    epochs = list(range(4,MM*5,5))
     
     for j in epochs:
-        f = open('./model/run{}/result{}.pkl'.format(run_nb, j), 'rb')
+        f = open('{}/run{}/result{}.pkl'.format(path, run_nb, j), 'rb')
         r = pickle.load(f)
         if len(res.keys()) == 1:
             for k in r['pitch_acc']:
@@ -26,15 +29,19 @@ def plot_run(run_nb):
             l = 'Overall accuracy'
         plt.plot(epochs, res[k], st, label=l)
             
+    max_epoch = res['acc'].index(max(res['acc']))
+    print("Max accuracy achieved at epoch {}".format(epochs[max_epoch]))
+    for k in res:
+        print("Accuracy of {} : {}".format(k, res[k][max_epoch]))
     
     
     plt.grid()
-    plt.title('Accuracies for an orchestra with {} instruments'.format(len(res.keys())-1))
+    plt.title('Accuracies for an orchestra with {} instruments for the ResNet'.format(len(res.keys())-1))
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
     
-def get_instr(list_run):
+def get_instr(path, list_run):
     res = {'acc' : []}
     
     epochs = list(range(4,50,5))
@@ -43,7 +50,7 @@ def get_instr(list_run):
         m = 0
         p = {}
         for j in epochs:
-            f = open('./model/run{}/result{}.pkl'.format(i, j), 'rb')
+            f = open('{}/run{}/result{}.pkl'.format(path, i, j), 'rb')
             r = pickle.load(f)
             if len(p.keys()) == 0:
                 for k in r['pitch_acc']:

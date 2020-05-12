@@ -1,4 +1,0 @@
-Make orchestration using thresholds (using percentiles on the histogram)
-Not fix the number of instruments
-Compute RMS of target sound and incremental RMS using successive combinations
-Analysis of outputs

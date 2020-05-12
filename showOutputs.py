@@ -6,7 +6,7 @@ from matplotlib.colors import ListedColormap
 
 from train import getPosNMax, prediction
 
-path = './model/run2/outputs.npy'
+path = './model/run4/outputs.npy'
 
 viridis = cm.get_cmap('viridis')
 prec = 0.2
