@@ -83,6 +83,12 @@ In this paper we will explore preliminary neural models for the task of computer
 %
 \section{Introduction}\label{sec:introduction}
 
+Computer-assisted orchestration is an important problem ... \textbf{Carmine can you add more?}.
+
+We attempt to use neural networks to solve the assisted orchestration problem. Our idea is to frame this as a classification problem, and then use these classifiers to perform orchestrations. Our classifiers will be trained on sounds that are combinations of multiple instruments and notes, leading to a model that can take a complex mixture of timbres and deconstruct it into individual instrument-note pairs. In our setting of the problem, each class is an instrument-note pair. When a new sound, one that is not simply a mixture of notes, is fed to the model, the predictions are used to create an orchestrated solution.
+
+We found that even on a simplified version of this classification problem, parametric classifiers were unable to meaningfully identify instrument-note pairs as the number of instruments used in the combinations increased. Therefore a need for neural networks arose. The two architectures we experimented with are a Convolutional Neural Network with a Long Short-Term Memory unit, and ResNet, a well known residual network. After training these models on combinations of 10 instruments, we orchestrated 15 target sounds by feeding them to the networks. We then compared our orchestrations to OrchIdea's solutions for the same targets.
+
 \section{Data}
 
 \subsection{Data Source and Generation}
