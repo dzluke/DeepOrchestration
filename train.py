@@ -385,7 +385,7 @@ if __name__=='__main__':
         print("Total number of epochs : {}".format(GLOBAL_PARAMS.nb_epoch))
     
     print("Loading database")
-    with open('../rdb.pkl', 'rb') as f:
+    with open('D:/DeepOrchestration/rdb.pkl', 'rb') as f:
         rdb = pickle.load(f)
     print("Database loaded")
     
