@@ -134,7 +134,7 @@ The second augmentation was performed on the feature matrix itself, the mel spec
 
 \section{Our model}
 
-Our idea is to perform orchestration using deep neural networks trained for classification. In our setting, each class is an instrument-note pair. Our model takes in the mel spectrogram of a soundfile that is a combination of different instruments and pitches, and attempts to identify which instrument-pitch pairs are present. The network learns how to take a sound that is a complex combination of notes and timbres and deconstruct it into its original parts. Then, when a network is given a target sound as input, it will attempt to apply the same classification rules, outputting a vector of the probabilities of each sample being in the target sound. By taking the samples that have the highest probability, an orchestrated solution can be created. 
+Our idea is to perform orchestration using deep neural networks trained for classification. In our setting, each class is an instrument-note pair. Our model takes in the mel spectrogram of a soundfile that is a combination of different instruments and pitches, and attempts to identify which instrument-pitch pairs are present. The network learns how to take a sound that is a complex combination of notes and timbres and deconstruct it into its original parts. Then, when a network is given a target sound as input, it will attempt to apply the same classification rules, outputting a vector of the probabilities of each sample being in the target sound. By taking the samples that have the highest probability, an orchestrated solution can be created. Both of our deep models use the Adam optimizer, Binary Cross-Entropy loss, and were written using PyTorch.
 
 We did not train our model to classify the dynamics of a sample despite TinySOL having pianissimo, mezzo forte, and fortissimo recordings for each sample. If we had, then each class would be an instrument-pitch-dynamic tuple and would have only one data point. Instead, when the model is used for orchestration, the dynamic is determined by the probability of that sample as output by the model. If the model output a probability higher than $0.66$ for a sample, the fortissimo version of the sample was used. If it was between $0.33$ and $0.66$, then the mezzo forte version, and if less than $0.33$ the pianissimo dynamic. The idea behind this is that samples that are the most represented in the target should be the loudest in the orchestrated solution. \textbf{\{I am not sure this hypothesis can be used accurately\}}
 
@@ -176,27 +176,29 @@ This was still a simplified version of the problem, as we were identifying only 
 
 \subsection{CNN with LSTM}
 
-The first deep model we tested was a Convolutional Neural Network (CNN). CNNs show good performance on classification problems for their ability to extract spatial features. \textbf{Reference needed}. Our architecture contained three convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a $2 \times 2$  MaxPool layer with a stride of 2. The kernel size is $3 \times 3$ with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32.
+The first deep model we tested was a Convolutional Neural Network (CNN) with a Long Short-Term Memory (LSTM) unit. CNNs show good performance on classification problems for their ability to extract spatial features. \textbf{Reference needed}. Long Short-Term Memory (LSTM) units provide a way to learn long term dependencies in the data \cite{LSTM}, which is relevent given the sequential nature of audio.
+
+Our architecture contains four convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a $2 \times 2$  MaxPool layer with a stride of 2. The kernel size is $3 \times 3$ with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32, and 32.
+
+Following the first three convolutional layers, there is an LSTM layer with 32 outputs. After the LSTM layer, there is a final convolutional layer yielding a tensor of dimensions $32\times 8 \times 21$. We flatten the outputs and feed them into fully a connected layer with Dropout, then another another fully connected layer. Finally, the sigmoid function is applied to the final layer. 
+
+Since each class is independent, we are able to take the sigmoid activation and use binary classification for each class. The model architecture is shown in Figure \ref{cnn_lstm}.
 
 \begin{figure*}
 \includegraphics[scale=0.45]{CNN_LSTM_diagram.png}
 \caption{Diagram of the CNN with LSTM architecture. \label{cnn_lstm}}
 \end{figure*}
 
-Given the sequential nature of audio, a Long Short-Term Memory (LSTM) network provides a way to learn long term dependencies in the data \cite{LSTM}.
-
- In our setting, we added one LSTM layer with 32 outputs units following three convolutional layers following the same pattern as the CNN described earlier. After LSTM layer, we reshaped the output into the same size as the output of the last convulational layer, which was fed to another convolutional layer with the same structure and kernel size, yielding a tensor of dimensions $32\times 8 \times 21$. Finally, we flattened out the outputs and fed them into fully a connected layer with Dropout layer, followed by another fully connected layer. Finally, the sigmoid function was applied to the final layer in order to get a probability between 0 and 1 for each individual label. Since there is no competition relationship between different classes for each class can be classification result equally, it is reasonable for us to take sigmoid activations and used binary classification for each class to treat them independently. We minimize the binary cross entropy(BCE) loss between the predictions and targets. We implemented our neural networks with PyTorch and trained them with Adam optimizer. The model architecture is shown in Figure\ref{cnn_lstm}.\\
-
 
 \subsection{ResNet}
 
 The second deep model that we used was the well known deep residual network ResNet.
 
-To make our setting more reasonable, we took the well-known deep residual network(ResNet) as backbone in our experiments. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. Besides, to make the model more suitable to our problem, we reduce the number of parameters and reset the output channel numbers of each block with 32, 64, 32, 32 respectively. We took the same loss function-BCE and optimizer-Adam as those in training the CNN with LSTM model.
+To make our setting more reasonable, we took the well-known deep residual network (ResNet) as backbone in our experiments. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. Besides, to make the model more suitable to our problem, we reduce the number of parameters and reset the output channel numbers of each block with 32, 64, 32, 32 respectively.
 
 \subsection{Classification results}
 
-During training, the loss function used to optimize the inner parameters of the model was binary cross entropy, as it is the common choice for multiclass multilabel classification frameworks such as this one. However, the value of the loss function alone is difficult to interpret. This is why, we used a complementary function $f$ only for evaluation, to match the notion of accuracy of the model with the intuitive approach. This function compares a vector of expected outputs $\overline{X}$ with the estimated output from the model $\hat{X}$ by using the following function
+During training, the loss function used to optimize the inner parameters of the model was binary cross entropy, as it is the common choice for multiclass multilabel classification frameworks such as this one. However, the value of the loss function alone is difficult to interpret. For this reason we created a complementary function $f$ to be used only for evaluation. This function compares a vector of expected outputs $\overline{X}$ with the estimated output from the model $\hat{X}$ by using the following function
 
 \begin{equation}
 f(\overline{X}, \hat{X}) = \frac{1}{N}<\overline{X}, M_N(\hat{X})>
@@ -212,9 +214,9 @@ M_N(\hat{X})_i = \left\{\begin{array}{ll}
 \end{array}\right.
 \label{NMax}
 \end{equation}
-and $I_N(\hat{X})$ is the set of the indices containing the $N$ first maximums of the vector $\hat{X}$.
+and $I_N(\hat{X})$ is the set of indices containing the $N$ first maximums of the vector $\hat{X}$.
 
-More specifically, the function $M_N(\hat{X})$ takes as an input a vector of probabilities (values between 0 and 1) and outputs a vector where only the positions of the $N$ first maxima are set to 1. This new vector would be the orchestration of $N$ instruments given by the model. Thus, the function $f$ simply outputs the proportion of the estimated orchestration that matches the expected one.
+More specifically, the function $M_N(\hat{X})$ takes as an input a vector of probabilities and outputs a vector where only the positions of the $N$ first maxima are set to 1. This new vector would be the orchestration of $N$ instruments given by the model. Thus, the function $f$ simply outputs the proportion of the estimated orchestration that matches the expected one.
 
 Different experiments were made by varying the number of instruments in the orchestra $N$ but always matching this number with the number of instruments in each mixture sample. Tab. \ref{exp_tab} shows the orchestra for each different value of $N$ used in the experiments.
 
@@ -291,11 +293,6 @@ Best test accuracy obtained for each model and value of $N$ over the total numbe
 \end{table}
 
 \section{Orchestration experiments}
-- set of 10 targets
-- orchestra fix to 10
-- qualitative evaluation: acoustic inspection of the solutions
-- quantitative evaluation: distance in feature space
-- comparison table between Orchidea and our model
 
 Our final model was trained on data where each input was a combination of ten instruments, but we performed experiments with varying numbers of instruments used in combination. (insert table of data showing the results of CNN with 2,3,4 etc instruments) An arbitrary number of samples can be used in the solution, since the $n$ highest probabilities can be taken from the output, leading to $n$ samples in the solution.
 
@@ -348,7 +345,7 @@ This metric takes in the FFT of the target, $x$ and the FFT of the solution $\ti
       \hline
     \end{tabular}
   \end{center}
-  \caption{Comparison of the orchestration solutions of our two models, CNN with LSTM and ResNet, against OrchIdea's solutions. The distance between the target and solution are calculated for each target using \eqref{distance} and then averaged.}
+  \caption{Comparison of the orchestration solutions of our two models, CNN with LSTM and ResNet, against OrchIdea's solutions. The distance between the target and solution are calculated for each target using Eqn. \eqref{distance} and then averaged.}
 \end{table}
 
 \section{Conclusion}
@@ -389,24 +386,6 @@ When the following words appear in the conference publication titles, please abb
 
 \section{Figures}
 
-\begin{figure}
-\includegraphics[scale=0.6]{figs/CNN4.png}
-\end{figure}
-\begin{figure}
-\includegraphics[scale=0.6]{figs/CNN5.png}
-\end{figure}
-\begin{figure}
-\includegraphics[scale=0.6]{figs/CNN6.png}
-\end{figure}
-\begin{figure}
-\includegraphics[scale=0.6]{figs/CNN7.png}
-\end{figure}
-\begin{figure}
-\includegraphics[scale=0.6]{figs/CNN8.png}
-\end{figure}
-\begin{figure}
-\includegraphics[scale=0.6]{figs/CNN9.png}
-\end{figure}
 \begin{figure}
 \includegraphics[scale=0.6]{figs/CNN10.png}
 \end{figure}
