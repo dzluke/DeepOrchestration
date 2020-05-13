@@ -249,7 +249,12 @@ Orchestra for each $N$ used in the experiments.
 \end{caption}
 \end{table}
 
-Then, for both CNN with LSTM and ResNet, we computed the maximum accuracy over the epochs. Tab. \ref{epoch} compiles the number of samples per epoch and the total number of epochs used for each model and each value of $N$. Tab. \ref{class_res} shows the maximum accuracy computed using the function $f$ explicited in (\ref{eval}).
+Then, for both CNN with LSTM and ResNet, we computed the maximum accuracy over the epochs. Tab. \ref{epoch} compiles the number of samples per epoch and the total number of epochs used for each model and each value of $N$. Fig. \ref{cnn_vs_resnet} shows the best overall test accuracy achieved by both models across the number of instruments $N$ to detect simultaneously.\\
+
+From this plot, we see that ResNet achieves better performances regardless of the number of instruments used in the combination, with 
+
+
+For more details on the accuracy Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum accuracy computed using the function $f$ explicited in (\ref{eval}).
 
 
 
@@ -272,7 +277,16 @@ Number of epochs and number of samples per epoch used for training each model wi
 \end{table}
 
 
-\begin{table}
+\begin{figure}
+\includegraphics[scale=0.57]{figs/CNN_vs_ResNet.png}
+\caption{Best overall accuracy and for CNN and ResNet depending on the number of instruments in the combinations used for training. \label{cnn_vs_resnet}}
+\end{figure}
+
+
+
+\iffalse
+\begin{table*}
+\center{
 \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
 \hline
 Instruments & \multicolumn{2}{c|}{$N=4$} & \multicolumn{2}{c|}{$N=5$}& \multicolumn{2}{c|}{$N=6$}& \multicolumn{2}{c|}{$N=7$}& \multicolumn{2}{c|}{$N=8$}& \multicolumn{2}{c|}{$N=9$}& \multicolumn{2}{c|}{$N=10$}\\
@@ -295,8 +309,9 @@ ClBb & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
 \begin{caption}
 Best test accuracy obtained for each model and value of $N$ over the total number of epochs. The accuracy is computed using $f$ define in (\ref{eval}). The first row correspond to the overall accuracy of the model, regrouping all the instruments. C is CNN with LSTM, R is ResNet.
 \label{class_res}
-\end{caption}
-\end{table}
+\end{caption}}
+\end{table*}
+\fi
 
 \section{Orchestration experiments}
 
@@ -395,6 +410,17 @@ When the following words appear in the conference publication titles, please abb
 \begin{figure}
 \includegraphics[scale=0.6]{figs/CNN10.png}
 \end{figure}
+
+
+\begin{figure*}
+\includegraphics[scale=0.6]{figs/Acc_vs_N_CNN.png}
+\caption{Best overall accuracy and for each instrument obtained by the CNN with LSTM depending on the number of instruments in the combinations. \label{best_acc_cnn}}
+\end{figure*}
+
+\begin{figure*}
+\includegraphics[scale=0.6]{figs/Acc_vs_N_ResNet.png}
+\caption{Best overall accuracy and for each instrument obtained by the ResNet depending on the number of instruments in the combinations. \label{best_acc_resnet}}
+\end{figure*}
 
 % For bibtex users:
 \bibliography{paper}

@@ -1,5 +1,60 @@
 import matplotlib.pyplot as plt
 import pickle
+import os
+import parameters
+
+def f(l):
+    Y = [0,0,0,0,0,0]
+    for i in l:
+        Y[X.index(i[0])] = i[1]['acc']
+    return Y
+
+def plot_best_acc(path):
+    
+    list_accs = []
+    for i in os.listdir(path):
+        accs = {}
+        MM = len([x for x in os.listdir('{}/{}'.format(path, i)) if 'result' in x])
+        epochs = list(range(4,MM*5,5))
+        max_epoch = -1
+        
+        parameters.GLOBAL_PARAMS.load_parameters('{}/{}'.format(path, i))
+    
+        for j in epochs:
+            f = open('{}/{}/result{}.pkl'.format(path, i, j), 'rb')
+            r = pickle.load(f)
+            if len(accs.keys()) == 0:
+                accs['acc'] = 0
+                for k in r['pitch_acc']:
+                    accs[k] = 0
+            
+            if r['acc'] > accs['acc']:
+                max_epoch = j
+                accs['acc'] = r['acc']
+                for k in r['pitch_acc']:
+                    accs[k] = r['pitch_acc'][k]
+            f.close()
+            
+        list_accs.append((parameters.GLOBAL_PARAMS.N, accs, max_epoch, epochs[-1]))
+    plt.figure(figsize=(12,7))
+    for i in list_accs[0][1].keys():
+        accs = []
+        for x in list_accs:
+            accs.append((x[0], x[1][i]))
+            
+        accs.sort(key = lambda x : x[0])
+        
+        if i == 'acc':
+            plt.plot([x[0] for x in accs], [x[1] for x in accs], '-o', label = "Overall accuracy")
+        else:
+            plt.plot([x[0] for x in accs], [x[1] for x in accs], '--x', label = "{} accuracy".format(i))
+        plt.grid()
+    plt.xlabel("Number of instruments in the combinations")
+    plt.ylabel("Accuracy")
+    plt.title("Maximum test accuracy achieved vs number of instruments N".format(i))
+    plt.legend()
+        
+    return list_accs
 
 def plot_run(path, run_nb):
     res = {'acc' : []}

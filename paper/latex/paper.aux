@@ -1,51 +1,57 @@
 \relax 
 \bibstyle{plain}
 \@LN@col{1}
-\@writefile{toc}{\contentsline {section}{\numberline {1.} Introduction}{1}}
+\@writefile{toc}{\contentsline {section}{\numberline {1.} Introduction}{1}\protected@file@percent }
 \newlabel{sec:introduction}{{1}{1}}
-\@writefile{toc}{\contentsline {section}{\numberline {2.} Data}{1}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1} Data Source and Generation}{1}}
 \@LN@col{2}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces T}}{1}}
-\newlabel{tab_pitch}{{1}{1}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2} Data Augmentation}{1}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.} Data}{1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1} Data Source and Generation}{1}\protected@file@percent }
 \@LN@col{1}
-\@writefile{toc}{\contentsline {section}{\numberline {3.} Our model}{2}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1} Baseline}{2}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces T}}{2}\protected@file@percent }
+\newlabel{tab_pitch}{{1}{2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2} Data Augmentation}{2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.} Our model}{2}\protected@file@percent }
 \@LN@col{2}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1} Baseline}{2}\protected@file@percent }
+\citation{LSTM}
 \@LN@col{1}
 \newlabel{tab:table1}{{3.1}{3}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Comparison of results between SVM and Random Forest. Each data point is a combination of two TinySOL samples, where at least one of the samples is from one of the two instruments specified for that experiment. For the samples drawn from one of the two instruments, the pitch class of that sample is identified. For a sample not from one of the two instruments, the classifier simply attempted to identify that a sample from one of the non-specified instruments was present. In this setting, there are 25 classes: 24 from the 12 pitch classes from 2 instruments, and 1 class that specified whether an instrument that is not one of the two specified is present.}}{3}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2} CNN with LSTM}{3}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Comparison of results between SVM and Random Forest. Each data point is a combination of two TinySOL samples, where at least one of the samples is from one of the two instruments specified for that experiment. For the samples drawn from one of the two instruments, the pitch class of that sample is identified. For a sample not from one of the two instruments, the classifier simply attempted to identify that a sample from one of the non-specified instruments was present. In this setting, there are 25 classes: 24 from the 12 pitch classes from 2 instruments, and 1 class that specified whether an instrument that is not one of the two specified is present.}}{3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2} CNN with LSTM}{3}\protected@file@percent }
 \@LN@col{2}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3} ResNet}{3}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4} Classification results}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3} ResNet}{3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4} Classification results}{3}\protected@file@percent }
 \newlabel{eval}{{1}{3}}
 \newlabel{NMax}{{2}{3}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Diagram of the CNN with LSTM architecture. }}{4}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Diagram of the CNN with LSTM architecture. }}{4}\protected@file@percent }
 \newlabel{cnn_lstm}{{1}{4}}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces O}}{4}}
-\newlabel{exp_tab}{{3}{4}}
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces N}}{4}}
-\newlabel{epoch}{{4}{4}}
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces B}}{4}}
-\newlabel{class_res}{{5}{4}}
 \@LN@col{1}
-\@writefile{toc}{\contentsline {section}{\numberline {4.} Orchestration experiments}{5}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1} Evaluation}{5}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces O}}{4}\protected@file@percent }
+\newlabel{exp_tab}{{3}{4}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces N}}{4}\protected@file@percent }
+\newlabel{epoch}{{4}{4}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Best overall accuracy and for CNN and ResNet depending on the number of instruments in the combinations used for training. }}{4}\protected@file@percent }
+\newlabel{cnn_vs_resnet}{{2}{4}}
+\@LN@col{1}
+\@writefile{toc}{\contentsline {section}{\numberline {4.} Orchestration experiments}{5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1} Evaluation}{5}\protected@file@percent }
 \newlabel{distance}{{3}{5}}
 \@LN@col{2}
 \newlabel{orch_eval}{{4.1}{5}}
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Comparison of the orchestration solutions of our two models, CNN with LSTM and ResNet, against OrchIdea's solutions. The distance between the target and solution are calculated for each target using \textup  {\hbox {\mathsurround \z@ \normalfont  (\ignorespaces 3\hbox {}\unskip \@@italiccorr )}} and then averaged.}}{5}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.} Conclusion}{5}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1} Interpreting the Latent Space}{5}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.} Future steps}{5}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Comparison of the orchestration solutions of our two models, CNN with LSTM and ResNet, against OrchIdea's solutions. The distance between the target and solution are calculated for each target using Eqn. \textup  {\hbox {\mathsurround \z@ \normalfont  (\ignorespaces 3\hbox {}\unskip \@@italiccorr )}} and then averaged.}}{5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.} Conclusion}{5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1} Interpreting the Latent Space}{5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.} Future steps}{5}\protected@file@percent }
 \citation{Author:00}
 \citation{Author:00,Someone:10,Someone:04}
 \citation{Someone:10}
 \citation{Someone:10}
-\bibdata{ISMIRtemplate}
+\bibdata{paper}
 \@LN@col{1}
-\@writefile{toc}{\contentsline {section}{\numberline {7.} Citations}{6}}
-\@writefile{toc}{\contentsline {section}{\numberline {8.} Figures}{6}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.} Citations}{6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.} Figures}{6}\protected@file@percent }
 \@LN@col{2}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Best overall accuracy and for each instrument obtained by the CNN with LSTM depending on the number of instruments in the combinations. }}{7}\protected@file@percent }
+\newlabel{best_acc_cnn}{{3}{7}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Best overall accuracy and for each instrument obtained by the ResNet depending on the number of instruments in the combinations. }}{7}\protected@file@percent }
+\newlabel{best_acc_resnet}{{4}{7}}
