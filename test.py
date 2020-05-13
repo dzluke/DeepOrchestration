@@ -28,10 +28,10 @@ to be the path to this folder
 tinysol_path = './TinySOL'
 
 # cnn or resnet
-model_type = 'cnn'
+model_type = 'resnet'
 
 # number of samples to be used in solution
-n = 4
+n = 10
 
 # instruments to be used (all instruments will be used)
 instr_filter = ['Hn', 'Ob', 'Vn', 'Va',
@@ -217,8 +217,8 @@ def compute_distance(target, solution):
     target_fft = np.abs(np.fft.rfft(target, N))
     solution_fft = np.abs(np.fft.rfft(solution, N))
 
-    lambda_1 = 1
-    lambda_2 = 1
+    lambda_1 = 0.1
+    lambda_2 = 2
 
     sum_1 = 0
     sum_2 = 0
@@ -283,61 +283,87 @@ def make_fake_targets(num_classes):
 
 
 if __name__ == "__main__":
-    print('--------------------------')
-    print('MODEL TYPE:', model_type)
-    print('NUMBER OF INSTRUMENTS:', len(instr_filter))
-    print('N:', n)
-    print('--------------------------')
+    # print('--------------------------')
+    # print('MODEL TYPE:', model_type)
+    # print('NUMBER OF INSTRUMENTS:', len(instr_filter))
+    # print('N:', n)
+    # print('--------------------------')
 
 
-    rdb = RawDatabase(tinysol_path, GLOBAL_PARAMS.rdm_granularity, instr_filter)
+    # rdb = RawDatabase(tinysol_path, GLOBAL_PARAMS.rdm_granularity, instr_filter)
 
-    lab_class = GLOBAL_PARAMS.lab_class
+    # lab_class = GLOBAL_PARAMS.lab_class
 
-    # calculate num classes
-    num_classes = 0
-    for k in rdb.db:
-        a = set()
-        for l in rdb.db[k]:
-            for e in l:
-                a.add(e['pitch_name'])
-        for p in rdb.pr:
-            if p in a:
-                num_classes += 1
+    # # calculate num classes
+    # num_classes = 0
+    # for k in rdb.db:
+    #     a = set()
+    #     for l in rdb.db[k]:
+    #         for e in l:
+    #             a.add(e['pitch_name'])
+    #     for p in rdb.pr:
+    #         if p in a:
+    #             num_classes += 1
 
     
-    def class_encoder(list_samp):
-        label = [0 for i in range(num_classes)]
-        for s in list_samp:
-            label[lab_class[s['instrument']][s['pitch_name']]] = 1
-        return np.array(label).astype(np.float32)
+    # def class_encoder(list_samp):
+    #     label = [0 for i in range(num_classes)]
+    #     for s in list_samp:
+    #         label[lab_class[s['instrument']][s['pitch_name']]] = 1
+    #     return np.array(label).astype(np.float32)
 
-    def evaluate(preds, labels):
-        if preds.shape != labels.shape:
-            print("[Error]: size difference")
-        # compute the label-based accuracy
-        result = {}
+    # def evaluate(preds, labels):
+    #     if preds.shape != labels.shape:
+    #         print("[Error]: size difference")
+    #     # compute the label-based accuracy
+    #     result = {}
 
-        result['acc'] = np.sum(preds*labels)/max(1.0, np.sum(labels))
-        pitch_acc = {}
-        for i in lab_class:
-            l = [lab_class[i][x] for x in lab_class[i]]
-            f = np.zeros(preds.shape, dtype=np.float32)
-            f[:, min(l):max(l)+1] = 1.0
-            f = labels*f
-            pitch_acc[i] = np.sum(preds*f)/max(1.0, np.sum(f))
-        result['pitch_acc'] = pitch_acc
+    #     result['acc'] = np.sum(preds*labels)/max(1.0, np.sum(labels))
+    #     pitch_acc = {}
+    #     for i in lab_class:
+    #         l = [lab_class[i][x] for x in lab_class[i]]
+    #         f = np.zeros(preds.shape, dtype=np.float32)
+    #         f[:, min(l):max(l)+1] = 1.0
+    #         f = labels*f
+    #         pitch_acc[i] = np.sum(preds*f)/max(1.0, np.sum(f))
+    #     result['pitch_acc'] = pitch_acc
 
-        return result
+    #     return result
     
-    features_shape = [128, 87] # the dim of the data used to train the network
+    # features_shape = [128, 87] # the dim of the data used to train the network
     
-    model = OrchMatchNet(num_classes, model_type, features_shape)
+    # model = OrchMatchNet(num_classes, model_type, features_shape)
     
-    if sanity_check:
-        data, targets, labels = make_fake_targets(num_classes)
-    else:
-        data, targets = load_data(target_path)
+    # if sanity_check:
+    #     data, targets, labels = make_fake_targets(num_classes)
+    # else:
+    #     data, targets = load_data(target_path)
 
-    test(model, state_path, data, targets)
-    print('Done.')
+    # test(model, state_path, data, targets)
+    # print('Done.')
+
+    orchidea_solutions_path = './orchidea_solutions'
+    data, targets = load_data(target_path)
+    total = 0
+    f = open(orchidea_solutions_path + '/orchestration_results.txt', 'w+')
+    for target in targets:
+        print("Target Name:", target['name'])
+        name = target['name'] + '.wav.solution'
+        solution_path = os.path.join(orchidea_solutions_path, name, 'connection.wav')
+        print('Soln Path:', solution_path)
+        try:
+            solution, _ = librosa.load(solution_path, sr=None)
+        except:
+            continue
+        target['distance'] = compute_distance(target, solution)
+        print('Distance', target['distance'])
+        total += target['distance']
+        f.write('Target: {}; Distance: {:,.2f}\n\n'.format(target['name'], target['distance']))
+    f.write('Average Distance: {:,.2f}'.format(total/len(targets)))
+    f.close()
+
+
+
+
+
+    
