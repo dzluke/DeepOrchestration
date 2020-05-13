@@ -224,57 +224,16 @@ and $I_N(\hat{X})$ is the set of indices containing the $N$ first maximums of th
 
 More specifically, the function $M_N(\hat{X})$ takes as an input a vector of probabilities and outputs a vector where only the positions of the $N$ first maxima are set to 1. This new vector would be the orchestration of $N$ instruments given by the model. Thus, the function $f$ simply outputs the proportion of the estimated orchestration that matches the expected one.
 
-Different experiments were made by varying the number of instruments in the orchestra $N$ but always matching this number with the number of instruments in each mixture sample. Tab. \ref{exp_tab} shows the orchestra for each different value of $N$ used in the experiments.
+Different experiments were made by varying the number $N$ of instruments in each mixture sample. We used an orchestra of 10 instruments containing Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet C and Clarinet Bb.
+
+Then, for both CNN with LSTM and ResNet, we computed the maximum accuracy over the epochs. For the CNN model, all the trainings with different values of $N$ were made using a dataset containing 200000 samples over 50 epochs, whereas for the ResNet, the dataset contained 400000 samples and was trained over 20 epochs. Fig. \ref{cnn_vs_resnet} shows the best overall test accuracy achieved by both models across the number of instruments $N$.\\
 
 \textbf{(Alejandro, add how there were certain instruments that performed poorly and some that were great. Add how ResNet was awful for Flute and always output Flute C7)}
 
-\begin{table}
-\begin{tabular}{|c|l|}
-\hline
-$N$ & Orchestra\\
-\hline
-4 & Hn, Ob, Vn, Va\\
-5 & Hn, Ob, Vn, Va, Vc\\
-6 & Hn, Ob, Vn, Va, Vc, Fl\\
-7 & Hn, Ob, Vn, Va, Vc, Fl, Tbn\\
-8 & Hn, Ob, Vn, Va, Vc, Fl, Tbn, Bn\\
-9 & Hn, Ob, Vn, Va, Vc, Fl, Tbn, Bn, TpC\\
-10 & Hn, Ob, Vn, Va, Vc, Fl, Tbn, Bn, TpC, ClBb\\
-\hline
-\end{tabular}
-
-\begin{caption}
-Orchestra for each $N$ used in the experiments.
-\label{exp_tab}
-\end{caption}
-\end{table}
-
-Then, for both CNN with LSTM and ResNet, we computed the maximum accuracy over the epochs. Tab. \ref{epoch} compiles the number of samples per epoch and the total number of epochs used for each model and each value of $N$. Fig. \ref{cnn_vs_resnet} shows the best overall test accuracy achieved by both models across the number of instruments $N$ to detect simultaneously.\\
-
-From this plot, we see that ResNet achieves better performances regardless of the number of instruments used in the combination, with 
+From this plot, we see that ResNet achieves better performances than the CNN regardless of the number of instruments used in the combination. This result isn't surprising \textbf{\color{red} Interpretation of why ResNet is better than CNN}
 
 
-For more details on the accuracy Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum accuracy computed using the function $f$ explicited in (\ref{eval}).
-
-
-
-\begin{table}
-\begin{tabular}{|c|c|c|c|}
-\hline
-Model & $N$ & Nb epochs & Nb samples\\
-\hline
-CNN-LSTM & 4-7 & 50 & 100000 \\
-CNN-LSTM & 8-10 & 50 & 200000 \\
-ResNet & 4-8 & 20 & 200000 \\
-ResNet & 9-10 & 20 & 400000 \\
-\hline
-\end{tabular}
-
-\begin{caption}
-Number of epochs and number of samples per epoch used for training each model with a given value of the size of the orchestra $N$.
-\label{epoch}
-\end{caption}
-\end{table}
+Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum accuracy computed using the function $f$ explicited in (\ref{eval}). Note that for ResNet, the variance of accuracy is much smaller until $N$ reaches 5 before becoming similar to the CNN. Another key observation is that both models struggle to classify the same instruments. Flute, Trombone and Trumpet yield the worst results for both models, being notably worst \textbf{\color{red} Use same colors for instruments}
 
 
 \begin{figure}
