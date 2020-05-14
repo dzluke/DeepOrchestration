@@ -13,16 +13,16 @@ Samples used: [['Bn', 'B3', 'pp'], ['Hn', 'B3', 'pp'], ['Bn', 'G#3', 'pp'], ['Tb
 Target: WinchesterBell; Distance: 2.35155130
 Samples used: [['ClBb', 'G#5', 'pp'], ['Vc', 'B4', 'pp'], ['Ob', 'F4', 'pp'], ['ClBb', 'F6', 'pp'], ['Ob', 'D6', 'pp'], ['ClBb', 'C6', 'pp'], ['Fl', 'C7', 'pp'], ['ClBb', 'E6', 'mf'], ['Fl', 'A6', 'mf'], ['Ob', 'D#6', 'ff']]
 
-Target: YanBn-mul-PG-ST12; Distance: 0.88439012
+Target: YanBn-mul-PG-ST12; Distance: 0.89444146
 Samples used: [['Va', 'A4', 'pp'], ['TpC', 'D4', 'pp'], ['Hn', 'A4', 'pp'], ['Fl', 'D#5', 'pp'], ['ClBb', 'A4', 'pp'], ['Hn', 'D#5', 'pp'], ['ClBb', 'D5', 'pp'], ['ClBb', 'A#4', 'pp'], ['ClBb', 'D3', 'pp'], ['ClBb', 'D#3', 'ff']]
 
 Target: car-horn; Distance: 2.00485712
 Samples used: [['Bn', 'C#3', 'mf'], ['Tbn', 'G#4', 'mf'], ['Bn', 'G#4', 'mf'], ['Hn', 'C#5', 'mf'], ['Vn', 'D7', 'mf'], ['ClBb', 'D#6', 'mf'], ['Fl', 'C7', 'mf'], ['Ob', 'G#6', 'mf'], ['Fl', 'D7', 'ff'], ['Ob', 'G#5', 'ff']]
 
-Target: boat_docking; Distance: 1.57501900
+Target: boat_docking; Distance: 1.24871258
 Samples used: [['Va', 'A#3', 'pp'], ['Vc', 'D3', 'pp'], ['Va', 'C#3', 'pp'], ['Va', 'A3', 'pp'], ['ClBb', 'B3', 'pp'], ['TpC', 'A3', 'pp'], ['Vc', 'A3', 'pp'], ['ClBb', 'D3', 'pp'], ['Va', 'C3', 'pp'], ['Vc', 'F#4', 'pp']]
 
-Target: wind-harp; Distance: 2.00222964
+Target: wind-harp; Distance: 1.97599768
 Samples used: [['Vc', 'D3', 'pp'], ['Hn', 'C#5', 'pp'], ['Hn', 'B3', 'pp'], ['Vc', 'C#3', 'pp'], ['Va', 'F#3', 'pp'], ['Va', 'D3', 'pp'], ['ClBb', 'D3', 'pp'], ['Bn', 'E4', 'pp'], ['Bn', 'F#4', 'pp'], ['Hn', 'D5', 'mf']]
 
 Target: Beethoven_chord2; Distance: 4.23140618
@@ -43,7 +43,7 @@ Samples used: [['Tbn', 'C#2', 'pp'], ['Vn', 'A6', 'pp'], ['Fl', 'D7', 'pp'], ['C
 Target: Trompe_attaque-MN; Distance: 3.33442082
 Samples used: [['Hn', 'D#4', 'pp'], ['Hn', 'A#1', 'pp'], ['TpC', 'G4', 'pp'], ['TpC', 'G#4', 'pp'], ['Hn', 'E3', 'pp'], ['ClBb', 'E5', 'pp'], ['Hn', 'C2', 'pp'], ['Hn', 'C#2', 'pp'], ['Tbn', 'C5', 'mf'], ['ClBb', 'F#5', 'mf']]
 
-Average distance: 3.13469590
+Average distance: 3.11186343
 
 
 Ratios:
@@ -58,13 +58,13 @@ Target: archeos-bell; Ratio: 0.54983930
 
 Target: WinchesterBell; Ratio: 0.26350558
 
-Target: YanBn-mul-PG-ST12; Ratio: 1.10373324
+Target: YanBn-mul-PG-ST12; Ratio: 1.09132996
 
 Target: car-horn; Ratio: 0.67699594
 
-Target: boat_docking; Ratio: 0.95066623
+Target: boat_docking; Ratio: 1.19908889
 
-Target: wind-harp; Ratio: 0.54346998
+Target: wind-harp; Ratio: 0.55068470
 
 Target: reed_bone; Ratio: 0.70247880
 

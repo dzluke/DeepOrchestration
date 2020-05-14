@@ -25,7 +25,7 @@ Samples used: [['Vc', 'C2', 'pp'], ['Hn', 'B1', 'pp'], ['TpC', 'F4', 'pp'], ['Hn
 Target: wind-harp; Distance: 1.77806105
 Samples used: [['Hn', 'E5', 'pp'], ['Hn', 'D#5', 'pp'], ['Va', 'A3', 'pp'], ['Vc', 'G#3', 'pp'], ['Hn', 'C4', 'pp'], ['ClBb', 'C4', 'pp'], ['Hn', 'A3', 'pp'], ['Bn', 'E3', 'mf'], ['Bn', 'E4', 'mf'], ['Hn', 'E4', 'ff']]
 
-Target: Beethoven_chord2; Distance: 6.54262915
+Target: Beethoven_chord2; Distance: 6.16727370
 Samples used: [['Vn', 'B5', 'pp'], ['Va', 'E6', 'pp'], ['Vc', 'C6', 'pp'], ['Vc', 'G2', 'pp'], ['Hn', 'E3', 'pp'], ['ClBb', 'E5', 'mf'], ['Tbn', 'A#0', 'ff'], ['Vc', 'G#2', 'ff'], ['Hn', 'B3', 'ff'], ['Vc', 'C#2', 'ff']]
 
 Target: reed_bone; Distance: 13.62668318
@@ -37,13 +37,13 @@ Samples used: [['Hn', 'B1', 'pp'], ['Vc', 'C#3', 'pp'], ['Vn', 'A3', 'pp'], ['Vc
 Target: gong_c#3; Distance: 2.87029288
 Samples used: [['Hn', 'F3', 'pp'], ['ClBb', 'F3', 'pp'], ['Tbn', 'F3', 'pp'], ['Vc', 'D3', 'mf'], ['ClBb', 'E3', 'ff'], ['Hn', 'E3', 'ff'], ['Vc', 'C2', 'ff'], ['Vc', 'C#3', 'ff'], ['Vc', 'F#2', 'ff'], ['Hn', 'G4', 'ff']]
 
-Target: girl-scream; Distance: 7.61276436
+Target: girl-scream; Distance: 7.56598538
 Samples used: [['Vn', 'A4', 'pp'], ['Ob', 'F#6', 'pp'], ['Va', 'D5', 'pp'], ['Ob', 'C5', 'pp'], ['Vc', 'C6', 'pp'], ['Vn', 'G#4', 'pp'], ['Va', 'C6', 'pp'], ['Vn', 'D#7', 'pp'], ['Vc', 'A#5', 'ff'], ['Ob', 'G6', 'ff']]
 
 Target: Trompe_attaque-MN; Distance: 2.50775218
 Samples used: [['Vc', 'G#2', 'pp'], ['Hn', 'D2', 'pp'], ['Hn', 'G#3', 'pp'], ['Hn', 'E3', 'pp'], ['TpC', 'G4', 'pp'], ['ClBb', 'E5', 'pp'], ['Hn', 'E4', 'pp'], ['ClBb', 'E3', 'pp'], ['TpC', 'G#3', 'pp'], ['Tbn', 'A#0', 'ff']]
 
-Average distance: 3.39323979
+Average distance: 3.36509750
 
 
 Ratios:
@@ -70,7 +70,7 @@ Target: reed_bone; Ratio: 0.50935768
 
 Target: gong_c#3; Ratio: 0.71161733
 
-Target: girl-scream; Ratio: 1.02562771
+Target: girl-scream; Ratio: 1.03196896
 
 Target: Trompe_attaque-MN; Ratio: 1.05407020
 
