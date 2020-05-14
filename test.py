@@ -289,7 +289,7 @@ if __name__ == "__main__":
 
         # The argument must be the folder where the params.pkl file is
         GLOBAL_PARAMS.load_parameters(
-            './orchestrated_targets/params_{}'.format(model_type))
+            './orchestrated_targets/new_models/{}_params'.format(model_type))
 
         # path to a trained version of the model
         if model_type == 'cnn':
