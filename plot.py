@@ -9,6 +9,8 @@ def f(l):
         Y[X.index(i[0])] = i[1]['acc']
     return Y
 
+order = ['acc', 'Fl', 'ClBb', 'Ob', 'Bn', 'Va', 'Vn', 'Vc', 'TpC', 'Tbn', 'Hn']
+
 def plot_best_acc(path):
     
     list_accs = []
@@ -36,8 +38,8 @@ def plot_best_acc(path):
             f.close()
             
         list_accs.append((parameters.GLOBAL_PARAMS.N, accs, max_epoch, epochs[-1]))
-    plt.figure(figsize=(12,7))
-    for i in list_accs[0][1].keys():
+    plt.figure(figsize=(6,4))
+    for i in order:
         accs = []
         for x in list_accs:
             accs.append((x[0], x[1][i]))
@@ -48,11 +50,10 @@ def plot_best_acc(path):
             plt.plot([x[0] for x in accs], [x[1] for x in accs], '-o', label = "Overall accuracy")
         else:
             plt.plot([x[0] for x in accs], [x[1] for x in accs], '--x', label = "{} accuracy".format(i))
-        plt.grid()
-    plt.xlabel("Number of instruments in the combinations")
+    plt.grid()
+    plt.xlabel("Number of samples in the combinations")
     plt.ylabel("Accuracy")
-    plt.title("Maximum test accuracy achieved vs number of instruments N".format(i))
-    plt.legend()
+    plt.title("Maximum test accuracy achieved vs number of samples N".format(i))
         
     return list_accs
 

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7200 64-bit) (preloaded format=pdflatex 2019.10.15)  13 MAY 2020 21:57
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7200 64-bit) (preloaded format=pdflatex 2019.10.15)  14 MAY 2020 17:04
 entering extended mode
 **./paper.tex
 (paper.tex
@@ -130,40 +130,149 @@ File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package color Info: Driver file: pdftex.def on input line 147.
 )
+("C:\Program Files\MiKTeX 2.9\tex/latex/hyperref\hyperref.sty"
+Package: hyperref 2019/09/28 v7.00a Hypertext links for LaTeX
+
+("C:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\hobsub-hyperref.sty"
+Package: hobsub-hyperref 2016/05/16 v1.14 Bundle oberdiek, subset hyperref (HO)
+
+
+("C:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\hobsub-generic.sty"
+Package: hobsub-generic 2016/05/16 v1.14 Bundle oberdiek, subset generic (HO)
+Package: hobsub 2016/05/16 v1.14 Construct package bundles (HO)
+Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
+Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
+Package: ifluatex 2016/05/16 v1.4 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+Package: ifvtex 2016/05/16 v1.6 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+Package: intcalc 2016/05/16 v1.2 Expandable calculations with integers (HO)
+Package: ifpdf 2018/09/07 v3.3 Provides the ifpdf switch
+Package: etexcmds 2016/05/16 v1.6 Avoid name clashes with e-TeX commands (HO)
+Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
+Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
+Package: pdftexcmds 2019/07/25 v0.30 Utility functions of pdfTeX for LuaTeX (HO
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+Package: pdfescape 2016/05/16 v1.14 Implements pdfTeX's escape features (HO)
+Package: bigintcalc 2016/05/16 v1.4 Expandable calculations on big integers (HO
+)
+Package: bitset 2016/05/16 v1.2 Handle bit-vector datatype (HO)
+Package: uniquecounter 2016/05/16 v1.3 Provide unlimited unique counter (HO)
+)
+Package hobsub Info: Skipping package `hobsub' (already loaded).
+Package: letltxmacro 2016/05/16 v1.5 Let assignment for LaTeX macros (HO)
+Package: hopatch 2016/05/16 v1.3 Wrapper for package hooks (HO)
+Package: xcolor-patch 2016/05/16 xcolor patch
+Package: atveryend 2016/05/16 v1.9 Hooks at the very end of document (HO)
+Package atveryend Info: \enddocument detected (standard20110627).
+Package: atbegshi 2016/06/09 v1.18 At begin shipout hook (HO)
+Package: refcount 2016/05/16 v3.5 Data extraction from label references (HO)
+Package: hycolor 2016/05/16 v1.8 Color options for hyperref/bookmark (HO)
+)
+("C:\Program Files\MiKTeX 2.9\tex/generic/ifxetex\ifxetex.sty"
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/oberdiek\auxhook.sty"
+Package: auxhook 2016/05/16 v1.4 Hooks for auxiliary files (HO)
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/oberdiek\kvoptions.sty"
+Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
+)
+\@linkdim=\dimen114
+\Hy@linkcounter=\count100
+\Hy@pagecounter=\count101
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/hyperref\pd1enc.def"
+File: pd1enc.def 2019/09/28 v7.00a Hyperref: PDFDocEncoding definition (HO)
+Now handling font encoding PD1 ...
+... no UTF-8 mapping file for font encoding PD1
+)
+\Hy@SavedSpaceFactor=\count102
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/00miktex\hyperref.cfg"
+File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
+)
+Package hyperref Info: Option `bookmarks' set `false' on input line 4414.
+Package hyperref Info: Hyper figures OFF on input line 4540.
+Package hyperref Info: Link nesting OFF on input line 4545.
+Package hyperref Info: Hyper index ON on input line 4548.
+Package hyperref Info: Plain pages OFF on input line 4555.
+Package hyperref Info: Backreferencing OFF on input line 4560.
+Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
+Package hyperref Info: Bookmarks OFF on input line 4799.
+\c@Hy@tempcnt=\count103
+LaTeX Info: Redefining \url on input line 5152.
+\XeTeXLinkMargin=\dimen115
+\Fld@menulength=\count104
+\Field@Width=\dimen116
+\Fld@charsize=\dimen117
+Package hyperref Info: Hyper figures OFF on input line 6423.
+Package hyperref Info: Link nesting OFF on input line 6428.
+Package hyperref Info: Hyper index ON on input line 6431.
+Package hyperref Info: backreferencing OFF on input line 6438.
+Package hyperref Info: Link coloring OFF on input line 6443.
+Package hyperref Info: Link coloring with OCG OFF on input line 6448.
+Package hyperref Info: PDF/A mode OFF on input line 6453.
+LaTeX Info: Redefining \ref on input line 6493.
+LaTeX Info: Redefining \pageref on input line 6497.
+\Hy@abspage=\count105
+\c@Item=\count106
+\c@Hfootnote=\count107
+)
+Package hyperref Info: Driver (autodetected): hpdftex.
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/hyperref\hpdftex.def"
+File: hpdftex.def 2019/09/28 v7.00a Hyperref driver for pdfTeX
+\Fld@listcount=\count108
+\c@bookmark@seq@number=\count109
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/oberdiek\rerunfilecheck.sty"
+Package: rerunfilecheck 2016/05/16 v1.8 Rerun checks for auxiliary files (HO)
+Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
+82.
+)
+\Hy@SectionHShift=\skip46
+)
 ("C:\Users\Alejandro\AppData\Local\Programs\MiKTeX 2.9\tex/latex/lineno\lineno.
 sty"
 Package: lineno 2005/11/02 line numbers on paragraphs v4.41
-\linenopenalty=\count100
+\linenopenalty=\count110
 \output=\toks22
-\linenoprevgraf=\count101
-\linenumbersep=\dimen114
-\linenumberwidth=\dimen115
-\c@linenumber=\count102
-\c@pagewiselinenumber=\count103
-\c@LN@truepage=\count104
-\c@internallinenumber=\count105
-\c@internallinenumbers=\count106
-\quotelinenumbersep=\dimen116
-\bframerule=\dimen117
-\bframesep=\dimen118
+\linenoprevgraf=\count111
+\linenumbersep=\dimen118
+\linenumberwidth=\dimen119
+\c@linenumber=\count112
+\c@pagewiselinenumber=\count113
+\c@LN@truepage=\count114
+\c@internallinenumber=\count115
+\c@internallinenumbers=\count116
+\quotelinenumbersep=\dimen120
+\bframerule=\dimen121
+\bframesep=\dimen122
 \bframebox=\box29
 LaTeX Info: Redefining \\ on input line 3056.
 ) (paper.aux)
 \openout1 = `paper.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 75.
-LaTeX Font Info:    ... okay on input line 75.
-LaTeX Font Info:    Trying to load font information for T1+ptm on input line 75
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Trying to load font information for T1+ptm on input line 77
 .
  ("C:\Program Files\MiKTeX 2.9\tex/latex/psnfss\t1ptm.fd"
 File: t1ptm.fd 2001/06/04 font definitions for T1/ptm.
@@ -171,56 +280,22 @@ File: t1ptm.fd 2001/06/04 font definitions for T1/ptm.
 ("C:\Users\Alejandro\AppData\Local\Programs\MiKTeX 2.9\tex/context/base/mkii\su
 pp-pdf.mkii"
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count107
-\scratchdimen=\dimen119
+\scratchcounter=\count117
+\scratchdimen=\dimen123
 \scratchbox=\box30
-\nofMPsegments=\count108
-\nofMParguments=\count109
+\nofMPsegments=\count118
+\nofMParguments=\count119
 \everyMPshowfont=\toks23
-\MPscratchCnt=\count110
-\MPscratchDim=\dimen120
-\MPnumerator=\count111
-\makeMPintoPDFobject=\count112
+\MPscratchCnt=\count120
+\MPscratchDim=\dimen124
+\MPnumerator=\count121
+\makeMPintoPDFobject=\count122
 \everyMPtoPDFconversion=\toks24
 ) ("C:\Program Files\MiKTeX 2.9\tex/latex/oberdiek\epstopdf-base.sty"
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
 
-("C:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\infwarerr.sty"
-Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
-)
 ("C:\Program Files\MiKTeX 2.9\tex/latex/oberdiek\grfext.sty"
 Package: grfext 2016/05/16 v1.2 Manage graphics extensions (HO)
-
-("C:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\kvdefinekeys.sty"
-Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
-
-("C:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\ltxcmds.sty"
-Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
-)))
-("C:\Program Files\MiKTeX 2.9\tex/latex/oberdiek\kvoptions.sty"
-Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
-
-("C:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\kvsetkeys.sty"
-Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
-
-("C:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\etexcmds.sty"
-Package: etexcmds 2016/05/16 v1.6 Avoid name clashes with e-TeX commands (HO)
-
-("C:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\ifluatex.sty"
-Package: ifluatex 2016/05/16 v1.4 Provides the ifluatex switch (HO)
-Package ifluatex Info: LuaTeX not detected.
-))))
-("C:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\pdftexcmds.sty"
-Package: pdftexcmds 2019/07/25 v0.30 Utility functions of pdfTeX for LuaTeX (HO
-)
-
-("C:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\ifpdf.sty"
-Package: ifpdf 2018/09/07 v3.3 Provides the ifpdf switch
-)
-Package pdftexcmds Info: LuaTeX not detected.
-Package pdftexcmds Info: \pdf@primitive is available.
-Package pdftexcmds Info: \pdf@ifprimitive is available.
-Package pdftexcmds Info: \pdfdraftmode found.
 )
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 38.
@@ -229,168 +304,272 @@ Package grfext Info: Graphics extension search list:
 G,.JBIG2,.JB2,.eps]
 (grfext)             \AppendGraphicsExtensions on input line 456.
 )
+\AtBeginShipoutBox=\box31
+Package hyperref Info: Link coloring OFF on input line 77.
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/hyperref\nameref.sty"
+Package: nameref 2019/09/16 v2.46 Cross-referencing by name of section
+
+("C:\Program Files\MiKTeX 2.9\tex/generic/oberdiek\gettitlestring.sty"
+Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
+)
+\c@section@level=\count123
+)
+LaTeX Info: Redefining \ref on input line 77.
+LaTeX Info: Redefining \pageref on input line 77.
+LaTeX Info: Redefining \nameref on input line 77.
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <14.4> not available
-(Font)              Font shape `T1/ptm/b/n' tried instead on input line 78.
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 82.
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <12> not available
-(Font)              Font shape `T1/ptm/b/n' tried instead on input line 78.
-LaTeX Font Info:    Trying to load font information for T1+pcr on input line 78
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 82.
+LaTeX Font Info:    Trying to load font information for T1+pcr on input line 82
 .
 
 ("C:\Program Files\MiKTeX 2.9\tex/latex/psnfss\t1pcr.fd"
 File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
 )
-Overfull \hbox (12.00002pt too wide) in paragraph at lines 78--78
- [][] 
- []
-
-<figs/cc_by.pdf, id=1, 121.45375pt x 43.16125pt>
+<figs/cc_by.pdf, id=3, 121.45375pt x 43.16125pt>
 File: figs/cc_by.pdf Graphic file (type pdf)
 <use figs/cc_by.pdf>
-Package pdftex.def Info: figs/cc_by.pdf  used on input line 78.
+Package pdftex.def Info: figs/cc_by.pdf  used on input line 82.
 (pdftex.def)             Requested size: 36.02869pt x 12.80365pt.
-LaTeX Font Info:    Trying to load font information for OMS+ptm on input line 7
-8.
+LaTeX Font Info:    Trying to load font information for OMS+ptm on input line 8
+2.
+
 ("C:\Program Files\MiKTeX 2.9\tex/latex/psnfss\omsptm.fd"
 File: omsptm.fd 
 )
 LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <8> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 78.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 82.
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <8> not available
-(Font)              Font shape `T1/ptm/b/n' tried instead on input line 78.
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 82.
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <10> not available
-(Font)              Font shape `T1/ptm/b/n' tried instead on input line 80.
-LaTeX Font Info:    Trying to load font information for T1+phv on input line 80
-.
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 82.
 
-("C:\Program Files\MiKTeX 2.9\tex/latex/psnfss\t1phv.fd"
-File: t1phv.fd 2001/06/04 scalable font definitions for T1/phv.
-)
-LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 101.
- [1{C:/Users/Alejandro/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
+Underfull \hbox (badness 1442) in paragraph at lines 90--91
+\T1/ptm/m/n/10 ex-plor-ing a fea-ture space de-fined by a fixed fea-ture
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 90--91
+
+ []
+
+
+Underfull \hbox (badness 1117) in paragraph at lines 92--93
+\T1/ptm/m/n/10 G4}, the model will hope-fully ac-quire the abil-ity to
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 92--93
+
+ []
+
+
+Underfull \hbox (badness 2359) in paragraph at lines 94--95
+\T1/ptm/m/n/10 net-works for mu-si-cal clas-si-fi-ca-tion [[]12[]] [[]3[]] [[]4
+[]] [[]7[]].
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 94--95
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 101--102
+
+ []
+
+
+Underfull \hbox (badness 1515) in paragraph at lines 103--104
+\T1/ptm/m/n/10 and ResNet, a well known resid-ual ar-chi-tec-ture that
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 103--104
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 112--113
+
+ []
+
+[1{C:/Users/Alejandro/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
 
 
 
  <./figs/cc_by.pdf>]
-[2]
-Overfull \hbox (17.8459pt too wide) in paragraph at lines 163--178
- [] 
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 118.
+
+Underfull \hbox (badness 10000) in paragraph at lines 123--124
+
  []
 
 
-LaTeX Warning: Citation `LSTM' on page 3 undefined on input line 185.
+Underfull \hbox (badness 10000) in paragraph at lines 151--152
 
-<CNN_LSTM_diagram.png, id=23, 1092.33093pt x 520.19344pt>
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 153--154
+
+ []
+
+
+LaTeX Warning: Citation `scikit-learn' on page 2 undefined on input line 162.
+
+[2]
+<CNN_LSTM_diagram.png, id=71, 1092.33093pt x 520.19344pt>
 File: CNN_LSTM_diagram.png Graphic file (type png)
 <use CNN_LSTM_diagram.png>
-Package pdftex.def Info: CNN_LSTM_diagram.png  used on input line 194.
+Package pdftex.def Info: CNN_LSTM_diagram.png  used on input line 210.
 (pdftex.def)             Requested size: 491.54437pt x 234.08487pt.
 
-Overfull \hbox (2.15698pt too wide) in paragraph at lines 194--195
+Overfull \hbox (2.15698pt too wide) in paragraph at lines 210--211
 [][] 
  []
 
 [3]
-Underfull \hbox (badness 1360) in paragraph at lines 229--230
+Underfull \hbox (badness 1360) in paragraph at lines 245--246
 \T1/ptm/m/n/10 of $\OML/cmm/m/it/10 N$ \T1/ptm/m/n/10 were made us-ing a datase
 t con-tain-ing 200000
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 229--230
+Underfull \hbox (badness 10000) in paragraph at lines 245--246
 
  []
 
-<figs/CNN_vs_ResNet.png, id=30, 462.528pt x 344.0052pt>
+<figs/CNN_vs_ResNet.png, id=82, 462.528pt x 344.0052pt>
 File: figs/CNN_vs_ResNet.png Graphic file (type png)
 <use figs/CNN_vs_ResNet.png>
-Package pdftex.def Info: figs/CNN_vs_ResNet.png  used on input line 240.
-(pdftex.def)             Requested size: 263.64369pt x 196.08499pt.
-
-Overfull \hbox (30.3311pt too wide) in paragraph at lines 240--241
-[][] 
- []
-
-[4 <./CNN_LSTM_diagram.png> <./figs/CNN_vs_ResNet.png>] [5]
-
-LaTeX Warning: Citation `Author:00' on page 6 undefined on input line 361.
-
-
-LaTeX Warning: Citation `Author:00' on page 6 undefined on input line 361.
-
-
-LaTeX Warning: Citation `Someone:10' on page 6 undefined on input line 361.
-
-
-LaTeX Warning: Citation `Someone:04' on page 6 undefined on input line 361.
-
-
-LaTeX Warning: Citation `Someone:10' on page 6 undefined on input line 365.
-
-
-LaTeX Warning: Citation `Someone:10' on page 6 undefined on input line 365.
-
-<figs/CNN10.png, id=40, 462.528pt x 344.0052pt>
-File: figs/CNN10.png Graphic file (type png)
-<use figs/CNN10.png>
-Package pdftex.def Info: figs/CNN10.png  used on input line 370.
-(pdftex.def)             Requested size: 277.51894pt x 206.40471pt.
-
-Overfull \hbox (44.20634pt too wide) in paragraph at lines 370--371
-[][] 
- []
-
-<figs/Acc_vs_N_CNN.png, id=41, 867.24pt x 502.9992pt>
+Package pdftex.def Info: figs/CNN_vs_ResNet.png  used on input line 250.
+(pdftex.def)             Requested size: 185.0079pt x 137.59962pt.
+[4 <./CNN_LSTM_diagram.png> <./figs/CNN_vs_ResNet.png>]
+<figs/Acc_vs_N_CNN.png, id=98, 478.78876pt x 353.82187pt>
 File: figs/Acc_vs_N_CNN.png Graphic file (type png)
 <use figs/Acc_vs_N_CNN.png>
-Package pdftex.def Info: figs/Acc_vs_N_CNN.png  used on input line 375.
-(pdftex.def)             Requested size: 520.34802pt x 301.80185pt.
+Package pdftex.def Info: figs/Acc_vs_N_CNN.png  used on input line 261.
+(pdftex.def)             Requested size: 239.39378pt x 176.91049pt.
 
-Overfull \hbox (30.96063pt too wide) in paragraph at lines 375--376
+Overfull \hbox (6.08119pt too wide) in paragraph at lines 261--262
 [][] 
  []
 
-<figs/Acc_vs_N_ResNet.png, id=42, 867.24pt x 502.9992pt>
+<figs/Acc_vs_N_ResNet.png, id=99, 478.78876pt x 353.82187pt>
 File: figs/Acc_vs_N_ResNet.png Graphic file (type png)
 <use figs/Acc_vs_N_ResNet.png>
-Package pdftex.def Info: figs/Acc_vs_N_ResNet.png  used on input line 380.
-(pdftex.def)             Requested size: 520.34802pt x 301.80185pt.
+Package pdftex.def Info: figs/Acc_vs_N_ResNet.png  used on input line 266.
+(pdftex.def)             Requested size: 239.39378pt x 176.91049pt.
 
-Overfull \hbox (30.96063pt too wide) in paragraph at lines 380--381
+Overfull \hbox (6.08119pt too wide) in paragraph at lines 266--267
 [][] 
  []
 
-No file paper.bbl.
-[6
+[5 <./figs/Acc_vs_N_CNN.png> <./figs/Acc_vs_N_ResNet.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 380--381
 
- <./figs/CNN10.png>] [7 <./figs/Acc_vs_N_CNN.png> <./figs/Acc_vs_N_ResNet.png>]
+ []
+
+<figs/latent_space_layer0.png, id=114, 462.528pt x 346.896pt>
+File: figs/latent_space_layer0.png Graphic file (type png)
+<use figs/latent_space_layer0.png>
+Package pdftex.def Info: figs/latent_space_layer0.png  used on input line 389.
+(pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
+<figs/latent_space_layer1.png, id=115, 462.528pt x 346.896pt>
+File: figs/latent_space_layer1.png Graphic file (type png)
+<use figs/latent_space_layer1.png>
+Package pdftex.def Info: figs/latent_space_layer1.png  used on input line 394.
+(pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
+<figs/latent_space_layer2.png, id=116, 462.528pt x 346.896pt>
+File: figs/latent_space_layer2.png Graphic file (type png)
+<use figs/latent_space_layer2.png>
+Package pdftex.def Info: figs/latent_space_layer2.png  used on input line 399.
+(pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
+<figs/latent_space_layer3.png, id=117, 462.528pt x 346.896pt>
+File: figs/latent_space_layer3.png Graphic file (type png)
+<use figs/latent_space_layer3.png>
+Package pdftex.def Info: figs/latent_space_layer3.png  used on input line 404.
+(pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
+<figs/latent_space_layer4.png, id=118, 462.528pt x 346.896pt>
+File: figs/latent_space_layer4.png Graphic file (type png)
+<use figs/latent_space_layer4.png>
+Package pdftex.def Info: figs/latent_space_layer4.png  used on input line 409.
+(pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
+<figs/latent_space_layer5.png, id=119, 462.528pt x 346.896pt>
+File: figs/latent_space_layer5.png Graphic file (type png)
+<use figs/latent_space_layer5.png>
+Package pdftex.def Info: figs/latent_space_layer5.png  used on input line 414.
+(pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 420--421
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 422--423
+
+ []
+
+[6 <./figs/latent_space_layer0.png> <./figs/latent_space_layer1.png>] [7 <./fig
+s/latent_space_layer2.png> <./figs/latent_space_layer3.png> <./figs/latent_spac
+e_layer4.png> <./figs/latent_space_layer5.png>] (paper.bbl
+Underfull \hbox (badness 1924) in paragraph at lines 20--25
+\T1/ptm/m/n/10 Richter, and Roger Wat-ten-hofer.  Monau-ral mu-sic
+ []
+
+
+Underfull \hbox (badness 3838) in paragraph at lines 54--57
+[]\T1/ptm/m/n/10 Sepp Hochre-iter and Jür-gen Schmid-hu-ber.  Long
+ []
+
+
+Underfull \hbox (badness 1077) in paragraph at lines 59--62
+[]\T1/ptm/m/n/10 Tetsuro Ki-ta-hara, Masa-taka Goto, and Hi-roshi G.
+ []
+
+)
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 455.
+ [8]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 455.
  (paper.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 455.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 455.
+
 
 LaTeX Warning: There were undefined references.
 
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 455.
  ) 
 Here is how much of TeX's memory you used:
- 2996 strings out of 492452
- 39440 string characters out of 3129795
- 120558 words of memory out of 3000000
- 7288 multiletter control sequences out of 15000+200000
- 40580 words of font info for 53 fonts, out of 3000000 for 9000
+ 6506 strings out of 492452
+ 93347 string characters out of 3129795
+ 199529 words of memory out of 3000000
+ 10727 multiletter control sequences out of 15000+200000
+ 36989 words of font info for 53 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 46i,15n,30p,1134b,383s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 31i,15n,27p,1073b,362s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/base/8r.enc}<C:/Program Files/Mi
 KTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program Files/MiKTeX 2.9
 /fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTeX 2.9/fonts/t
 ype1/public/amsfonts/cm/cmmi7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/publ
 ic/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfon
-ts/cm/cmr7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy
-10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C
-:/Program Files/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8a.pfb><C:/Program Files
-/MiKTeX 2.9/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Program Files/MiKTeX 2.9/fo
-nts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/tim
-es/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pfb>
-Output written on paper.pdf (7 pages, 569267 bytes).
+ts/cm/cmr7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr8
+.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:
+/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Program 
+Files/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8a.pfb><C:/Program Files/MiKTeX 2.
+9/fonts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw
+/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pf
+b>
+Output written on paper.pdf (8 pages, 543068 bytes).
 PDF statistics:
- 92 PDF objects out of 1000 (max. 8388607)
- 0 named destinations out of 1000 (max. 500000)
- 31 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 206 PDF objects out of 1000 (max. 8388607)
+ 58 named destinations out of 1000 (max. 500000)
+ 56 words of extra memory for PDF output out of 10000 (max. 10000000)
 
