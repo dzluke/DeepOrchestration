@@ -1,0 +1,85 @@
+\begin{thebibliography}{10}
+
+\bibitem{Benetos07}
+Emmanouil Benetos, Margarita Kotti, and Constantine Kotropoulos.
+\newblock Large scale musical instrument identification.
+\newblock 2007.
+
+\bibitem{Bhardwaj17}
+Siddharth Bhardwaj.
+\newblock Audio data augmentation with respect to musical instrument
+  recognition.
+\newblock Master's thesis, 2017.
+
+\bibitem{Bian}
+Wenhao Bian, Jie Wang, Bojin Zhuang, Shaojun~Wang Jiankui~Yang, and Jing Xiao.
+\newblock Audio-based music classification with densenet and data augmentation.
+\newblock 0.
+
+\bibitem{Brunner}
+Gino Brunner, Nawel Naas, Sveinn Palsson, Oliver Richter, and Roger
+  Wattenhofer.
+\newblock Monaural music source separation using a resnet latent separator
+  network.
+\newblock 0.
+
+\bibitem{Cella19}
+Carmine~Emanuele Cella, Jon Gillick, and David Bamman.
+\newblock Estimating unobserved audio features for targed-based orchestration.
+\newblock 2019.
+
+\bibitem{Chetry05}
+Nicolas Chetry, Mike Davies, and Mark Sandler.
+\newblock Musical instrument identification using lsf and k-means.
+\newblock 2005.
+
+\bibitem{Defossez19}
+Alexandre Défossez, Nicolas Usunier, Léon Bottou, and Francis Bach.
+\newblock Music source separation in the waveform domain.
+\newblock 2019.
+
+\bibitem{He15}
+Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.
+\newblock Deep residual learning for image recognition.
+\newblock 2015.
+
+\bibitem{Hershey16}
+Shawn Hershey, Sourish Chaudhuri, Daniel P.~W. Ellis, Jort~F. Gemmeke, Aren
+  Jansen, R.~Channing Moore, Manoj Plakal, Devin Platt, Rif~A. Saurous, Bryan
+  Seybold, Malcolm Slaney, Ron~J. Weiss, and Kevin Wilson.
+\newblock Cnn architectures for large-scale audio classification.
+\newblock 2016.
+
+\bibitem{Hochreiter97}
+Sepp Hochreiter and J\"{u}rgen Schmidhuber.
+\newblock Long short-term memory.
+\newblock {\em Neural Comput.}, 9(8):1735–1780, November 1997.
+
+\bibitem{Kitahara05}
+Tetsuro Kitahara, Masataka Goto, and Hiroshi~G. Okuno.
+\newblock Pitch-dependent identification of musical instrument sounds.
+\newblock 2005.
+
+\bibitem{lostanlen16}
+Vincent Lostanlen and Carmine-Emanuele Cella.
+\newblock Deep convolutional networks on the pitch spiral for musical
+  instrument recognition, 2016.
+
+\bibitem{mcfee15}
+Brian McFee, Colin Raffel, Dawen Liang, Daniel~P.W. Ellis, Matt McVicar, Eric
+  Battenberg, and Oriol Nieto.
+\newblock librosa: Audio and music signal analysis in python.
+\newblock 2015.
+
+\bibitem{Salamon17}
+Justin Salamon and Juan~Pablo Bello.
+\newblock Deep convolutional neural networks and data augmentation for
+  environmental sound classification.
+\newblock {\em IEEE Signal Processing Letters}, 24(3):279–283, Mar 2017.
+
+\bibitem{Stevens37}
+S.~S. Stevens, J.~Volkmann, , and E.~B. Newman.
+\newblock A scale for the measurement of the psychological magnitude pitch.
+\newblock 1937.
+
+\end{thebibliography}

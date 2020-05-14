@@ -1,3 +1,5 @@
+import torch
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -60,36 +62,47 @@ class CNN(nn.Module):
         self.activation = F.sigmoid
 
     def forward(self, x):
-        #print(x.shape)
         out = self.layer1(x)
-        #print(out.shape)
         out = self.layer2(out)
-        #print(out.shape)
         out = self.layer3(out)
-        #print(out.shape)
 
         out = out.view(-1, self.lstm_shape[0], self.lstm_shape[1])
-        #print(out.shape)
         out, _ = self.lstm(out)
 
-        #print(out.shape)
         out = out.view(-1, 32, self.lstm_shape[0], self.lstm_shape[1])
-#        print(out.shape)
         out = self.layer4(out)
-        #print(out.shape)
-
-        #print(out.shape)
+        
         out = out.contiguous().view(out.size()[0], -1)
-        #print(out.shape)
         out = self.fc1(out)
-        #print(out.shape)
         out = self.fc3(out)
-        #print(out.shape)
         out = self.activation(out)
-        #print(out.shape)
 
         return out
+    
+    def getLatentSpace(self, x):
+        res = []
+        
+        out = self.layer1(x)
+        res.append(out.detach().cpu().numpy())
+        out = self.layer2(out)
+        res.append(out.detach().cpu().numpy())
+        out = self.layer3(out)
+        res.append(out.detach().cpu().numpy())
 
+        out = out.view(-1, self.lstm_shape[0], self.lstm_shape[1])
+        out, _ = self.lstm(out)
+
+        out = out.view(-1, 32, self.lstm_shape[0], self.lstm_shape[1])
+        res.append(out.detach().cpu().numpy())
+        out = self.layer4(out)
+        res.append(out.detach().cpu().numpy())
+        
+        out = out.contiguous().view(out.size()[0], -1)
+        out = self.fc1(out)
+        out = self.fc3(out)
+        out = self.activation(out)
+        res.append(out.detach().cpu().numpy())
+        return res
 
 class OrchMatchNet(nn.Module):
     def __init__(self, out_num, model_select, features_dim):
@@ -103,6 +116,9 @@ class OrchMatchNet(nn.Module):
         out = self.net(x)
 
         return out
+    
+    def getLatentSpace(self, feature):
+        return self.net.getLatentSpace(feature)
 
 if __name__ == "__main__":
     cnn = CNN(out_num=505)
