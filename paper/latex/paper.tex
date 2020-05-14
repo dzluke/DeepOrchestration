@@ -115,14 +115,14 @@ We used the TinySOL database to create our input data. TinySOL is a subset of th
 We generated all the data we used to train our models based on the samples of TinySOL. For a given $N$, each input to our model is a combination of $N$ TinySOL samples chosen among an orchestra of 10 instruments. The data is generated in the following way: 
 
 \begin{itemize}
-\item We iteratively choose a random instrument, pitch and dynamic to pick the sample. We repeat that step $N$ times. Note that we don't allow the same instrument to be chosen more than three times in order to ensure variety in the mixtures.
-\item The chosen samples are additively combined to be played simultaneously and normalized by the number of instruments.
-\item The mel spectrogram of the mixture is computed to be used as the features input to the model.
+\item $N$ random TinySOL samples are selected, leading to a variety of instruments, pitches, and dynamics. Note that we don't allow the same instrument to be chosen more than three times in order to ensure variety in the mixtures.
+\item The chosen samples are combined to be played simultaneously and normalized by the number of instruments.
+\item The mel spectrogram of the mixture is computed to be used as the features that are input to the model.
 \end{itemize}
 
-The choice of using the mel spectrogram as input features of the model is very commmon in music information \cite{Stevens37} and can be considered to be an accurate representation of the way humans perceive sound and music.\carmine{Do we need more references for mel spectrogram?}\\
+The choice of using the mel spectrogram as input features of the model is very common in music information \cite{Stevens37} and can be considered to be an accurate representation of the way humans perceive sound and music.\carmine{Do we need more references for mel spectrogram?}\\
 
-Samples had a sample rate of $44100$Hz and were all padded or chopped to be exactly 4 seconds long. The Mel spectrograms were then generated using an FFT hop length of 2048 samples (e.g. the window of each FFT was $46$ms wide), and a number of Mel bins equal to 128. Therefore, all the features fed to the model were matrices of size $128\times 345$. We used Librosa package in Python to compute the features, and more details on the exact computations can be found in \cite{mcfee15} The choice of the hop length was made by doing a compromise between the amount of information extracted by each FFT window, and the ability to capture changes in the dynamic, assuming that no change faster than $10$ms could be perceived by the human ear \carmine{Do you have a reference for that? I don't find anything on the topic}.
+The resulting combination has a sample rate of $44100$Hz and is padded or trimmed to be exactly 4 seconds long. The Mel spectrogram is generated using an FFT hop length of 2048 samples (e.g. the window of each FFT was $46$ms wide), and a number of Mel bins equal to 128. Therefore, all the features fed to the model were matrices of size $128\times 345$. We used the Librosa package in Python to compute the features, and more details on the exact computations can be found in \cite{mcfee15} The choice of the hop length was made by doing a compromise between the amount of information extracted by each FFT window, and the ability to capture changes in the dynamic, assuming that no change faster than $10$ms could be perceived by the human ear \carmine{Do you have a reference for that? I don't find anything on the topic}.
 
 \begin{table}
 \begin{tabular}{|c|c|c|}
@@ -150,7 +150,7 @@ Bassoon & Bn & A\#1-D\#5\\
 
 In order to increase variability in our generated data, we used two methods of data augmentation \cite{Salamon17}\cite{Bhardwaj17} : pitch shifting and partial feature dropout.\\
 
-The first one was done on the TinySOL samples. We performed a slight pitch shift by shifting the frequency of the signal. We did this by reading the samples with different sample rates. Python package librosa automatically converts the data coming from the samples to match the specified sample rate \cite{mcfee15}. Thus, a small difference in sample rate will slightly modify the perceived pitch if played at the normal sample rate. In practice, the sample rates used for this data augmentation were within $5\%$ of the actual $44100$Hz.\\
+The first one was done on the TinySOL samples. We performed a slight pitch shift by shifting the frequency of the signal. We did this by reading the samples with different sample rates. Librosa automatically converts the data coming from the samples to match the specified sample rate \cite{mcfee15}. Thus, a small difference in sample rate will slightly modify the perceived pitch if played at the normal sample rate. In practice, the sample rates used for this data augmentation were within $5\%$ of the actual $44100$Hz.\\
 
 The second augmentation was performed on the feature matrix itself, the mel spectrogram. We chose random columns and rows of the matrix to zero out. For a given matrix, each column and each row had individually a $1\%$ chance to be set to 0, which yielded an average of $1.28$  columns and $3.45$ rows being zero-ed out. This method of data augmentation aimed to be more resilient to the possible errors of recording \carmine{Is there any other reference to justify this sentence?}, due either to a setup that induces interferences and cancels specific frequencies, or to a default in the microphone that fails to record a small temporal portion.
 
@@ -242,7 +242,8 @@ More specifically, the function $M_N(\hat{X})$ takes as an input a vector of pro
 
 Different experiments were made by varying the number $N$ of samples in each mixture sample. We used an orchestra of 10 instruments containing Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet C and Clarinet Bb.
 
-Then, for both CNN with LSTM and ResNet, we computed the maximum accuracy over the epochs. For the CNN model, all the trainings with different values of $N$ were made using a dataset containing 200000 samples over 50 epochs, whereas for the ResNet, the dataset contained 400000 samples and was trained over 20 epochs. Fig. \ref{cnn_vs_resnet} shows the best overall test accuracy achieved by both models across the number of samples $N$.\\
+Then, for both CNN with LSTM and ResNet, we computed the maximum accuracy over the epochs. 
+The CNN was trained on 200,000 generated samples over 50 epochs, and ResNet was trained on 400,000 generated samples over 20 epochs. Fig. \ref{cnn_vs_resnet} shows the best overall test accuracy achieved by both models across the number of samples $N$.\\
 
 
 \begin{figure}
@@ -253,8 +254,9 @@ Then, for both CNN with LSTM and ResNet, we computed the maximum accuracy over t
 
 From this plot, we see that ResNet achieves better performances than the CNN regardless of the number of samples used in the combination. This result isn't surprising as residual networks usually perform better for this kind of classification problems \carmine{It would need a citation on why ResNet was expected to be better}
 
-Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum accuracy computed using the function $f$ explicited in (\ref{eval}). Note that for ResNet, the variance of accuracy is much smaller until $N$ reaches 5 before becoming similar to the CNN. The results on both figures show consistency on the relative accuracy of instruments, which is a first step towards the validation of this method \carmine{Can I say that?}. Flute, Trombone and Trumpet yield the worst results for both models, being notably worst, which could be explained by the nature of their spectra. For the Flute, since it has very few harmonics, it is difficult to identify it among other instruments, especially if they are richer. On the other hand, brasses have a very rich spectra and a strong noisy component that excites almost all the frequencies.\\
-Strings give consistent results, having for both models similar accuracies, an interesting point to notice is the very high accuracy of Oboe on both models. This could indicate that there is an optimal balance of harmonies that maximizes the probability of being detected in such classification framework.\carmine{Please review those interpretations}
+Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum accuracy computed using the function $f$ from Eqn. \eqref{eval}. For ResNet, the variance in accuracy is much smaller until $N$ reaches 5, at which point it becomes similar to the CNN. The results on both figures show consistency on the relative accuracy of instruments, which is a first step towards the validation of this method \carmine{Can I say that?}. Flute, Trombone and Trumpet yield the worst results for both models. Their low accuracy could be explained by the nature of their spectra. For the Flute, since it has very few harmonics, it is difficult to identify it among other instruments, especially if they are richer. On the other hand, brasses have a very rich spectra and a strong noisy component that excites almost all the frequencies.
+
+Strings give similar results across both models. An interesting point to notice is the very high accuracy of Oboe on both models. This could indicate that there is an optimal balance of harmonies that maximizes the probability of being detected in such classification framework.\carmine{Please review those interpretations}
 
 
 \begin{figure}
@@ -292,7 +294,7 @@ ClBb & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
 \end{tabular}
 
 \begin{caption}
-Best test accuracy obtained for each model and value of $N$ over the total number of epochs. The accuracy is computed using $f$ define in (\ref{eval}). The first row correspond to the overall accuracy of the model, regrouping all the instruments. C is CNN with LSTM, R is ResNet.
+Best test accuracy obtained for each model and value of $N$ over the total number of epochs. The accuracy is computed using $f$ defined in \eqref{eval}. The first row correspond to the overall accuracy of the model, regrouping all the instruments. C is CNN with LSTM, R is ResNet.
 \label{class_res}
 \end{caption}}
 \end{table*}
@@ -300,9 +302,9 @@ Best test accuracy obtained for each model and value of $N$ over the total numbe
 
 \section{Orchestration experiments}
 
-For orchestrating, we trained our models on combinations of 10 instruments: French Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet, and Clarinet. A target sound is input to the model, and the 10 classes with the highest probability are extracted. These 10 classes represent the instrument-note pairs that are most represented in the target, and can be from any combination of the 10 instruments. The dynamic of each sample is inferred from its probability.
+For orchestrating, we trained our models on combinations of 10 instruments: French Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet, and Clarinet. A target sound is input to the model, and the 10 classes with the highest probability are extracted. These 10 classes represent the instrument-note pairs that are most represented in the target, and can be from any combination of the 10 instruments. 
 
-We did not train our model to classify the dynamics of a sample despite TinySOL having pianissimo, mezzo forte, and fortissimo recordings for each sample. If we had, then each class would have only one data point: the TinySOL sample ir represents. By not initially ignoring dynamics, this led to each class having three data points: the instrument-note at \textit{pp}, \textit{mf}, and \textit{ff} When the model is used for orchestration, the dynamic is determined by the probability of that sample as output by the model. If the model outputs a probability higher than $0.66$ for a sample, the fortissimo version of the sample was used. If it was between $0.33$ and $0.66$, then the mezzo forte version, and if less than $0.33$ the pianissimo dynamic. The idea behind this is that samples that are the most represented in the target should be the loudest in the orchestrated solution.
+We did not train our model to classify the dynamics of a sample despite TinySOL having pianissimo, mezzo forte, and fortissimo recordings for each sample. If we had, then each class would have only one data point: the TinySOL sample it represents. When the model is used for orchestration, the dynamic is determined by the probability of that sample as output by the model. If the model outputs a probability higher than $0.66$ for a sample, the fortissimo version of the sample was used. If it was between $0.33$ and $0.66$, then the mezzo forte version, and if less than $0.33$ the pianissimo dynamic. The idea behind this is that samples that are the most represented in the target should be the loudest in the orchestrated solution.
 
 We tested our models using 15 targets for orchestration. Two of the targets were made from TinySOL samples, but the rest are not combinations of input data, and some are not even recordings of instruments. Among the targets are recordings of bells, a car horn, a gong, and a recording of a boat docking. 
 
@@ -343,37 +345,30 @@ d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \su
 \begin{table*}
   \begin{center}
     \label{orch_eval}
-    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|} 
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|} 
     	  \hline
-      \textbf{Model} & \textbf{Ob + Bn} & \textbf{Bn} & \textbf{Bass Clarinet} & \textbf{Bell1} & \textbf{Bell2} & \textbf{Yan} & \textbf{Car Horn} & \textbf{Boat} & \textbf{Wind Harp} \\
+      \textbf{Model} & \textbf{Ob + Bn} & \textbf{Bn} & \textbf{Bass Clarinet} & \textbf{Bell1} & \textbf{Bell2} & \textbf{Yan} & \textbf{Car Horn} & \textbf{Boat}  \\
       \hline
-      CNN with LSTM & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+      CNN with LSTM & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
       \hline
-      ResNet & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+      ResNet & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
       \hline
-      OrchIdea & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0  \\
+      OrchIdea & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+      \hline
+      \hline
+      \textbf{Model} & \textbf{Wind Harp} & \textbf{Chord1} & \textbf{Reed Bone} & \textbf{Chord2} & \textbf{Gong} & \textbf{Scream} & \textbf{Trompe Attack} & \textbf{Average}  \\
+      \hline
+      CNN with LSTM & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+      \hline
+      ResNet & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+      \hline
+      OrchIdea & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
       \hline
     \end{tabular}
   \end{center}
   \caption{Quantitative comparison of orchestrations.}
 \end{table*}
-\begin{table*}
-  \begin{center}
-    \label{orch_eval2}
-    \begin{tabular}{|c|c|c|c|c|c|c|c|} 
-    	  \hline
-      \textbf{Model} & \textbf{Chord1} & \textbf{Reed Bone} & \textbf{Chord2} & \textbf{Gong} & \textbf{Scream} & \textbf{Trompe Attack} & \textbf{Average}  \\
-      \hline
-      CNN with LSTM & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
-      \hline
-      ResNet & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
-      \hline
-      OrchIdea & 0 & 0 & 0 & 0 & 0 & 0 & 0   \\
-      \hline
-    \end{tabular}
-  \end{center}
-  \caption{Continuation of Table 3}
-\end{table*}
+
 
 \section{Conclusion}
 
