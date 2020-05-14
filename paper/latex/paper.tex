@@ -348,24 +348,24 @@ d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \su
     	  \hline
       \textbf{Model} & \textbf{Ob + Bn} & \textbf{Bn} & \textbf{Bass Clarinet} & \textbf{Bell1} & \textbf{Bell2} & \textbf{Yan} & \textbf{Car Horn} & \textbf{Boat}  \\
       \hline
-      CNN with LSTM & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+      CNN with LSTM & 0.17 & 0.28 & 0.70 & 0.55 & 0.26 & \textbf{1.10} & 0.68 & \textbf{1.12} \\
       \hline
-      ResNet & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+      ResNet & 0.34 & 0.50 & 0.48 & 0.59 & 0.45 & 0.90 & 0.49 & \textbf{1.16} \\
       \hline
-      OrchIdea & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+      OrchIdea & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
       \hline
       \hline
       \textbf{Model} & \textbf{Wind Harp} & \textbf{Chord1} & \textbf{Reed Bone} & \textbf{Chord2} & \textbf{Gong} & \textbf{Scream} & \textbf{Trompe Attack} & \textbf{Average}  \\
       \hline
-      CNN with LSTM & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+      CNN with LSTM & 0.55 & - & 0.70 & - & 0.73 & \textbf{1.14} & 0.79 & 0.59\\
       \hline
-      ResNet & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+      ResNet & 0.61 & - & 0.51 & - & 0.71 & \textbf{1.03} & \textbf{1.05} & 0.55 \\
       \hline
-      OrchIdea & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+      OrchIdea & 1 & - & 1 & - & 1 & 1 & 1 & 1 \\
       \hline
     \end{tabular}
   \end{center}
-  \caption{Quantitative comparison of orchestrations.}
+  \caption{Quantitative comparison of orchestrations as ratios to OrchIdea. Eqn. \eqref{distance} was used with $\lambda_1 = 0.5$ and $\lambda_2 = 10$ to compute distances between orchestrations and targets. What is shown is the the ratio between the distance calculated and OrchIdea's distance for the same target. A value less than 1 means that the model performed worse (i.e. had a larger distance), and a value greater than 1 means the model performed better than OrchIdea. "Average" is the ratio of the average distances for the model across all targets.}
 \end{table*}
 
 
