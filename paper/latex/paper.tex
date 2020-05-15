@@ -231,7 +231,7 @@ Since each class is independent, we are able to take the sigmoid activation and 
 
 \begin{figure*}
 \begin{center}
-\includegraphics[scale=0.4]{CNN_LSTM_diagram.png}
+\includegraphics[scale=0.4]{figs/CNN_LSTM_diagram.png}
 \caption{Diagram of the CNN with LSTM architecture. \label{cnn_lstm}}
 \end{center}
 \end{figure*}
@@ -291,7 +291,7 @@ Since we decided not to train our models to classify the dynamics of a sample (d
 
 In order to test our models for orchestration, we used 15 targets from the Orchidea distribution. These targets represent a variety of signal types but are mostly static, in the sense that they do not change sensibly over time.
 
-Some of the targets were made of instrumental samples: a sum of oboe and bassoon notes, single bassoon and bass clarinet notes, two multiphonics of basson and two symphonic chords. The other targets there are: the recordings of two bells, of a car horn, of a gong, of a screaming voice, of a wind harp, of the attack of a brass instrument and the recording of a boat docking. 
+Some of the targets were made of instrumental samples: a sum of oboe and bassoon notes, single bassoon and bass clarinet notes, two multiphonics of bassoon and two symphonic chords. The other targets there are: the recordings of two bells, of a car horn, of a gong, of a screaming voice, of a wind harp, of the attack of a brass instrument and the recording of a boat docking. 
 
 Although the data we trained the model on was fixed to four seconds of audio, the target samples can be of arbitrary length since we adapt the representation to the size of the training data by changing the hop length during the computation of the Mel spectrogram.
 
