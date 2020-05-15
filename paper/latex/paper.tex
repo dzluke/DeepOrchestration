@@ -28,7 +28,7 @@
 
 % Title.
 % ------
-\title{Neural models for computer-assisted musical orchestration: a preliminary study}
+\title{Neural models for target-based computer-assisted musical orchestration: a preliminary study}
 
 % Note: Please do NOT use \thanks or a \footnote in any of the author markup
 
@@ -80,50 +80,79 @@ $^3$  Company, Address\\
 \maketitle
 %
 \begin{abstract}
-In this paper we will explore preliminary neural models for the task of computer-assisted musical orchestration. After an introduction on the problem, we will show how we decided to model musical orchestration as a classification task. In this context, we will propose two deep learning models and we will show how they perform as classifiers for musical instruments recognition by comparing them with specific baselines. We will the show how they perform, both qualitative and quantitative, in the task of computer-assisted orchestration by comparing them with state-of-the-art systems. We will highlight, finally, benefits and problems of neural approaches for orchestration and we will propose possible future steps.
+In this paper we will explore preliminary neural models for the task of target-based computer-assisted musical orchestration. After an introduction on computer-assisted orchestration, we will show how we model this  musical problem as a classification task. In this context, we will propose two deep learning models and we will show, first, how they perform as classifiers for musical instruments recognition by comparing them with specific baselines. We will then show how they perform, both qualitative and quantitative, in the task of computer-assisted orchestration by comparing them with state-of-the-art systems. We will highlight, finally, benefits and problems of neural approaches for assisted orchestration and we will propose possible future steps.
 \end{abstract}
 %
 \section{Introduction}\label{sec:introduction}
 
 Computer-assisted orchestration is an important problem ... \carmine{Can you add more?}.
 
-The approach studied in \cite{Cella19} consists in finding a good orchestration for any given sound by successive iterations, exploring a feature space defined by a fixed feature function $f$. This method is currently considered state of the art and was implemented in Orch-Idea.
+The approach studied in \cite{Cella18, Cella2020} consists in finding a good orchestration for any given sound by searching combinations of sounds from a database with a multi-objective optimization heuristics and a constraint solver that are jointly optimized. Both the target sound and the sounds in the database are embedded in a feature space defined by a fixed feature function $f$ and each generated combination of sounds is evaluated by using a specific metric. This method is currently considered state of the art and is implemented in the \emph{Orchidea} toolbox for assisted orchestration (\url{www.orch-idea.org}); we will describe this approach in more detail in the next sections.
 
-In this paper, we try a different approach, using Deep Neural networks. The main idea is to train a model to classify combinations of real instruments, and use it then for orchestration. By training it with real combinations of instruments, such as \{Flute C6, Bassoon C4, Bassoon G4\}, the model will hopefully acquire the ability to identify the presence of each instrument and its associaed pitch by building the appropriate filter. Thus, when a sound is given as input, those filters will identify what are the best instruments that match the target sound.
+In this paper, we try a different approach by experimenting with deep neural architectures. The main idea is to train a model to classify combinations of real instruments and use it then for orchestration. A typical solution for assisted orchestration is a set of triples \emph{instrument-pitch-dynamics} such as \{\texttt{Flute C6 pp, Bassoon C4 mf, Bassoon G4 ff}\}. By training a neural network with real combinations of instrumental notes, it will acquire the ability to identify the presence of each instrument and its associated pitch by building the appropriate latent representation. Thus, when an unknown target sound is given as input, the network will identify which are the best instruments-pitches pairs to match the target sound, and it will be able to  deconstruct a complex mixture of timbres into individual instrument-note pairs\footnote{The dynamics is retrived using the probability distributions generated as output by the network; more details on this will be given in the next sections.}.
 
-This method is motivated by the good results obtained in previous research on musical instruments identification \cite{Benetos07}\cite{Kitahara05}\cite{Chetry05} and the more recent use of deep neural networks for musical classification \cite{lostanlen16}\cite{Bian}\cite{Brunner}\cite{Defossez19}. \carmine{Can you check if those references are good to use in this context?}
+This method is motivated by the good results obtained in previous research on musical instruments identification \cite{Benetos07, Kitahara05} and the more recent use of deep neural networks for musical classification \cite{lostanlen16, Bian19}. 
 
-\iffalse
-We attempt to use neural networks to solve the assisted orchestration problem. Our model must be able to take in a sound and identify what instruments playing which notes best represents the sound. Our idea is to frame this as a classification problem, where each class is an instrument-note pair. Our classifiers will be trained on sounds that are combinations of multiple instruments and notes, leading to a model that can take a complex mixture of timbres and deconstruct it into individual instrument-note pairs. When a new sound, one that is not simply a mixture of notes, is fed to the model, the predictions are used to create an orchestrated solution.
+In this paper we do preliminary experiments with two deep architectures: a convolutional neural network (CNN) with a long short-term memory (LSTM) unit in the middle and \emph{ResNet}, a well known residual architecture that already yielded good results for image classification \cite{He15}. We chose to use a CNN because of its success in audio classification \cite{Hershey16} and we decided to include an LSTM unit in it because of its ability to learn long term dependencies in data \cite{Hochreiter97}, which is important given the temporal nature of audio.
 
-\fi
+After training these models on varying combinations of 10 instruments, we used them for orchestration. More specifically, we orchestrated 15 target sounds by feeding them to the networks and synthesizing a solution from the most likely samples output from the system. We then compared our orchestrations to Orchidea's solutions for the same targets, through both qualitative and quantitative means. For quantitative comparison, we computed the distance metric suggested in \cite{Cella2020} on the FFTs of the target and solution, comparing the distance between Orchidea's solution and the target and our model's solution and the target.
 
-The features we use are the mel spectrogram of the input sound, because of its ability to represent the way we hear sounds and its common use in MIR\textbf{Reference}.
+Next sections will be as follows: section \ref{sec:models} will describe the dataset we used for experiments and the models we trained as classifiers, showing the classification results. Sections \ref{sec:orchestration} and \ref{sec:conclusions} will show, respectively, the results of orchestration experiments using the trained models and will present the conclusions of our preliminary study on neural approaches for target-based computer-assisted orchestration.
 
-We found that even on a simplified version of this classification problem, parametric classifiers were unable to meaningfully identify instrument-note pairs as the number of instruments used in the combinations increased. Therefore the need for neural networks arose. The two architectures we used are a Convolutional Neural Network (CNN) with a Long Short-Term Memory (LSTM) unit, and ResNet, a well known residual architecture that already yielded good results for image classification \cite{He15}. We chose to use a CNN because of its success in audio classification \cite{Hershey16}. Our inclusion of an LSTM is because of its ability to learn long term dependencies in data \cite{Hochreiter97}, which is important given the temporal nature of audio.
+The codebase for this paper and some audio examples can be found at: \url{https://github.com/dzluke/DeepOrchestration}.
 
-After training these models on varying combinations of 10 instruments, we used them for orchestration. More specifically, we orchestrated 15 target sounds by feeding them to the networks and synthesizing a solution from the most likely samples output from the system. We then compared our orchestrations to OrchIdea's solutions for the same targets through both qualitative and quantitative means. For quantitative comparison, we computed a distance metric on the FFTs of the target and solution, comparing the distance between OrchIdea's solution and the target and our model's solution and the target. \carmine{Do we need to reference the use of that distance?}
+\section{Neural models}
+\label{sec:models}
 
-Our codebase can be found at: \url{https://github.com/dzluke/DeepOrchestration}.
-\section{Data}
+\subsection{Form orchestration to classification}
 
-\subsection{Data Source and Generation}
+In this paper, we model assisted orchestration as a classification problem. The general methodology is as follows:
+\begin{enumerate}
+\item we train specific models to classify instrument-pitch pairs on sound combinations of a database of instrument notes, up to ten simultaneous instruments;
+\item we then pick the best classifier and we feed into it an unknown sound to be classified;
+\item since the output of the classifier will be made of instrument-pitch pairs, we use this information to synthesize an orchestration for the target sound;
+\item finally, we evaluate the generated orchestration against state-of-the-art systems for computer-assisted orchestrations.
+\end{enumerate}
 
-We used the TinySOL database to create our input data. TinySOL is a subset of the Studio On Line (SOL) database created by IRCAM \textbf{Reference needed}. TinySOL contains 1,529 samples from 12 instruments. The instruments come from different orchestral families: strings, woodwinds, and brass. Each sample is one instrument playing a single note in the ordinario style, with one of three dynamics: \textit{pp}, \textit{mf}, or \textit{ff}. The instruments and ranges over which they were recorded is summarized in Tab.\ref{tinysol}.  \carmine{Can you review this part about TinySOL and add more details if needed?}
+In other words, the classifiers learn how to take a complex combination of pitches and timbres and deconstruct it into its original parts.
 
-We generated all the data we used to train our models based on the samples of TinySOL. For a given $N$, each input to our model is a combination of $N$ TinySOL samples chosen among an orchestra of 10 instruments. The data is generated in the following way: 
+A complete orchestration solution, however, would normally be made by triples of instrument-pitch-dynamics. This is difficult, however, since to frame this problem as classification, we would need to have a very high number of classes. Moreover, for the nature of the samples we use (a typical sample is in the form \texttt{Flute-C4-pp}, as described in \ref{sec:dataset}), each class would be represented by a single sample. For these reasons, our models have been trained on simplified versions of the original problem.
+
+On one hand, the baseline classifiers have been trained to recognize either the instrument only for a total of 12 classes or the pair instrument-pitch \emph{class} (a pitch class is the pitch of a note without the corresponding octave, e.g. C, D\#, G, etc.) for a total of 25 classes.
+
+On the other hand, for the neural models, we reframed the classification problem by using full pitch and trained them to recognize the pair instruments-pitch for a total of 424 classes (i.e. the neural classifiers would classify instruments and pitches with respective octaves). We want to point out, however, that this is still a simplified problem compared to assisted orchestration. Even in the case of instrument-pitch pair classification, indeed, we would miss the dynamics of the note. To cope with this problem, in the orchestration phase, we quantize the probability functions generated by the models. When a network is given a target sound as input, it will attempt to apply the same classification rules, outputting a vector of the probabilities of each sample being in the target sound. Since the classes only encode instrument-pitch pairs and since we also need the dynamics, we quantize the probability function generated by the network into three echelons coresponding, respectively, to the dynamic levels \emph{pianissimo}, \emph{mezzoforte} and \emph{fortissimo} (see section \ref{sec:orchestration}). By taking the instruments and pitches that have the highest probability and by using quantized probabilities to retrieve dynamics, a full orchestrated solution can be created.  Figure \ref{fig:method} illustrates the described ideas.
+
+\begin{figure}
+\includegraphics[scale=0.5]{figs/Acc_vs_N_CNN.png}
+\caption{Best overall accuracy and for each instrument obtained by the CNN with LSTM depending on the number of instruments in the combinations. \label{best_acc_cnn}}
+\end{figure}
+
+
+\begin{figure}
+\center{
+\includegraphics[scale=0.5]{figs/CNN_vs_ResNet.png}}
+\caption{Best overall accuracy for CNN with LSTM and ResNet depending on the number of instruments in the combinations used for training. \label{cnn_vs_resnet}}
+\end{figure}
+
+\subsection{Dataset}
+\label{sec:dataset}
+
+To create the input data for training the classifiers, we used the \emph{TinySOL} database. TinySOL is a subset of the Studio On Line (SOL) database created by IRCAM \cite{Cella2020b}. TinySOL contains 1,529 samples from 12 instruments. The instruments come from different orchestral families: strings, woodwinds, and brass. Each sample is one instrument playing a single note in the \emph{ordinario} playing style, with one of three dynamics: \textit{pp}, \textit{mf}, or \textit{ff}, for example \texttt{Flute-C4-pp} or \texttt{Clarinet-D5-mf}. The instruments and ranges over which they were recorded is summarized in table \ref{tab:ranges}. 
+
+For a given number of instruments $N$, each input to our models is a combination of $N$ TinySOL samples chosen among an orchestra of 10 instruments. The data is generated in the following way: 
 
 \begin{itemize}
-\item $N$ random TinySOL samples are selected, leading to a variety of instruments, pitches, and dynamics. Note that we don't allow the same instrument to be chosen more than three times in order to ensure variety in the mixtures.
-\item The chosen samples are combined to be played simultaneously and normalized by the number of instruments.
-\item The mel spectrogram of the mixture is computed to be used as the features that are input to the model.
+\item $N$ random TinySOL samples are selected, leading to a variety of instruments, pitches, and dynamics; we did not allow the same instrument to be chosen more than three times in order to ensure variety in the mixtures;
+\item the chosen samples are combined to be played simultaneously and normalized by the number of instruments;
+\item the Mel frequency cepstral coefficients (MFCCs) and the Mel spectrogram of the mixture are computed to be used as the input features for the baseline classifiers and the neural classifiers respectively.
 \end{itemize}
 
-The choice of using the mel spectrogram as input features of the model is very common in music information \cite{Stevens37} and can be considered to be an accurate representation of the way humans perceive sound and music.\carmine{Do we need more references for mel spectrogram?}
+The resulting combination has a sample rate of $44100$Hz and is padded or trimmed to be exactly 4 seconds long.
 
-The resulting combination has a sample rate of $44100$Hz and is padded or trimmed to be exactly 4 seconds long. The Mel spectrogram is generated using an FFT hop length of 2048 samples (e.g. the window of each FFT was $46$ms wide), and a number of Mel bins equal to 128. Therefore, all the features fed to the model were matrices of size $128\times 345$. We used the Librosa package in Python to compute the features, and more details on the exact computations can be found in \cite{mcfee15} The choice of the hop length was made by doing a compromise between the amount of information extracted by each FFT window, and the ability to capture changes in the dynamic, assuming that no change faster than $10$ms could be perceived by the human ear \carmine{Do you have a reference for that? I don't find anything on the topic}.
+The choice of using the Mel spectrogram and MFCCs as input features for classification models is common in music information retrieval \cite{Stevens37} and can be considered to be an accurate representation of sound and musical signals. The Mel spectrogram is generated using an FFT hop length of 2048 samples (e.g. the window of each FFT was $46$ms wide), and a number of Mel bins equal to 128. Therefore, the Mel features fed to the model were matrices of size $128\times 345$. We used the Librosa package in Python to compute the features; more details on the exact computations can be found in \cite{mcfee15}. The choice of the hop length was made by doing a compromise between the amount of information extracted by each FFT window, and the ability to capture changes in the dynamic, assuming that no change faster than $10$ms would be allowed.
 
 \begin{table}
+\begin{center}
 \begin{tabular}{|c|c|c|}
 \hline
 Instrument & Abbreviation & Range \\
@@ -142,27 +171,26 @@ Bass Tuba & BTb & F\#1-F4\\
 Bassoon & Bn & A\#1-D\#5\\
 \hline
 \end{tabular}
-\caption{Table showing the pitch ranges present in the TinySOL database.\label{tinysol}}
+\caption{Table showing the pitch ranges present in the TinySOL database.\label{tab:ranges}}
+\end{center}
 \end{table}
 
-\subsection{Data Augmentation}
+\subsection{Data augmentation}
 
-In order to increase variability in our generated data, we used two methods of data augmentation \cite{Salamon17}\cite{Bhardwaj17} : pitch shifting and partial feature dropout.
+In order to increase variability in our generated data, we also used two methods of data augmentation as described in \cite{Salamon17, hardwaj17}; more specifically, we used pitch shifting and partial feature dropout.
 
-The first one was done on the TinySOL samples. We performed a slight pitch shift by shifting the frequency of the signal. We did this by reading the samples with different sample rates. Librosa automatically converts the data coming from the samples to match the specified sample rate \cite{mcfee15}. Thus, a small difference in sample rate will slightly modify the perceived pitch if played at the normal sample rate. In practice, the sample rates used for this data augmentation were within $5\%$ of the actual $44100$Hz.
+The former has been directly applied on the TinySOL samples each time the are selected to generate a new combination. We performed a small pitch shift by reading the samples with different sample rates: a small difference in sample rate will slightly modify the duration and the perceived pitch if played at the normal sample rate. In practice, the sample rates used for this data augmentation were within $5\%$ of the actual $44100$Hz.
 
-The second augmentation was performed on the feature matrix itself, the mel spectrogram. We chose random columns and rows of the matrix to zero out. For a given matrix, each column and each row had individually a $1\%$ chance to be set to 0, which yielded an average of $1.28$  columns and $3.45$ rows being zero-ed out. This method of data augmentation aimed to be more resilient to the possible errors of recording \carmine{Is there any other reference to justify this sentence?}, due either to a setup that induces interferences and cancels specific frequencies, or to a default in the microphone that fails to record a small temporal portion.
-
-\section{Our model}
-
-Our idea is to perform orchestration using deep neural networks trained for classification. In our setting, each class is an instrument-note pair. Our model takes in the mel spectrogram of a soundfile that is a combination of different instruments and pitches, and attempts to identify which instrument-pitch pairs are present. The network learns how to take a sound that is a complex combination of notes and timbres and deconstruct it into its original parts. Then, when a network is given a target sound as input, it will attempt to apply the same classification rules, outputting a vector of the probabilities of each sample being in the target sound. By taking the samples that have the highest probability, an orchestrated solution can be created. Both of our deep models use the Adam optimizer, Binary Cross-Entropy loss, and were written using PyTorch.
+The latter was performed on the feature matrix itself of input samples, the Mel spectrogram. We chose random columns and rows of the matrix to zero out. For a given matrix, each column and each row had individually a $1\%$ chance to be set to 0, which yielded an average of $1.28$  columns and $3.45$ rows being zero-ed out. This method of data augmentation aimed to be more resilient to the possible variations in the recording of the instruments.
 
 \subsection{Baseline}
-In order to have a baseline to compare our results against, we attempted to solve the classification problem using various parametric classifiers. The classifiers we tested were Support Vector Machine (SVM), Random Forest, and K-Nearest Neighbors. We used the implementations provided in the scikit-learn library for Python \cite{scikit-learn}. For SVM, we used SVC with a non-linear RBF kernel. For Random Forest, we set the maximum depth of each tree to be 15.  All of the following baseline experiments used 50,000 generated samples with a train-test split of 60/40. Each sample is a combination of one or more instruments and is four seconds in length. The features used are the mel frequency cepstral coefficients (MFCCs) of the resulting combination, with a total of 100 coefficients per sample. We chose to use MFCCs for this setting because using the mel spectrogram leads to a number of features that is too high for the parametric classifiers. We found SVM to have the highest accuracy of the three classifiers across all experiments.
 
-We found that the parametric classifiers were not able to solve the full setting of our problem which had 424 classes, so we started by simplifying the problem to classifying only the instruments and not the pitch. This had the benefit of both reducing the number of classes and increasing the number of samples per class. We found that SVM was able to very accurately identify the instrument given an input that had only one instrument present; for this case the accuracy was 99.8\%. However as soon as multiple instruments were present in the input, the accuracy dropped significantly. With two instruments, accuracy was 55.4\%, with three it was 19.6\% and with 10 instruments the accuracy was 0.5\%. K-Nearest Neighbors performed significantly worse than SVM, so we did not attempt any further testing with KNN.
+In order to have a baseline to compare our classification results and to get a sense on the complexity of the problem, we initially used various parametric classifiers. The classifiers we tested were support vector machine (SVM), random forest (RF), and K-nearest neighbours (KNN). We used the implementations provided in the \emph{scikit-learn }library for Python \cite{scikit-learn}. More specifically, for SVM we used a non-linear RBF kernel and for RF we set the maximum depth of each tree to be 15.  All of the baseline experiments used 50,000 generated samples with a train-test split of 60/40. Each sample was made by a combination of one to ten instruments and was four seconds in length. 
+In this case, differently from the neural models, the features used are the MFCCs of the resulting combination; we chose to use MFCCs for this setting, instead of the Mel spectrogram, to have a number of features that is more appropriate for the parametric classifiers. We found SVM to have the highest accuracy of the three classifiers across all experiments.
 
-To better approximate the problem of identifying instrument and pitch, we performed experiments in which two instruments were selected and for input data that contained samples from one of those two instruments, both the instrument and pitch class of the sample would be classified. That is, which octave the pitch was in did not matter, only the pitch class. The input was a combination of two instruments drawn from a possible twelve instruments, and the classifier attempted to identify which instruments were present and for the specified instruments, say Violin and Viola, which pitch classes were present. If another instrument was present in the input combination that was not Violin or Viola, the classifier would simply identify that an instrument that was not one of the two was present. The accuracies from this experiment are outlined in Table 1. Since Random Forest performed worse than SVM is every experiment, we stopped testing with Random Forest and used SVM from that point on.
+The complete problem of classification of the pairs instrument-pitch has 424 total classes. This problem is very hard for parametric classifiers, so we initially switched to the simpler problem of classifying only the instruments and not the pitch. This had the benefit of both reducing the number of classes and increasing the number of samples per class. We found that SVM was able to very accurately identify the instrument given an input that had only one instrument present; for this case the accuracy was 99.8\%. However, as soon as multiple instruments were present in the input, the accuracy dropped significantly. With two instruments, accuracy was 55.4\%, with three it was 19.6\%. KNN performed significantly worse than SVM, so we did not attempt any further testing with it.
+
+To better approximate our original problem of identifying instrument and pitch, however, we performed experiments in which two instruments were selected and for input data that contained samples from one of those two instruments, both the instrument and pitch \emph{class} of the sample would be classified. The pitch class is the note name without the octave, e.g. C, D\#, G, etc. The input was a combination of two instruments drawn from a possible twelve instruments, and the classifier attempted to identify which instruments were present and for the specified instruments, say Violin and Viola, which pitch classes were present. If another instrument was present in the input combination that was not Violin or Viola, the classifier would simply identify that an instrument that was not one of the two was present. The accuracies from this experiment are outlined in table \ref{tab:baselines}. Since RF performed worse than SVM is every experiment, we stopped testing with it and used SVM from that point on.
 
 We then performed this same experiment with three instruments having their pitch class identified. Flute, Oboe, and Violin reached an accuracy of 11.1\%, and Bass Tuba, Trumpet, and Trombone was 0.5\%. As we increased the number of instruments whose pitch classes was being identified, the accuracy continued to drop. For classifying the pitch class of four instruments: Oboe, French Horn, Violin, and Flute, the accuracy was 2.7\%.
 
@@ -170,7 +198,6 @@ This was still a simplified version of the problem, as we were identifying only 
 
 \begin{table}
   \begin{center}
-    \label{tab:table1}
     \begin{tabular}{|c|c|c|c|} 
     	  \hline
       \textbf{Instr. 1} & \textbf{Instr. 2} & \textbf{SVM Acc.} & \textbf{RF Acc.}\\
@@ -187,39 +214,35 @@ This was still a simplified version of the problem, as we were identifying only 
       \hline
     \end{tabular}
   \end{center}
-  \caption{Comparison of accuracies between SVM and Random Forest. Each data point is a combination of two TinySOL samples, where at least one of the samples is from one of the two instruments specified for that experiment. For the samples drawn from one of the two instruments, the pitch class of that sample is identified. For a sample not from one of the two instruments, the classifier simply attempted to identify that a sample from one of the non-specified instruments was present. In this setting, there are 25 classes: 24 from the 12 pitch classes from 2 instruments, and 1 class that specified whether an instrument that is not one of the two specified is present.}
+  \caption{Comparison of accuracies between SVM and RF. Each data point is a combination of two TinySOL samples, where at least one of the samples is from one of the two instruments specified for that experiment. For the samples drawn from one of the two instruments, the pitch class of that sample is identified. For a sample not from one of the two instruments, the classifier simply attempted to identify that a sample from one of the non-specified instruments was present. In this setting, there are 25 classes: 24 from the 12 pitch classes from 2 instruments, and 1 class that specified whether an instrument that is not one of the two specified is present. \label{tab:baselines}}
 \end{table}
 
+In the rest of this section, we will show the classification results of two neural models. 
 
 \subsection{CNN with LSTM}
 
-The first deep model we tested was a Convolutional Neural Network (CNN) with a Long Short-Term Memory (LSTM) unit. CNNs show good performance on classification problems for their ability to extract spatial features, and have shown success in audio classification \cite{Hershey16}. Long Short-Term Memory (LSTM) units provide a way to learn long term dependencies in the data \cite{Hochreiter97}, which is relevant given the sequential nature of audio.
+The first deep model we trained as a classifier for musical instruments and pitches was a CNN with a LSTM unit. CNNs show good performance on classification problems for their ability to extract spatial features, and have shown success in audio classification \cite{Hershey16}. LSTM units provide a way to learn long term dependencies in the data \cite{Hochreiter97}, which is relevant given the sequential nature of audio.
 
-\carmine{Do we need any more justification on why we used that model?}
-
-Our architecture contains four convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a $2 \times 2$  MaxPool layer with a stride of 2. The kernel size is $3 \times 3$ with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32, and 32.
+Our architecture is made of four convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a $2 \times 2$  MaxPool layer with a stride of 2. The kernel size is $3 \times 3$ with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32, and 32.
 
 Following the first three convolutional layers, there is an LSTM layer with 32 outputs. After the LSTM layer, there is a final convolutional layer yielding a tensor of dimensions $32\times 8 \times 21$. We flatten the outputs and feed them into fully a connected layer with Dropout, then another another fully connected layer. Finally, the sigmoid function is applied to the final layer. 
-
-\carmine{Does this architecture need to be explained in more details?}
 
 Since each class is independent, we are able to take the sigmoid activation and use binary classification for each class. The model architecture is shown in Figure \ref{cnn_lstm}.
 
 \begin{figure*}
-\includegraphics[scale=0.45]{CNN_LSTM_diagram.png}
+\begin{center}
+\includegraphics[scale=0.4]{CNN_LSTM_diagram.png}
 \caption{Diagram of the CNN with LSTM architecture. \label{cnn_lstm}}
+\end{center}
 \end{figure*}
 
-
 \subsection{ResNet}
-\carmine{Can you add more to this section about why ResNet is good, and maybe some details about the implementation?}
-The second deep model that we used was the well known deep residual network ResNet.
 
-To make our setting more reasonable, we took the well-known deep residual network (ResNet) as backbone in our experiments. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. Besides, to make the model more suitable to our problem, we reduce the number of parameters and reset the output channel numbers of each block with 32, 64, 32, 32 respectively.
+The second and more deep model that we trained as classifier was the well known deep residual network \emph{ResNet}. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. Besides, to make the model more suitable to our problem, we decided to reduce the number of parameters and to reset the output channel numbers of each block with 32, 64, 32, 32 respectively.
 
 \subsection{Classification results}
 
-During training, the loss function used to optimize the inner parameters of the model was binary cross entropy, as it is the common choice for multiclass multilabel classification frameworks such as this one \carmine{Is there a specific paper justifying that claim? Or is it obvious enough?}. However, the value of the loss function alone is difficult to interpret. For this reason we created a complementary function $f$ to be used only for evaluation. This function compares a vector of expected outputs $\overline{X}$ with the estimated output from the model $\hat{X}$ by using the following function
+During training, the loss function used to optimize the inner parameters of the model was binary cross entropy, as it is the common choice for multiclass multilabel classification frameworks. However, the value of the loss function alone is difficult to interpret. For this reason we created a complementary function $f$ to be used only for evaluation. This function compares a vector of expected outputs $\overline{X}$ with the estimated output from the model $\hat{X}$ by using the following function
 
 \begin{equation}
 f(\overline{X}, \hat{X}) = \frac{1}{N}<\overline{X}, M_N(\hat{X})>
@@ -239,79 +262,42 @@ and $I_N(\hat{X})$ is the set of indices containing the $N$ first maximums of th
 
 More specifically, the function $M_N(\hat{X})$ takes as an input a vector of probabilities and outputs a vector where only the positions of the $N$ first maxima are set to 1. This new vector would be the orchestration of $N$ instruments given by the model. Thus, the function $f$ simply outputs the proportion of the estimated orchestration that matches the expected one.
 
-Different experiments were made by varying the number $N$ of samples in each mixture sample. We used an orchestra of 10 instruments containing Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet C and Clarinet Bb.
+Different experiments were made by varying the number $N$ of samples in each mixture sample. We used an orchestra of 10 instruments containing Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet in C and Clarinet in Bb.
 
 Then, for both CNN with LSTM and ResNet, we computed the maximum accuracy over the epochs. 
 The CNN was trained on 200,000 generated samples over 50 epochs, and ResNet was trained on 400,000 generated samples over 20 epochs. Fig. \ref{cnn_vs_resnet} shows the best overall test accuracy achieved by both models across the number of samples $N$.\\
 
+ResNet outperforms the CNN regardless of the number of samples used in the combination. This result is consistent with previous research \cite{He15}, as residual networks usually perform well in classification problems.
 
-\begin{figure}
-\center{
-\includegraphics[scale=0.4]{figs/CNN_vs_ResNet.png}}
-\caption{Best overall accuracy for CNN with LSTM and ResNet depending on the number of instruments in the combinations used for training. \label{cnn_vs_resnet}}
-\end{figure}
+Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum accuracy computed using the function $f$ from Eqn. \eqref{eval}. For ResNet, the variance in accuracy is much smaller until $N$ reaches 5, at which point it becomes similar to the CNN. The results on both figures show consistency on the relative accuracy of instruments, which was for us the first step towards the validation of this method. Flute, Trombone and Trumpet yield the worst results for both models. 
 
-From this plot, we see that ResNet achieves better performances than the CNN regardless of the number of samples used in the combination. This result isn't surprising as residual networks usually perform better for this kind of classification problems \carmine{It would need a citation on why ResNet was expected to be better}
+While it is not easy to explain these differences in accuracy, we hypothesize this being related to the nature of peculiar spectral and temporal morphology of each instrument. For example, flute notes tend to exhibit a steep spectral rolloff, with most of the energy captured by the first few partials. Moreover, the noisy nature of the transient portions of these note is not well represented by frequency-based descriptions such as Mel spectra. These two factors combined, could make the disentanglement of the flute from the analyzed combination more difficult.
 
-Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum accuracy computed using the function $f$ from Eqn. \eqref{eval}. For ResNet, the variance in accuracy is much smaller until $N$ reaches 5, at which point it becomes similar to the CNN. The results on both figures show consistency on the relative accuracy of instruments, which is a first step towards the validation of this method \carmine{Can I say that?}. Flute, Trombone and Trumpet yield the worst results for both models. Their low accuracy could be explained by the nature of their spectra. For the Flute, since it has very few harmonics, it is difficult to identify it among other instruments, especially if they are richer. On the other hand, brasses have a very rich spectra and a strong noisy component that excites almost all the frequencies.
-
-Strings give similar results across both models. An interesting point to notice is the very high accuracy of Oboe on both models. This could indicate that there is an optimal balance of harmonies that maximizes the probability of being detected in such classification framework.\carmine{Please review those interpretations}
-
-
-\begin{figure}
-\includegraphics[scale=0.5]{figs/Acc_vs_N_CNN.png}
-\caption{Best overall accuracy and for each instrument obtained by the CNN with LSTM depending on the number of instruments in the combinations. \label{best_acc_cnn}}
-\end{figure}
+Strings give similar results across both models. An interesting point to notice is the very high accuracy of Oboe on both models. This could indicate that there is an optimal spectral shape that maximizes the probability of being detected in such classification framework.
 
 \begin{figure}
 \includegraphics[scale=0.5]{figs/Acc_vs_N_ResNet.png}
 \caption{Best overall accuracy and for each instrument obtained by the ResNet depending on the number of instruments in the combinations. \label{best_acc_resnet}}
 \end{figure}
 
-
-
-\iffalse
-\begin{table*}
-\center{
-\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
-Instruments & \multicolumn{2}{c|}{$N=4$} & \multicolumn{2}{c|}{$N=5$}& \multicolumn{2}{c|}{$N=6$}& \multicolumn{2}{c|}{$N=7$}& \multicolumn{2}{c|}{$N=8$}& \multicolumn{2}{c|}{$N=9$}& \multicolumn{2}{c|}{$N=10$}\\
-\cline{2-3} & C & R & C & R & C & R & C & R & C & R & C & R & C & R\\
-\hline
-All & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-Hn & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-Ob & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-Vn & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-Va & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-Vc & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-Fl & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-Tbn & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-Bn & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-TpC & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-ClBb & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-\hline
-\end{tabular}
-
-\begin{caption}
-Best test accuracy obtained for each model and value of $N$ over the total number of epochs. The accuracy is computed using $f$ defined in \eqref{eval}. The first row correspond to the overall accuracy of the model, regrouping all the instruments. C is CNN with LSTM, R is ResNet.
-\label{class_res}
-\end{caption}}
-\end{table*}
-\fi
-
 \section{Orchestration experiments}
+\label{sec:orchestration}
 
-For orchestrating, we trained our models on combinations of 10 instruments: French Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet, and Clarinet. This leads to 424 classes, each one representing an instrument-note pair. A target sound is input to the model, and the 10 classes with the highest probability are extracted. These 10 classes are the instrument-note pairs that are most represented in the target, and can be from any combination of the 10 instruments. 
+After training the neural models for classification, we finally tested them for the task of target-based computer-assisted orchestration. For this purpose, we decided to use the models trained on combinations of 10 instruments: French Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet, and Clarinet. The total number of classes in this setting is 424, each one representing an instrument-note pair. 
 
-We did not train our model to classify the dynamics of a sample despite TinySOL having pianissimo, mezzo forte, and fortissimo recordings for each sample. If we had, then each class would have only one data point: the TinySOL sample it represents. When the model is used for orchestration, the dynamic is determined by the probability of that sample as output by the model. If the model outputs a probability higher than $0.66$ for a sample, the fortissimo version of the sample was used. If it was between $0.33$ and $0.66$, then the mezzo forte version, and if less than $0.33$ the pianissimo dynamic. The idea behind this is that samples that are the most represented in the target should be the loudest in the orchestrated solution.
+To orchestrate, a target sound is input to the model, and the 10 classes with the highest probability are extracted. These 10 classes are the instrument-note pairs that are most represented in the target, and can be from any combination of the 10 instruments. 
 
-We tested our models using 15 targets for orchestration. Two of the targets were made from TinySOL samples, but the rest are not combinations of input data, and some are not even recordings of instruments. Among the targets are recordings of bells, a car horn, a gong, and a recording of a boat docking. 
+Since we decided not to train our models to classify the dynamics of a sample (despite TinySOL having \emph{pianissimo}, \emph{mezzoforte}, and \emph{fortissimo} recordings), the dynamics is determined by the probability of each sample as output by the model. If the model outputs a probability higher than $0.66$ for a sample, the fortissimo version of the sample is used. If the probability is between $0.33$ and $0.66$, then the mezzoforte version is selected and if it is less than $0.33$ the pianissimo version is used. The idea behind this quantization, is that samples that are the most represented in the target should appear as the loudest in the orchestrated solution.
 
-Although the data we trained the model on was fixed to four seconds of audio, the target samples can be of arbitrary length. By changing the mel hop length, which is the distance between the frames of the melspectrogram, an audio signal of any length can be represented as a matrix of the same size as the training data.
+In order to test our models for orchestration, we used 15 targets from the Orchidea distribution. These targets represent a variety of signal types but are mostly static, in the sense that they do not change sensibly over time.
+
+Some of the targets were made of instrumental samples: a sum of oboe and bassoon notes, single bassoon and bass clarinet notes, two multiphonics of basson and two symphonic chords. The other targets there are: the recordings of two bells, of a car horn, of a gong, of a screaming voice, of a wind harp, of the attack of a brass instrument and the recording of a boat docking. 
+
+Although the data we trained the model on was fixed to four seconds of audio, the target samples can be of arbitrary length since we adapt the representation to the size of the training data by changing the hop length during the computation of the Mel spectrogram.
 
 \subsection{Evaluation}
 
-We evaluated our orchestrations both qualitatively and quantitatively. We compared our solutions to OrchIdea, the state-of-the-art program for computer-assisted orchestration. In order to have comparable solutions, we did not allow OrchIdea to create sparse solutions, meaning that OrchIdea was forced to use all 10 instruments in each solution. This creates a more fair comparison since our model is unable to create sparse solutions.
+We evaluated our orchestrations both qualitatively and quantitatively by comparing our solutions to Orchidea's solutions, the state-of-the-art program for computer-assisted orchestration. In order to have a more fair comparison, we did not allow Orchidea to create sparse solutions, meaning that OrchIdea was forced to use all 10 instruments in each solution. This creates a more fair comparison since our model is unable to create sparse solutions.
 
 Qualitative evaluation was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution. For example, one of the samples of a bell had partials that represented a C\# minor chord, so we checked if the orchestration contained the notes of the chord. If a target had specific notes, we identified if the note or its partials were present. For example there is target of an Oboe playing an A4 and a Bassoon playing a C\#3, the solution from ResNet contained the partials of the Bassoon's note: C\#3, G\#4, C\#5, and E6 were all included on various instruments in the solution.
 
@@ -341,81 +327,77 @@ d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \su
 \end{cases}
 \end{equation}
 
+
 \begin{table*}
   \begin{center}
     \label{orch_eval}
-    \begin{tabular}{|c|c|c|c|c|c|c|c|c|} 
-    	  \hline
-      \textbf{Model} & \textbf{Ob + Bn} & \textbf{Bn} & \textbf{Bass Clarinet} & \textbf{Bell1} & \textbf{Bell2} & \textbf{Yan} & \textbf{Car Horn} & \textbf{Boat}  \\
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c}
+     \hline
+      \textbf{Model} & \textbf{Ob + Bn} & \textbf{Bn} & \textbf{Bass cl.} & \textbf{Bell 1} & \textbf{Bell 2} & \textbf{Multiph. 1} & \textbf{Car horn} & \textbf{Boat} $\ldots$ \\
       \hline
-      CNN with LSTM & 0.17 & 0.28 & 0.70 & 0.55 & 0.26 & \textbf{1.10} & 0.68 & \textbf{1.12} \\
+      CNN with LSTM & 0.17 & 0.28 & 0.70 & 0.55 & 0.26 & \textbf{1.10} & 0.68 & \textbf{1.12} $\ldots$  \\
       \hline
-      ResNet & 0.34 & 0.50 & 0.48 & 0.59 & 0.45 & 0.90 & 0.49 & \textbf{1.16} \\
-      \hline
-      OrchIdea & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+      ResNet & 0.34 & 0.50 & 0.48 & 0.59 & 0.45 & 0.90 & 0.49 & \textbf{1.16} $\ldots$ \\
       \hline
       \hline
-      \textbf{Model} & \textbf{Wind Harp} & \textbf{Chord1} & \textbf{Reed Bone} & \textbf{Chord2} & \textbf{Gong} & \textbf{Scream} & \textbf{Trompe Attack} & \textbf{Average}  \\
+      \textbf{$\ldots$} & \textbf{Wind harp} & \textbf{Chord 1} & \textbf{Multiph. 2} & \textbf{Chord 2} & \textbf{Gong} & \textbf{Scream} & \textbf{Brass} & \textbf{Average}  \\
       \hline
-      CNN with LSTM & 0.55 & - & 0.70 & - & 0.73 & \textbf{1.14} & 0.79 & 0.59\\
+      $\ldots$ & 0.55 & 0.79 & 0.70 & 0.57 & 0.73 & \textbf{1.14} & 0.79 & 0.71\\
       \hline
-      ResNet & 0.61 & - & 0.51 & - & 0.71 & \textbf{1.03} & \textbf{1.05} & 0.55 \\
-      \hline
-      OrchIdea & 1 & - & 1 & - & 1 & 1 & 1 & 1 \\
+      $\ldots$  & 0.61 & 0.86 & 0.51 & 0.37 & 0.71 & \textbf{1.03} & \textbf{1.05} & 0.66 \\
       \hline
     \end{tabular}
   \end{center}
-  \caption{Quantitative comparison of orchestrations as ratios to OrchIdea. Eqn. \eqref{distance} was used with $\lambda_1 = 0.5$ and $\lambda_2 = 10$ to compute distances between orchestrations and targets. What is shown is the the ratio between the distance calculated and OrchIdea's distance for the same target. A value less than 1 means that the model performed worse (i.e. had a larger distance), and a value greater than 1 means the model performed better than OrchIdea. "Average" is the ratio of the average distances for the model across all targets.}
+  \caption{Quantitative comparison of orchestrations as ratios to Orchidea. Eqn. \eqref{distance} was used with $\lambda_1 = 0.5$ and $\lambda_2 = 10$ to compute distances between orchestrations and targets. What is shown is the ratio between the distance calculated and Orchidea's distance for the same target. A value less than 1 means that the model performed worse (i.e. had a larger distance), and a value greater than 1 means the model performed better than Orchidea. The last column shows the ratio of the average distances for the model across all targets.}
 \end{table*}
 
 
-\section{Conclusion}
+\section{Conclusions}
+\label{sec:conclusions}
 
 Classification through deep learning seems promising for orchestration because of our model's ability to classify individual instruments and pitches out of dense combinations of samples. While our model is not able to outperform OrchIdea, it shows consistent results. When comparing our methods to OrchIdea, it is important to note that many of processes OrchIdea uses to optimize its solution are not present in our model. Our model also lacks the implementation of symbolic constraints, which is an important part of assisted orchestration.
 
 We find that the CNN and ResNet give similar accuracies during training, but perform differently when tasked with orchestrating targets. Overall, CNN seems to better emulate the timbre in its orchestrations, where ResNet is better for recreating the harmonic content of the target. 
-
-\subsection{Interpreting the Latent Space}
-
-After training the CNN with LSTM for $N=10$ samples per combination, it is possible to visualize the filters applied to the input layer after layer. Figs. \ref{latent0}-\ref{latent5} show the successive outputs of each layer of the convolutional network. \carmine{I put here all the intermediary features of the CNN with LSTM. I don't find any particular conclusion other than saying that LSTM seems to focus more on vertical components rather than horizontal, ie time over frequency}
-
-\begin{figure}
-\includegraphics[scale=0.5]{figs/latent_space_layer0.png}
-\caption{Initial feature matrix used as input of the model \label{latent0}}
-\end{figure}
-
-\begin{figure}
-\includegraphics[scale=0.5]{figs/latent_space_layer1.png}
-\caption{Intermediary features after the first convolutional layer of the CNN with LSTM. \label{latent1}}
-\end{figure}
-
-\begin{figure}
-\includegraphics[scale=0.5]{figs/latent_space_layer2.png}
-\caption{Intermediary features after the second convolutional layer of the CNN with LSTM. \label{latent2}}
-\end{figure}
-
-\begin{figure}
-\includegraphics[scale=0.5]{figs/latent_space_layer3.png}
-\caption{Intermediary features after the third convolutional layer of the CNN with LSTM. \label{latent3}}
-\end{figure}
-
-\begin{figure}
-\includegraphics[scale=0.5]{figs/latent_space_layer4.png}
-\caption{Intermediary features after the LSTM layer. \label{latent4}}
-\end{figure}
-
-\begin{figure}
-\includegraphics[scale=0.5]{figs/latent_space_layer5.png}
-\caption{Intermediary features after final convolutional layer of the CNN with LSTM. \label{latent5}}
-\end{figure}
-
-\section{Future steps}
 
 Future steps in this project include implementing various methods that are present in OrchIdea.
 
 Our current model orchestrates all targets using the same number of samples, and this does not take into account the density of different targets. The solution to this is to allow sparse solutions in which the model decides how many samples should be used to best represent the target. This allows a small number of samples to be used for sonically sparse sounds and many to be used for sonically dense sounds.
 
 Partial filtering is a method that would aid our model in orchestrating the harmonics of a target. The dominant harmonic partials of the target are identified, and the search space is limited to only include samples of those pitches. For example, if the target is a recording of an instrument playing a C4, then the partials identified may be C4, C5, G5, and E6. The model would then only consider samples of these pitches to be used in the solution. This leads to a solution whose harmonics are much closer to the target, which is an important part of aural similarity.
+
+%\subsection{Interpreting the Latent Space}
+%
+%After training the CNN with LSTM for $N=10$ samples per combination, it is possible to visualize the filters applied to the input layer after layer. Figs. \ref{latent0}-\ref{latent5} show the successive outputs of each layer of the convolutional network. \carmine{I put here all the intermediary features of the CNN with LSTM. I don't find any particular conclusion other than saying that LSTM seems to focus more on vertical components rather than horizontal, ie time over frequency}
+%
+%\begin{figure}
+%\includegraphics[scale=0.5]{figs/latent_space_layer0.png}
+%\caption{Initial feature matrix used as input of the model \label{latent0}}
+%\end{figure}
+%
+%\begin{figure}
+%\includegraphics[scale=0.5]{figs/latent_space_layer1.png}
+%\caption{Intermediary features after the first convolutional layer of the CNN with LSTM. \label{latent1}}
+%\end{figure}
+%
+%\begin{figure}
+%\includegraphics[scale=0.5]{figs/latent_space_layer2.png}
+%\caption{Intermediary features after the second convolutional layer of the CNN with LSTM. \label{latent2}}
+%\end{figure}
+%
+%\begin{figure}
+%\includegraphics[scale=0.5]{figs/latent_space_layer3.png}
+%\caption{Intermediary features after the third convolutional layer of the CNN with LSTM. \label{latent3}}
+%\end{figure}
+%
+%\begin{figure}
+%\includegraphics[scale=0.5]{figs/latent_space_layer4.png}
+%\caption{Intermediary features after the LSTM layer. \label{latent4}}
+%\end{figure}
+%
+%\begin{figure}
+%\includegraphics[scale=0.5]{figs/latent_space_layer5.png}
+%\caption{Intermediary features after final convolutional layer of the CNN with LSTM. \label{latent5}}
+%\end{figure}
 
 \iffalse
 \begin{figure}
@@ -424,27 +406,104 @@ Partial filtering is a method that would aid our model in orchestrating the harm
 \fi
 
 % For bibtex users:
-\bibliography{paper}
+%\bibliography{paper}
 
-% For non bibtex users:
-%\begin{thebibliography}{citations}
-%
-%\bibitem {Author:00}
-%E. Author.
-%``The Title of the Conference Paper,''
-%{\it Proceedings of the International Symposium
-%on Music Information Retrieval}, pp.~000--111, 2000.
-%
-%\bibitem{Someone:10}
-%A. Someone, B. Someone, and C. Someone.
-%``The Title of the Journal Paper,''
-%{\it Journal of New Music Research},
-%Vol.~A, No.~B, pp.~111--222, 2010.
-%
-%\bibitem{Someone:04} X. Someone and Y. Someone. {\it Title of the Book},
-%    Editorial Acme, Porto, 2012.
-%
-%\end{thebibliography}
+\begin{thebibliography}{99}
+
+\bibitem{Benetos07}
+Emmanouil Benetos, Margarita Kotti, and Constantine Kotropoulos.
+\newblock Large scale musical instrument identification.
+\newblock 2007.
+
+\bibitem{Bhardwaj17}
+Siddharth Bhardwaj.
+\newblock Audio data augmentation with respect to musical instrument
+  recognition.
+\newblock Master's thesis, 2017.
+
+\bibitem{Bian19}
+Wenhao Bian, Jie Wang, Bojin Zhuang, Shaojun~Wang Jiankui~Yang, and Jing Xiao.
+\newblock Audio-based music classification with densenet and data augmentation.
+\newblock ArXiv (https://arxiv.org/abs/1906.11620v1), 2019.
+
+
+\bibitem{Cella18}
+Carmine~Emanuele Cella and Philippe Esling.
+\newblock Open-Source Modular Toolbox for Computer-Aided Orchestration.
+\newblock Timbre conference, 2018.
+
+\bibitem{Cella19}
+Carmine~Emanuele Cella, Jon Gillick, and David Bamman.
+\newblock Estimating unobserved audio features for targed-based orchestration.
+\newblock ISMIR, 2019.
+
+\bibitem{Cella2020}
+Carmine~Emanuele Cella.
+\newblock Orchidea: a comprehensive framework for target-based assisted orchestration.
+\newblock in preparation; available on request from the author, 2020.
+
+\bibitem{Cella2020b}
+Carmine~Emanuele Cella, Daniele Ghisi, Vincent Lostanlen, Fabi\'en Levy, Yan Maresz and Joshua Fineberg.
+\newblock OrchideaSOL: a dataset of extended instrumental techniques for computer-aided orchestration.
+\newblock ICMC (under review), 2020.
+
+\bibitem{Chetry05}
+Nicolas Chetry, Mike Davies, and Mark Sandler.
+\newblock Musical instrument identification using lsf and k-means.
+\newblock 2005.
+
+\bibitem{He15}
+Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.
+\newblock Deep residual learning for image recognition.
+\newblock 2015.
+
+\bibitem{Hershey16}
+Shawn Hershey, Sourish Chaudhuri, Daniel P.~W. Ellis, Jort~F. Gemmeke, Aren
+  Jansen, R.~Channing Moore, Manoj Plakal, Devin Platt, Rif~A. Saurous, Bryan
+  Seybold, Malcolm Slaney, Ron~J. Weiss, and Kevin Wilson.
+\newblock Cnn architectures for large-scale audio classification.
+\newblock 2016.
+
+\bibitem{Hochreiter97}
+Sepp Hochreiter and J\"{u}rgen Schmidhuber.
+\newblock Long short-term memory.
+\newblock {\em Neural Comput.}, 9(8):1735–1780, November 1997.
+
+\bibitem{Kitahara05}
+Tetsuro Kitahara, Masataka Goto, and Hiroshi~G. Okuno.
+\newblock Pitch-dependent identification of musical instrument sounds.
+\newblock 2005.
+
+\bibitem{lostanlen16}
+Vincent Lostanlen and Carmine-Emanuele Cella.
+\newblock Deep convolutional networks on the pitch spiral for musical
+  instrument recognition, 2016.
+
+\bibitem{mcfee15}
+Brian McFee, Colin Raffel, Dawen Liang, Daniel~P.W. Ellis, Matt McVicar, Eric
+  Battenberg, and Oriol Nieto.
+\newblock librosa: Audio and music signal analysis in python.
+\newblock 2015.
+
+\bibitem{scikit-learn}
+F.~Pedregosa, G.~Varoquaux, A.~Gramfort, V.~Michel, B.~Thirion, O.~Grisel,
+  M.~Blondel, P.~Prettenhofer, R.~Weiss, V.~Dubourg, J.~Vanderplas, A.~Passos,
+  D.~Cournapeau, M.~Brucher, M.~Perrot, and E.~Duchesnay.
+\newblock Scikit-learn: Machine learning in {P}ython.
+\newblock {\em Journal of Machine Learning Research}, 12:2825--2830, 2011.
+
+\bibitem{Salamon17}
+Justin Salamon and Juan~Pablo Bello.
+\newblock Deep convolutional neural networks and data augmentation for
+  environmental sound classification.
+\newblock {\em IEEE Signal Processing Letters}, 24(3):279–283, Mar 2017.
+
+\bibitem{Stevens37}
+S.~S. Stevens, J.~Volkmann, , and E.~B. Newman.
+\newblock A scale for the measurement of the psychological magnitude pitch.
+\newblock 1937.
+
+\end{thebibliography}
 
 \end{document}
 
