@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7200 64-bit) (preloaded format=pdflatex 2019.10.15)  14 MAY 2020 17:04
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7200 64-bit) (preloaded format=pdflatex 2019.10.15)  15 MAY 2020 13:48
 entering extended mode
 **./paper.tex
 (paper.tex
@@ -345,183 +345,101 @@ LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <8> not available
 (Font)              Font shape `T1/ptm/b/n' tried instead on input line 82.
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `T1/ptm/b/n' tried instead on input line 82.
-
-Underfull \hbox (badness 1442) in paragraph at lines 90--91
-\T1/ptm/m/n/10 ex-plor-ing a fea-ture space de-fined by a fixed fea-ture
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 90--91
-
- []
-
-
-Underfull \hbox (badness 1117) in paragraph at lines 92--93
-\T1/ptm/m/n/10 G4}, the model will hope-fully ac-quire the abil-ity to
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 92--93
-
- []
-
-
-Underfull \hbox (badness 2359) in paragraph at lines 94--95
-\T1/ptm/m/n/10 net-works for mu-si-cal clas-si-fi-ca-tion [[]12[]] [[]3[]] [[]4
-[]] [[]7[]].
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 94--95
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 101--102
-
- []
-
-
-Underfull \hbox (badness 1515) in paragraph at lines 103--104
-\T1/ptm/m/n/10 and ResNet, a well known resid-ual ar-chi-tec-ture that
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 103--104
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 112--113
-
- []
-
-[1{C:/Users/Alejandro/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
+ [1{C:/Users/Alejandro/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
 
 
 
  <./figs/cc_by.pdf>]
 LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 118.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 117.
 
-Underfull \hbox (badness 10000) in paragraph at lines 123--124
-
+Underfull \hbox (badness 3343) in paragraph at lines 124--125
+[]\T1/ptm/m/n/10 The re-sult-ing com-bi-na-tion has a sam-ple rate of
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 151--152
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 153--154
-
- []
-
-
-LaTeX Warning: Citation `scikit-learn' on page 2 undefined on input line 162.
+LaTeX Warning: Citation `scikit-learn' on page 2 undefined on input line 161.
 
 [2]
-<CNN_LSTM_diagram.png, id=71, 1092.33093pt x 520.19344pt>
-File: CNN_LSTM_diagram.png Graphic file (type png)
-<use CNN_LSTM_diagram.png>
-Package pdftex.def Info: CNN_LSTM_diagram.png  used on input line 210.
-(pdftex.def)             Requested size: 491.54437pt x 234.08487pt.
-
-Overfull \hbox (2.15698pt too wide) in paragraph at lines 210--211
-[][] 
- []
-
-[3]
-Underfull \hbox (badness 1360) in paragraph at lines 245--246
-\T1/ptm/m/n/10 of $\OML/cmm/m/it/10 N$ \T1/ptm/m/n/10 were made us-ing a datase
-t con-tain-ing 200000
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 245--246
+<figs/CNN_LSTM_diagram.png, id=71, 1092.33093pt x 520.19344pt>
+File: figs/CNN_LSTM_diagram.png Graphic file (type png)
+<use figs/CNN_LSTM_diagram.png>
+Package pdftex.def Info: figs/CNN_LSTM_diagram.png  used on input line 210.
+(pdftex.def)             Requested size: 382.32155pt x 182.07042pt.
+ [3]
+Underfull \hbox (badness 10000) in paragraph at lines 245--247
 
  []
 
 <figs/CNN_vs_ResNet.png, id=82, 462.528pt x 344.0052pt>
 File: figs/CNN_vs_ResNet.png Graphic file (type png)
 <use figs/CNN_vs_ResNet.png>
-Package pdftex.def Info: figs/CNN_vs_ResNet.png  used on input line 250.
+Package pdftex.def Info: figs/CNN_vs_ResNet.png  used on input line 251.
 (pdftex.def)             Requested size: 185.0079pt x 137.59962pt.
-[4 <./CNN_LSTM_diagram.png> <./figs/CNN_vs_ResNet.png>]
-<figs/Acc_vs_N_CNN.png, id=98, 478.78876pt x 353.82187pt>
+[4 <./figs/CNN_LSTM_diagram.png> <./figs/CNN_vs_ResNet.png>]
+<figs/Acc_vs_N_CNN.png, id=100, 478.78876pt x 353.82187pt>
 File: figs/Acc_vs_N_CNN.png Graphic file (type png)
 <use figs/Acc_vs_N_CNN.png>
-Package pdftex.def Info: figs/Acc_vs_N_CNN.png  used on input line 261.
+Package pdftex.def Info: figs/Acc_vs_N_CNN.png  used on input line 263.
 (pdftex.def)             Requested size: 239.39378pt x 176.91049pt.
 
-Overfull \hbox (6.08119pt too wide) in paragraph at lines 261--262
+Overfull \hbox (6.08119pt too wide) in paragraph at lines 263--264
 [][] 
  []
 
-<figs/Acc_vs_N_ResNet.png, id=99, 478.78876pt x 353.82187pt>
+<figs/Acc_vs_N_ResNet.png, id=101, 478.78876pt x 353.82187pt>
 File: figs/Acc_vs_N_ResNet.png Graphic file (type png)
 <use figs/Acc_vs_N_ResNet.png>
-Package pdftex.def Info: figs/Acc_vs_N_ResNet.png  used on input line 266.
+Package pdftex.def Info: figs/Acc_vs_N_ResNet.png  used on input line 268.
 (pdftex.def)             Requested size: 239.39378pt x 176.91049pt.
 
-Overfull \hbox (6.08119pt too wide) in paragraph at lines 266--267
+Overfull \hbox (6.08119pt too wide) in paragraph at lines 268--269
 [][] 
  []
 
 [5 <./figs/Acc_vs_N_CNN.png> <./figs/Acc_vs_N_ResNet.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 380--381
-
+Overfull \hbox (15.83951pt too wide) in paragraph at lines 348--368
+ [] 
  []
 
-<figs/latent_space_layer0.png, id=114, 462.528pt x 346.896pt>
+<figs/latent_space_layer0.png, id=116, 462.528pt x 346.896pt>
 File: figs/latent_space_layer0.png Graphic file (type png)
 <use figs/latent_space_layer0.png>
-Package pdftex.def Info: figs/latent_space_layer0.png  used on input line 389.
+Package pdftex.def Info: figs/latent_space_layer0.png  used on input line 384.
 (pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
-<figs/latent_space_layer1.png, id=115, 462.528pt x 346.896pt>
+<figs/latent_space_layer1.png, id=117, 462.528pt x 346.896pt>
 File: figs/latent_space_layer1.png Graphic file (type png)
 <use figs/latent_space_layer1.png>
-Package pdftex.def Info: figs/latent_space_layer1.png  used on input line 394.
+Package pdftex.def Info: figs/latent_space_layer1.png  used on input line 389.
 (pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
-<figs/latent_space_layer2.png, id=116, 462.528pt x 346.896pt>
+<figs/latent_space_layer2.png, id=118, 462.528pt x 346.896pt>
 File: figs/latent_space_layer2.png Graphic file (type png)
 <use figs/latent_space_layer2.png>
-Package pdftex.def Info: figs/latent_space_layer2.png  used on input line 399.
+Package pdftex.def Info: figs/latent_space_layer2.png  used on input line 394.
 (pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
-<figs/latent_space_layer3.png, id=117, 462.528pt x 346.896pt>
+<figs/latent_space_layer3.png, id=119, 462.528pt x 346.896pt>
 File: figs/latent_space_layer3.png Graphic file (type png)
 <use figs/latent_space_layer3.png>
-Package pdftex.def Info: figs/latent_space_layer3.png  used on input line 404.
+Package pdftex.def Info: figs/latent_space_layer3.png  used on input line 399.
 (pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
-<figs/latent_space_layer4.png, id=118, 462.528pt x 346.896pt>
+<figs/latent_space_layer4.png, id=120, 462.528pt x 346.896pt>
 File: figs/latent_space_layer4.png Graphic file (type png)
 <use figs/latent_space_layer4.png>
-Package pdftex.def Info: figs/latent_space_layer4.png  used on input line 409.
+Package pdftex.def Info: figs/latent_space_layer4.png  used on input line 404.
 (pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
-<figs/latent_space_layer5.png, id=119, 462.528pt x 346.896pt>
+<figs/latent_space_layer5.png, id=121, 462.528pt x 346.896pt>
 File: figs/latent_space_layer5.png Graphic file (type png)
 <use figs/latent_space_layer5.png>
-Package pdftex.def Info: figs/latent_space_layer5.png  used on input line 414.
+Package pdftex.def Info: figs/latent_space_layer5.png  used on input line 409.
 (pdftex.def)             Requested size: 231.26343pt x 173.44757pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 420--421
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 422--423
-
- []
-
-[6 <./figs/latent_space_layer0.png> <./figs/latent_space_layer1.png>] [7 <./fig
-s/latent_space_layer2.png> <./figs/latent_space_layer3.png> <./figs/latent_spac
-e_layer4.png> <./figs/latent_space_layer5.png>] (paper.bbl
+[6 <./figs/latent_space_layer0.png> <./figs/latent_space_layer1.png> <./figs/la
+tent_space_layer2.png>] (paper.bbl
 Underfull \hbox (badness 1924) in paragraph at lines 20--25
 \T1/ptm/m/n/10 Richter, and Roger Wat-ten-hofer.  Monau-ral mu-sic
  []
 
-
+[7 <./figs/latent_space_layer3.png> <./figs/latent_space_layer4.png> <./figs/la
+tent_space_layer5.png>]
 Underfull \hbox (badness 3838) in paragraph at lines 54--57
 []\T1/ptm/m/n/10 Sepp Hochre-iter and Jür-gen Schmid-hu-ber.  Long
  []
@@ -532,29 +450,28 @@ Underfull \hbox (badness 1077) in paragraph at lines 59--62
  []
 
 )
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 455.
- [8]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 455.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 450.
+ [8
+
+]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 450.
  (paper.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 455.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 455.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 450.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 450.
 
 
 LaTeX Warning: There were undefined references.
 
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 455.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 450.
  ) 
 Here is how much of TeX's memory you used:
- 6506 strings out of 492452
- 93347 string characters out of 3129795
- 199529 words of memory out of 3000000
- 10727 multiletter control sequences out of 15000+200000
+ 6504 strings out of 492452
+ 93358 string characters out of 3129795
+ 201496 words of memory out of 3000000
+ 10726 multiletter control sequences out of 15000+200000
  36989 words of font info for 53 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 31i,15n,27p,1073b,362s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 31i,15n,27p,1073b,431s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/base/8r.enc}<C:/Program Files/Mi
 KTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program Files/MiKTeX 2.9
 /fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTeX 2.9/fonts/t
@@ -567,9 +484,9 @@ Files/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8a.pfb><C:/Program Files/MiKTeX 2.
 9/fonts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw
 /times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pf
 b>
-Output written on paper.pdf (8 pages, 543068 bytes).
+Output written on paper.pdf (8 pages, 543746 bytes).
 PDF statistics:
- 206 PDF objects out of 1000 (max. 8388607)
- 58 named destinations out of 1000 (max. 500000)
+ 207 PDF objects out of 1000 (max. 8388607)
+ 57 named destinations out of 1000 (max. 500000)
  56 words of extra memory for PDF output out of 10000 (max. 10000000)
 
