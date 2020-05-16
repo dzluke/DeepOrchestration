@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2019.1.29)  15 MAY 2020 14:44
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2019.1.29)  15 MAY 2020 18:22
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -352,122 +352,128 @@ LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <8> not available
 (Font)              Font shape `T1/ptm/b/n' tried instead on input line 82.
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `T1/ptm/b/n' tried instead on input line 82.
+<figs/method.png, id=8, 1360.08125pt x 581.17125pt>
+File: figs/method.png Graphic file (type png)
+<use figs/method.png>
+Package pdftex.def Info: figs/method.png  used on input line 94.
+(pdftex.def)             Requested size: 231.21075pt x 98.7978pt.
 
-Underfull \hbox (badness 2635) in paragraph at lines 92--93
-\T1/ptm/m/it/10 pitch-dynamics \T1/ptm/m/n/10 such as {\T1/pcr/m/n/10 Flute C6 
-pp, Bassoon
+Underfull \hbox (badness 1163) in paragraph at lines 100--101
+[]\T1/ptm/m/n/10 In this pa-per, we try a dif-fer-ent ap-proach to this
  []
 
 [1{/usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
 
 
- <./figs/cc_by.pdf>]
-Underfull \hbox (badness 7256) in paragraph at lines 114--115
-[]\T1/ptm/m/n/10 finally, we eval-u-ate the gen-er-ated or-ches-tra-
+ <./figs/cc_by.pdf> <./figs/method.png>]
+<figs/CNN_LSTM_diagram.png, id=54, 1092.33093pt x 520.19344pt>
+File: figs/CNN_LSTM_diagram.png Graphic file (type png)
+<use figs/CNN_LSTM_diagram.png>
+Package pdftex.def Info: figs/CNN_LSTM_diagram.png  used on input line 120.
+(pdftex.def)             Requested size: 240.31354pt x 114.4429pt.
+
+Overfull \hbox (7.00095pt too wide) in paragraph at lines 120--121
+ [] 
  []
 
 
-LaTeX Warning: Reference `fig:method' on page 2 undefined on input line 123.
-
-<figs/Acc_vs_N_CNN.png, id=54, 478.78876pt x 353.82187pt>
-File: figs/Acc_vs_N_CNN.png Graphic file (type png)
-<use figs/Acc_vs_N_CNN.png>
-Package pdftex.def Info: figs/Acc_vs_N_CNN.png  used on input line 126.
-(pdftex.def)             Requested size: 239.39378pt x 176.91049pt.
-
-Overfull \hbox (6.08119pt too wide) in paragraph at lines 126--127
-[][] 
+Underfull \hbox (badness 7256) in paragraph at lines 132--133
+[]\T1/ptm/m/n/10 finally, we eval-u-ate the gen-er-ated or-ches-tra-
  []
 
 <figs/CNN_vs_ResNet.png, id=55, 462.528pt x 344.0052pt>
 File: figs/CNN_vs_ResNet.png Graphic file (type png)
 <use figs/CNN_vs_ResNet.png>
-Package pdftex.def Info: figs/CNN_vs_ResNet.png  used on input line 133.
-(pdftex.def)             Requested size: 231.26343pt x 172.00217pt.
-[2 <./figs/Acc_vs_N_CNN.png> <./figs/CNN_vs_ResNet.png>]
+Package pdftex.def Info: figs/CNN_vs_ResNet.png  used on input line 137.
+(pdftex.def)             Requested size: 185.0079pt x 137.59962pt.
+[2 <./figs/CNN_LSTM_diagram.png> <./figs/CNN_vs_ResNet.png>]
 LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 145.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 161.
 
-Underfull \hbox (badness 3343) in paragraph at lines 150--151
+Underfull \hbox (badness 3343) in paragraph at lines 166--167
 []\T1/ptm/m/n/10 The re-sult-ing com-bi-na-tion has a sam-ple rate of
  []
 
-
-LaTeX Warning: Citation `hardwaj17' on page 3 undefined on input line 180.
-
 [3]
-<figs/CNN_LSTM_diagram.png, id=95, 1092.33093pt x 520.19344pt>
-File: figs/CNN_LSTM_diagram.png Graphic file (type png)
-<use figs/CNN_LSTM_diagram.png>
-Package pdftex.def Info: figs/CNN_LSTM_diagram.png  used on input line 234.
-(pdftex.def)             Requested size: 436.92464pt x 208.07368pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 267--269
+LaTeX Warning: Citation `Hershey16' on page 4 undefined on input line 239.
+
+<figs/Acc_vs_N_CNN.png, id=104, 478.78876pt x 353.82187pt>
+File: figs/Acc_vs_N_CNN.png Graphic file (type png)
+<use figs/Acc_vs_N_CNN.png>
+Package pdftex.def Info: figs/Acc_vs_N_CNN.png  used on input line 255.
+(pdftex.def)             Requested size: 191.5121pt x 141.52623pt.
+[4 <./figs/Acc_vs_N_CNN.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 282--284
 
  []
 
-[4]
-<figs/Acc_vs_N_ResNet.png, id=114, 478.78876pt x 353.82187pt>
+<figs/Acc_vs_N_ResNet.png, id=123, 478.78876pt x 353.82187pt>
 File: figs/Acc_vs_N_ResNet.png Graphic file (type png)
 <use figs/Acc_vs_N_ResNet.png>
-Package pdftex.def Info: figs/Acc_vs_N_ResNet.png  used on input line 279.
-(pdftex.def)             Requested size: 239.39378pt x 176.91049pt.
+Package pdftex.def Info: figs/Acc_vs_N_ResNet.png  used on input line 295.
+(pdftex.def)             Requested size: 191.5121pt x 141.52623pt.
+[5 <./figs/Acc_vs_N_ResNet.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 358--373
 
-Overfull \hbox (6.08119pt too wide) in paragraph at lines 279--280
-[][] 
- []
-
-[5 <./figs/CNN_LSTM_diagram.png> <./figs/Acc_vs_N_ResNet.png>]
-Underfull \hbox (badness 2865) in paragraph at lines 300--301
-\T1/ptm/m/n/10 so-lu-tions, the state-of-the-art pro-gram for computer-
  []
 
 [6]
-Underfull \hbox (badness 1755) in paragraph at lines 446--449
+Underfull \hbox (badness 1189) in paragraph at lines 435--436
+[]\T1/ptm/m/n/10 Yan Maresz, On Computer-Assisted Or-ches-tra-tion.
+ []
+
+
+Underfull \hbox (badness 1755) in paragraph at lines 463--466
 []\T1/ptm/m/n/10 Carmine Emanuele Cella, Daniele Ghisi, Vin-cent
  []
 
 
-Underfull \hbox (badness 1762) in paragraph at lines 446--449
+Underfull \hbox (badness 1762) in paragraph at lines 463--466
 \T1/ptm/m/n/10 Lostanlen, Fabién Levy, Yan Maresz and Joshua
  []
 
 
-Underfull \hbox (badness 3838) in paragraph at lines 468--471
+Underfull \hbox (badness 3838) in paragraph at lines 485--488
 []\T1/ptm/m/n/10 Sepp Hochre-iter and Jür-gen Schmid-hu-ber.  Long
  []
 
 
-Underfull \hbox (badness 1077) in paragraph at lines 473--476
+Underfull \hbox (badness 1077) in paragraph at lines 490--493
 []\T1/ptm/m/n/10 Tetsuro Ki-ta-hara, Masa-taka Goto, and Hi-roshi G.
  []
 
 
-Underfull \hbox (badness 1270) in paragraph at lines 489--494
+Underfull \hbox (badness 1270) in paragraph at lines 506--511
 \T1/ptm/m/n/10 R. Weiss, V. Dubourg, J. Van-der-plas, A. Pas-sos,
  []
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 508.
+
+Underfull \hbox (badness 2856) in paragraph at lines 527--528
+[]\T1/ptm/m/n/10 Jon Gillick, Carmine-Emanuele Cella and David
+ []
+
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 531.
 [7]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 508.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 531.
  (./paper.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 508.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 508.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 531.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 531.
 
 
 LaTeX Warning: There were undefined references.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 508.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 531.
  ) 
 Here is how much of TeX's memory you used:
- 6370 strings out of 492649
- 91124 string characters out of 6129622
- 194709 words of memory out of 5000000
- 10124 multiletter control sequences out of 15000+600000
- 40789 words of font info for 56 fonts, out of 8000000 for 9000
+ 6376 strings out of 492649
+ 91263 string characters out of 6129622
+ 195032 words of memory out of 5000000
+ 10130 multiletter control sequences out of 15000+600000
+ 36989 words of font info for 53 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 28i,15n,25p,1383b,427s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 28i,15n,25p,1343b,433s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2018/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
 exlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/te
 xlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/tex
@@ -481,10 +487,10 @@ mf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texlive/2018/texmf-dist/
 fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type
 1/urw/times/utmr8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/urw/time
 s/utmri8a.pfb>
-Output written on paper.pdf (7 pages, 428635 bytes).
+Output written on paper.pdf (7 pages, 503209 bytes).
 PDF statistics:
- 199 PDF objects out of 1000 (max. 8388607)
- 168 compressed objects within 2 object streams
- 55 named destinations out of 1000 (max. 500000)
- 26 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 206 PDF objects out of 1000 (max. 8388607)
+ 173 compressed objects within 2 object streams
+ 56 named destinations out of 1000 (max. 500000)
+ 31 words of extra memory for PDF output out of 10000 (max. 10000000)
 
