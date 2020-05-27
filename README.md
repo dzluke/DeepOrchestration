@@ -4,8 +4,6 @@
 
 ## CNN with LSTM Solutions
 
-[Oboe and Bassoon](/orchestrated_targets/cnn_n=10/orchestrated_mix_ObA4_BnC#3.wav)
+[Oboe and Bassoon](/orchestrated_targets/cnn_n%3D10/orchestrated_mix_ObA4_BnC%233.wav)
 
 ## ResNet Solutions
-
-[Oboe and Bassoon](/orchestrated_targets/resnet_n=10/orchestrated_mix_ObA4_BnC#3.wav)
