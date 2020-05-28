@@ -9,7 +9,6 @@
 ## ResNet Solutions
 
 <audio controls>
-  <source src="horse.ogg" type="audio/ogg">
-  <source src="horse.mp3" type="audio/mpeg">
+  <source src="/orchestrated_targets/cnn_n%3D10/orchestrated_mix_ObA4_BnC%233.wav" type="audio/wav">
 Your browser does not support the audio element.
 </audio>
