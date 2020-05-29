@@ -1,8 +1,6 @@
 # Neural Models for Target-Based Computer-Assisted Musical Orchestration: A Preliminary Study
 
-<style>
-
-</style>
+This is the readme
 
 <table style="width:100%">
   <tr>
