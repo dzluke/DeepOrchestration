@@ -6,7 +6,7 @@
 
 Chord 1
 <audio controls>
-  <source src="https://raw.githubusercontent.com/dzluke/DeepOrchestration/master/orchestrated_targets/cnn_n%3D10/orchestrated_Beethoven_chord1.wav" type="audio/wav">
+  <source src="https://raw.githubusercontent.com/dzluke/DeepOrchestration/master/orchestrated_targets/cnn_n%3D10/orchestrated_Beethoven_chord1.wav?token=AFO5XL24YUJOTVVSBN7P5O263KIY2" type="audio/wav">
   
 
 Your browser does not support the audio element.
