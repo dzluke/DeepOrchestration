@@ -2,6 +2,27 @@
 <html>
 <body>
 
+<h1>
+    Neural Models for Target-Based Computer-Assisted Musical Orchestration: A Preliminary Study
+</h1>
+
+<p>
+
+    Below is a selection of the targets we orchestrated using our models. The first column contains the target 
+    sound, then the solution that Orchidea orchestrated, and finally the last column is the solution from our model,
+    which is either CNN with LSTM or ResNet.
+</p>
+
+<p>
+    Our main idea is to train a model to classify combinations of real instruments and use it then for orchestration. A
+    typical solution for assisted orchestration is a set of triples instrument-pitch-dynamics such as {Flute C6 pp, Bassoon
+    C4 mf, Bassoon G4 ff}. By training a neural network with real combinations of instrumental notes, it will acquire the
+    ability to identify the presence of each instrument and its associated pitch by building the appropriate latent
+    representation. Thus, when an unknown target sound is given as input, the network will identify which are the best
+    instruments to match the target sound, and it will be able to deconstruct a complex mixture of timbres into individual
+    instrument notes.
+</p>
+
 <table style="width:100%">
     <tr>
         <th></th>
