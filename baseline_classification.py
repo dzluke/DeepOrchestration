@@ -1,17 +1,5 @@
-# ------------------------------------
-# OrchideaSOL classification baselines
-# ------------------------------------
-#
-# Written by Carmine E. Cella, 2020
-#
-# This code is distributed with the OrchideaSOL dataset
-# of extended instrumental techniques.
-#
-# For more information, please see:
-# C. E. Cella, D. Ghisi, V. Lostanlen, F. Lévy, J. Fineberg and Y. Maresz,
-#       OrchideaSOL: a dataset of extended instrumental techniques for computer-assisted orchestration,
-#       ICMC 2020, Santiago, Chile.
-#
+# Adapted from code written by Carmine E. Cella, 2020
+
 
 import numpy as np
 import pandas as pd
@@ -236,11 +224,6 @@ def train_and_test(X, y):
                                                     test_size = 0.4,
                                                     random_state = 42,
                                                     shuffle=True)
-
-    # print('X train: ', X_train.shape)
-    # print('X test: ', X_test.shape)
-    # print('y train: ', y_train.shape)
-    # print('y test: ', y_test.shape)
 
     clfs = []
 

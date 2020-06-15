@@ -44,14 +44,3 @@ class SimParams:
         f.close()
 
 GLOBAL_PARAMS = SimParams()
-
-
-
-# Change every time we use one sample on generation
-# Alter it before combination
-# Frequency shift (modify sample rate)
-
-# Can be done dynamically
-# Before feeding the batch tensor, apply a filtering in frequency 
-# => Zeroing rows or columns of each matrix
-# => Convolution with small gaussian nois kernel

@@ -119,15 +119,3 @@ class OrchMatchNet(nn.Module):
     
     def getLatentSpace(self, feature):
         return self.net.getLatentSpace(feature)
-
-if __name__ == "__main__":
-    cnn = CNN(out_num=505)
-    init_weights(cnn)
-    cnn.to(device)
-
-    print("Network output shape:")
-    # `test_tensor` was trying to be imported from resnet.py
-    # this will have to be fixed if you want to run the main method of this file
-    print(cnn(test_tensor).shape)
-
-    count_parameters(cnn)
