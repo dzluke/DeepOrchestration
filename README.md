@@ -1,5 +1,7 @@
 This repository serves as the code base for the paper "Neural Models for Target-Based Computer-Assisted Musical Orchestration: A Preliminary Study"
 
+**Visit our github.io page to listen to orchestrated examples**: https://dzluke.github.io/DeepOrchestration/
+
 ## train.py
 
 Used to train the model.
