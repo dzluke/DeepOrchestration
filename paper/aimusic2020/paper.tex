@@ -17,6 +17,7 @@
 
 \documentclass[runningheads,a4paper]{llncs}
 
+
 \usepackage{amssymb}
 \usepackage{amsmath}
 \setcounter{tocdepth}{3}
@@ -29,9 +30,11 @@
 \newcommand{\keywords}[1]{\par\addvspace\baselineskip
 \noindent\keywordname\enspace\ignorespaces#1}
 
+\renewcommand{\baselinestretch}{0.96}
 \pagestyle{headings}
 
 \begin{document}
+
 
 \mainmatter  % start of an individual contribution
 
@@ -96,17 +99,17 @@ After training these models on varying combinations of 10 instruments, we used t
 
 Next sections will be as follows: section \ref{sec:models} will describe the dataset we used for experiments and the models we trained as classifiers, showing the classification results. Sections \ref{sec:orchestration} and \ref{sec:conclusions} will present, respectively, the results of orchestration experiments using the trained models and the conclusions of our preliminary study on neural approaches for target-based computer-assisted orchestration.
 
-The codebase for this paper and some audio examples can be found at: \url{https://github.com/dzluke/DeepOrchestration}.
+The codebase for this paper can be found at: \url{https://github.com/dzluke/DeepOrchestration}.
 
 \section{Neural models}
 \label{sec:models}
 
 
-\begin{figure}
-	\centering
-	\includegraphics[scale=0.22]{../latex/figs/CNN_LSTM_diagram.png}
-	\caption{Diagram of the CNN with LSTM architecture. \label{cnn_lstm}}
-\end{figure}
+%\begin{figure}
+%	\centering
+%	\includegraphics[scale=0.22]{../latex/figs/CNN_LSTM_diagram.png}
+%	\caption{Diagram of the CNN with LSTM architecture. \label{cnn_lstm}}
+%\end{figure}
 
 \subsection{From orchestration to classification}
 
@@ -141,15 +144,7 @@ To create the input data for training the classifiers, we used the \emph{TinySOL
 
 The instruments and ranges over which they were recorded are summarized in table \ref{tab:ranges}. 
 
-For a given number of instruments $N$, each input to our models is a combination of $N$ TinySOL samples chosen among an orchestra of 10 instruments. The data is generated in the following way: 
-
-\begin{itemize}
-\item $N$ random TinySOL samples are selected, leading to a variety of instruments, pitches, and dynamics; we did not allow the same instrument to be chosen more than three times in order to ensure variety in the mixtures;
-\item the chosen samples are combined to be played simultaneously and normalized by the number of instruments;
-\item the Mel frequency cepstral coefficients (MFCCs) and the Mel spectrogram of the mixture are computed to be used as the input features for the baseline classifiers and the neural classifiers respectively.
-\end{itemize}
-
-The resulting combination has a sample rate of $44100$Hz and is padded or trimmed to be exactly 4 seconds long.
+For a given number of instruments $N$, each input to our models is a combination of $N$ TinySOL samples chosen among an orchestra of 10 instruments. The data is generated in by selecting $N$ random TinySOL samples, leading to a variety of instruments, pitches, and dynamics; we did not allow the same instrument to be chosen more than three times in order to ensure variety in the mixtures. Then the chosen samples are combined to be played simultaneously and normalized by the number of instruments and the Mel frequency cepstral coefficients (MFCCs) and the Mel spectrogram of the mixture are computed to be used as the input features for the baseline classifiers and the neural classifiers respectively. The resulting combination has a sample rate of $44100$Hz and is padded or trimmed to be exactly 4 seconds long.
 
 The choice of using the Mel spectrogram and MFCCs as input features for classification models is common in music information retrieval \cite{McKinney2003} and can be considered to be an appropriate representation of sound and musical signals. The Mel spectrogram is generated using an FFT hop length of 2048 samples (the window of each FFT was $46$ms wide), and a number of Mel bins equal to 128. Therefore, the Mel features fed to the model were matrices of size $128\times 345$. We used the Librosa package in Python to compute the features; more details on the exact computations can be found in \cite{mcfee15}. The choice of the hop length was made by doing a compromise between the amount of information extracted by each FFT window, and the ability to capture changes in the dynamic, assuming that no change faster than $10$ms would be allowed.
 
@@ -168,33 +163,31 @@ The latter was performed on the feature matrix itself of input samples, the Mel 
 In order to get a better sense on the complexity of the problem, we tested three baseline classifiers: support vector machine (SVM), random forest (RF), and K-nearest neighbours (KNN). We used the implementations provided in the \emph{scikit-learn }library for Python \cite{scikit-learn}. More specifically, for SVM we used a non-linear RBF kernel and for RF we set the maximum depth of each tree to be 15.  All of the baseline experiments used 50,000 generated samples with a train-test split of 60/40. Each sample was made by a combination of one to ten instruments and was four seconds in length. 
 In this case, differently from the neural models, the features used are the MFCCs of the resulting combination; we chose to use MFCCs for this setting, instead of the Mel spectrogram, to have a lower number of features, that is more manageable by parametric classifiers. We found SVM to have the highest accuracy of the three classifiers across all experiments.
 
-The complete problem of classification of the pairs instrument-pitch has 424 total classes. This problem is very hard for parametric classifiers, so we initially switched to the simpler problem of classifying only the instruments and not the pitch. This had the benefit of both reducing the number of classes and increasing the number of samples per class. We found that SVM was able to very accurately identify the instrument given an input that had only one instrument present; for this case the accuracy was 99.8\%. However, as soon as multiple instruments were present in the input, the accuracy dropped significantly. With two instruments, accuracy was 55.4\%, with three it was 19.6\%. KNN performed significantly worse than SVM, so we did not attempt any further testing with it.
-
-To better approximate our original problem of identifying instrument and pitch, however, we performed experiments in which two instruments were selected and for input data that contained samples from one of those two instruments, both the instrument and pitch \emph{class} of the sample would be classified. The pitch class is the note name without the octave, e.g. C, D\#, G, etc. The input was a combination of two instruments drawn from a possible twelve instruments, and the classifier attempted to identify which instruments were present and for the specified instruments, say Violin and Viola, which pitch classes were present. If another instrument was present in the input combination that was not Violin or Viola, the classifier would simply identify that an instrument that was not one of the two was present. The accuracies from this experiment are outlined in Table \ref{tab:baselines}. Since RF performed worse than SVM in every experiment, we stopped testing with it and used SVM from that point on.
+We started with a simplification of our problem. We performed experiments in which two instruments were selected, and the classifier attempted to identify instrument and pitch \emph{class} of the samples. The pitch class is the note name without the octave, e.g. C, D\#, G, etc. The best accuracies from these experiments were from a combination of Oboe and French Horn, in which SVM had an accuracy of 39.9\% and RF had an accuracy of 17.5\%. Since RF performed worse than SVM in every experiment, we stopped testing with it and used SVM from that point on.
 
 We then performed this same experiment with three instruments having their pitch class identified. Flute, Oboe, and Violin reached an accuracy of 11.1\%, and Bass Tuba, Trumpet, and Trombone was 0.5\%. As we increased the number of instruments whose pitch classes was being identified, the accuracy continued to drop.Indeed, for classifying the pitch class of four instruments (Oboe, French Horn, Violin, and Flute) the accuracy was 2.7\%.
 
 This was still a simplified version of the problem, as we were identifying only the pitch class of a few instruments. However, the parametric classifiers were unable to achieve accurate results as the number of instruments increased. Therefore, we did not attempt, with parametric classifiers, the full setting of the problem in which individual pitches are classified for all instruments. 
 
-\begin{table}
-  \centering
-  \caption{Comparison of accuracies between SVM and RF. Each data point is a combination of two TinySOL samples, where at least one of the samples is from one of the two instruments specified for that experiment. For the samples drawn from one of the two instruments, the pitch class of that sample is identified. For a sample not from one of the two instruments, the classifier simply attempted to identify that a sample from one of the non-specified instruments was present. In this setting, there are 25 classes: 24 from the 12 pitch classes from 2 instruments, and 1 class that specified whether an instrument that is not one of the two specified is present. \label{tab:baselines}}
-    \begin{tabular}{|c|c|c|c|} 
-    	  \hline
-      \textbf{Instr. 1} & \textbf{Instr. 2} & \textbf{SVM Acc.} & \textbf{RF Acc.}\\
-      \hline
-      Violin & Flute & 38.8\% & 9.8\% \\
-      \hline
-      Violin & Trumpet & 33.8\% & 9.1\% \\
-      \hline
-      Violin & Cello & 34.8\% & 6.3\% \\
-      \hline
-      Cello & Viola & 32.1\% & 5.8\% \\
-      \hline
-      Oboe & French Horn & \textbf{39.9\%} & \textbf{17.5\%} \\
-      \hline
-    \end{tabular}
-\end{table}
+%\begin{table}
+%  \centering
+%  \caption{Comparison of accuracies between SVM and RF. Each data point is a combination of two TinySOL samples, where at least one of the samples is from one of the two instruments specified for that experiment. For the samples drawn from one of the two instruments, the pitch class of that sample is identified. For a sample not from one of the two instruments, the classifier simply attempted to identify that a sample from one of the non-specified instruments was present. In this setting, there are 25 classes: 24 from the 12 pitch classes from 2 instruments, and 1 class that specified whether an instrument that is not one of the two specified is present. \label{tab:baselines}}
+%    \begin{tabular}{|c|c|c|c|} 
+%    	  \hline
+%      \textbf{Instr. 1} & \textbf{Instr. 2} & \textbf{SVM Acc.} & \textbf{RF Acc.}\\
+%      \hline
+%      Violin & Flute & 38.8\% & 9.8\% \\
+%      \hline
+%      Violin & Trumpet & 33.8\% & 9.1\% \\
+%      \hline
+%      Violin & Cello & 34.8\% & 6.3\% \\
+%      \hline
+%      Cello & Viola & 32.1\% & 5.8\% \\
+%      \hline
+%      Oboe & French Horn & \textbf{39.9\%} & \textbf{17.5\%} \\
+%      \hline
+%    \end{tabular}
+%\end{table}
 
 In the rest of this section, we will show the classification results of the two neural models. 
 
@@ -239,7 +232,7 @@ More specifically, the function $M_N(\hat{X})$ takes as an input a vector of pro
 Different experiments were made by varying the number $N$ of samples in each mixture. We used an orchestra of 10 instruments containing Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet in C and Clarinet in Bb.
 
 Then, for both CNN with LSTM and ResNet, we computed the maximum accuracy over the epochs. 
-The CNN was trained on 200,000 generated samples over 50 epochs, and ResNet was 	trained on 400,000 generated samples over 20 epochs. Fig. \ref{cnn_vs_resnet} shows the best overall test accuracy achieved by both models across the number of samples $N$.\\
+The CNN was trained on 200,000 generated samples over 50 epochs, and ResNet was 	trained on 400,000 generated samples over 20 epochs. Fig. \ref{cnn_vs_resnet} shows the best overall test accuracy achieved by both models across the number of samples $N$.
 
 ResNet outperforms the CNN regardless of the number of samples used in the combination. This result is consistent with previous research \cite{He15}, as residual networks usually perform well in classification problems.
 
@@ -285,6 +278,7 @@ Although the data we trained the model on was fixed to four seconds of audio, th
 \begin{table*}
   \centering
      \caption{Quantitative comparison of orchestrations as ratios to Orchidea. Eqn. \ref{distance} was used with $\lambda_1 = 0.5$ and $\lambda_2 = 10$ to compute distances between orchestrations and targets. What is shown is the ratio between the distance calculated and Orchidea's distance for the same target. A value less than 1 means that the model performed worse (i.e. had a larger distance), and a value greater than 1 means the model performed better than Orchidea. The last column shows the ratio of the average distances for the model across all targets.}\label{orch_eval}
+	\centering    
     \begin{tabular}{|c|c|c|c|c|c|c|c|c|c}
      \hline
       \textbf{Model} & \textbf{Ob + Bn} & \textbf{Bn} & \textbf{Bass cl.} & \textbf{Bell 1} & \textbf{Bell 2} & \textbf{Multiph. 1} & \textbf{Car horn} & \textbf{Boat} $\ldots$ \\
@@ -308,39 +302,22 @@ Although the data we trained the model on was fixed to four seconds of audio, th
 
 We evaluated our orchestrations both qualitatively and quantitatively by comparing our solutions to the solutions generated by Orchidea, the state-of-the-art system for computer-assisted orchestration. 
 
-Orchidea implements many advanced features that are not supported by our models. For example, it is able to apply symbolic constraints to the search, hence allowing only specific instrumental combinations or playing styles. It is also able to reduce the search space by applying harmonic analysis on the target sound.
-The dominant harmonic partials of the target are identified, and the search space is limited to only include samples of those pitches. For example, if the target is a recording of an instrument playing a C4, then the partials identified may be C4, C5, G5, and E6. The model would then only consider samples of these pitches to be used in the solution. This leads to a solution whose harmonics are much closer to the target, which is an important part of aural similarity.
-Orchidea's solutions, moreover, can use any number of instruments included in the orchestra specified by the user, thus having variable-sized orchestrations from a single instrument to the whole set (this property is called \emph{sparsity} of the solution).
+Orchidea implements many advanced features that are not supported by our models. For example, it is able to apply symbolic constraints to the search, hence allowing only specific instrumental combinations or playing styles. It is also able to reduce the search space by applying harmonic analysis on the target sound, and create sparse solutions that do not use every instrument specified.
 
 In order to have a more fair comparison, we did not allow Orchidea to use any of the advanced features: we did not apply any symbolic constraints or harmonic analysis and we forced it forced to use all 10 instruments in each solution. This creates a more fair comparison, since our models are unable to create constrained or sparse solutions.
 
-Qualitative evaluation was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution. For example, one of the samples of a bell had partials that loosely represented a C minor chord, so we checked if the orchestration contained the notes of the chord. If a target had specific notes, we identified if the note or its partials were present. For example there is target of an Oboe playing an A4 and a Bassoon playing a C\#3, the solution from ResNet contained the partials of the Bassoon's note: C\#3, G\#4, C\#5, and E6 were all included on various instruments in the solution.
+Qualitative evaluation was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution. For example, one of the samples of a bell had partials that loosely represented a C minor chord, so we checked if the orchestration contained the notes of the chord.
 
 For quantitative evaluation, we used the distance metric defined in Eqn. \ref{distance} to calculate differences in timbre between targets and solutions. This metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\hat{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways. 
-
-In the first summation, $\lambda_1$ is multiplied by all the distances calculated when there was more energy in the target than the solution, since $\delta_{k1} = 1$ only when $x_k \ge \tilde{x}_k$. Similarly in the second summation, $\lambda_2$ is multiplied by all the distances when the solution provided more energy to a frequency than the target. Therefore, the relation between $\lambda_1$ and $\lambda_2$ determines whether a solution is penalized more for undershooting or overshooting the target.
 
 We calculated the distance between the target samples and our orchestrated solutions. We then orchestrated the same targets with Orchidea and calculated the distance for Orchidea's solutions. A comparison of these results is in Table \ref{orch_eval}.
 
 \begin{equation}\label{distance}
 d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k| \\
 \end{equation}
-where 
-$
-\delta_{k1} = 
-\begin{cases}
-1, \text{if   } x_k \ge \tilde{x}_k \\
-0, \text{otherwise}
-\end{cases} 
-$, $
-\delta_{k2} = 
-\begin{cases}
-1, \text{if   } x_k < \tilde{x}_k \\
-0, \text{otherwise}
-\end{cases}.
-$\\
+where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$; and $\delta_{k2} = 1 \text{  if  } x_k < \tilde{x}_k, 0 \text{  otherwise}$.
 
-While our model is not able to outperform Orchidea, it shows consistent results. We find that the CNN and ResNet give similar accuracies during training, but perform differently when tasked with orchestrating targets. Overall, CNN seems to better emulate the timbre in its orchestrations, where ResNet is better for recreating the harmonic content of the target. 
+While our model is not able to outperform Orchidea, it shows consistent results. We find that the CNN and ResNet give similar accuracies during training, but perform differently when tasked with orchestrating targets. Overall, CNN seems to better emulate the timbre in its orchestrations, where ResNet is better for recreating the harmonic content of the target. You can listen to the targets and orchestrated solutions from Orchidea, ResNet, and the CNN with LSTM at \url{https://dzluke.github.io/DeepOrchestration/}.
 
 \section{Conclusions}
 \label{sec:conclusions}
