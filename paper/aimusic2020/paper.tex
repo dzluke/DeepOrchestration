@@ -18,8 +18,11 @@
 \documentclass[runningheads,a4paper]{llncs}
 
 \usepackage{amssymb}
+\usepackage{amsmath}
 \setcounter{tocdepth}{3}
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{url}
 \usepackage{apacite}
 \newcommand{\keywords}[1]{\par\addvspace\baselineskip
@@ -135,7 +138,7 @@ Two neural classifiers, instead, have been trained on the more complex problem o
 
 To create the input data for training the classifiers, we used the \emph{TinySOL} database. TinySOL is a subset of the Studio On Line (SOL) database created by IRCAM \cite{Cella2020b}. TinySOL contains 1,529 samples from 12 instruments. The instruments come from different orchestral families: strings, woodwinds, and brass. Each sample is one instrument playing a single note in the \emph{ordinario} playing style, with one of three dynamics: \textit{pp}, \textit{mf}, or \textit{ff} (for example \texttt{Flute-C4-pp} or \texttt{Clarinet-D5-mf}). 
 
-%The instruments and ranges over which they were recorded are summarized in table \ref{tab:ranges}. 
+The instruments and ranges over which they were recorded are summarized in table \ref{tab:ranges}. 
 
 For a given number of instruments $N$, each input to our models is a combination of $N$ TinySOL samples chosen among an orchestra of 10 instruments. The data is generated in the following way: 
 
@@ -222,7 +225,7 @@ In the rest of this section, we will show the classification results of the two 
 
 The first deep model we trained as a classifier for musical instruments and pitches was a CNN with a LSTM unit. 
 
-%CNNs show good performance on classification problems for their ability to extract spatial features, and have shown success in audio classification \cite{Hershey17}. LSTM units provide a way to learn long term dependencies in the data \cite{Hochreiter97}, which is relevant given the sequential nature of audio.
+CNNs show good performance on classification problems for their ability to extract spatial features, and have shown success in audio classification \cite{Hershey17}. LSTM units provide a way to learn long term dependencies in the data \cite{Hochreiter97}, which is relevant given the sequential nature of audio.
 
 Our architecture is made of four convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a $2 \times 2$  MaxPool layer with a stride of 2. The kernel size is $3 \times 3$ with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32, and 32.
 
@@ -236,13 +239,6 @@ The second and more deep model that we trained as classifier was the well known 
 
 \subsection{Classification results}
 
-\begin{figure}
-\begin{center}
-\includegraphics[scale=0.4]{../latex/figs/Acc_vs_N_CNN.png}
-\caption{Best overall accuracy and for each instrument obtained by the CNN with LSTM depending on the number of instruments in the combinations. \label{best_acc_cnn}}
-\end{center}
-\end{figure}
-
 During training, the loss function used to optimize the inner parameters of the model was binary cross entropy, as it is the common choice for multiclass multilabel classification frameworks. However, the value of the loss function alone is difficult to interpret. For this reason we created a complementary function $f$ to be used for evaluation only. This function compares a vector of expected outputs $\overline{X}$ with the estimated output from the model $\hat{X}$ by using the following function
 
 \begin{equation}
@@ -252,13 +248,13 @@ f(\overline{X}, \hat{X}) = \frac{1}{N}<\overline{X}, M_N(\hat{X})>
 
 where
 
-%\begin{equation}
-%M_N(\hat{X})_i = \left\{\begin{array}{ll}
-%1 \text{ if } i \in I_N(\hat{X})\\
-%0 \text{ otherwise}
-%\end{array}\right.
-%\label{NMax}
-%\end{equation}
+\begin{equation}
+M_N(\hat{X})_i = \left\{\begin{array}{ll}
+1 \text{ if } i \in I_N(\hat{X})\\
+0 \text{ otherwise}
+\end{array}\right.
+\label{NMax}
+\end{equation}
 and $I_N(\hat{X})$ is the set of indices containing the $N$ first maximums of the vector $\hat{X}$.
 
 More specifically, the function $M_N(\hat{X})$ takes as an input a vector of probabilities and outputs a vector where only the positions of the $N$ first maxima are set to 1. This new vector would be the orchestration of $N$ instruments given by the model. Thus, the function $f$ simply outputs the proportion of the estimated orchestration that matches the expected one.
@@ -270,18 +266,29 @@ The CNN was trained on 200,000 generated samples over 50 epochs, and ResNet was 
 
 ResNet outperforms the CNN regardless of the number of samples used in the combination. This result is consistent with previous research \cite{He15}, as residual networks usually perform well in classification problems.
 
-%Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum accuracy computed using the function $f$ from Eqn. \eqref{eval}. For ResNet, the variance in accuracy is much smaller until $N$ reaches 5, at which point it becomes similar to the CNN. The results on both figures show consistency on the relative accuracy of instruments, which was for us the first step towards the validation of this method. Flute, Trombone and Trumpet yield the worst results for both models. 
+Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum accuracy computed using the function $f$ from Eqn. \ref{eval}. For ResNet, the variance in accuracy is much smaller until $N$ reaches 5, at which point it becomes similar to the CNN. The results on both figures show consistency on the relative accuracy of instruments, which was for us the first step towards the validation of this method. Flute, Trombone and Trumpet yield the worst results for both models. 
 
 While it is not easy to explain these differences in accuracy, we hypothesize this being related to the nature of peculiar spectral and temporal morphology of each instrument. For example, flute notes tend to exhibit a steep spectral rolloff, with most of the energy captured by the first few partials. Moreover, the noisy nature of the transient portions of these note is not well represented by frequency-based descriptions such as Mel spectra. These two factors combined, could make the disentanglement of the flute from the analyzed combination more difficult.
 
 Strings give similar results across both models. An interesting point to notice is the very high accuracy of Oboe on both models. This could indicate that there is an optimal spectral shape that maximizes the probability of being detected in such classification framework.
 
 \begin{figure}
-\begin{center}
-\includegraphics[scale=0.40]{../latex/figs/Acc_vs_N_ResNet.png}
-\caption{Best overall accuracy and for each instrument obtained by the ResNet depending on the number of instruments in the combinations. \label{best_acc_resnet}}
-\end{center}
+\centering
+\begin{subfigure}{.65\textwidth}
+  \centering
+  \includegraphics[width=0.9\linewidth]{../latex/figs/Acc_vs_N_CNN.png}
+  \caption{CNN with LSTM}
+  \label{best_acc_cnn}
+\end{subfigure}%
+\begin{subfigure}{.65\textwidth}
+  \centering
+  \includegraphics[width=0.9\linewidth]{../latex/figs/Acc_vs_N_ResNet.png}
+  \caption{ResNet}
+  \label{best_acc_resnet}
+\end{subfigure}
+\caption{Best overall accuracy and for each instrument obtained by the CNN with LSTM and the ResNet depending on the number of instruments in the combinations}
 \end{figure}
+
 
 \section{Orchestration experiments}
 \label{sec:orchestration}
@@ -318,7 +325,7 @@ Although the data we trained the model on was fixed to four seconds of audio, th
       \hline
     \end{tabular}
   \end{center}
-%  \caption{Quantitative comparison of orchestrations as ratios to Orchidea. Eqn. \eqref{distance} was used with $\lambda_1 = 0.5$ and $\lambda_2 = 10$ to compute distances between orchestrations and targets. What is shown is the ratio between the distance calculated and Orchidea's distance for the same target. A value less than 1 means that the model performed worse (i.e. had a larger distance), and a value greater than 1 means the model performed better than Orchidea. The last column shows the ratio of the average distances for the model across all targets.}
+  \caption{Quantitative comparison of orchestrations as ratios to Orchidea. Eqn. \ref{distance} was used with $\lambda_1 = 0.5$ and $\lambda_2 = 10$ to compute distances between orchestrations and targets. What is shown is the ratio between the distance calculated and Orchidea's distance for the same target. A value less than 1 means that the model performed worse (i.e. had a larger distance), and a value greater than 1 means the model performed better than Orchidea. The last column shows the ratio of the average distances for the model across all targets.}
 \end{table*}
 
 \subsection{Evaluation}
@@ -333,7 +340,7 @@ In order to have a more fair comparison, we did not allow Orchidea to use any of
 
 Qualitative evaluation was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution. For example, one of the samples of a bell had partials that loosely represented a C minor chord, so we checked if the orchestration contained the notes of the chord. If a target had specific notes, we identified if the note or its partials were present. For example there is target of an Oboe playing an A4 and a Bassoon playing a C\#3, the solution from ResNet contained the partials of the Bassoon's note: C\#3, G\#4, C\#5, and E6 were all included on various instruments in the solution.
 
-%For quantitative evaluation, we used the distance metric defined in Eqn. \eqref{distance} to calculate differences in timbre between targets and solutions. This metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\hat{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways. 
+For quantitative evaluation, we used the distance metric defined in Eqn. \ref{distance} to calculate differences in timbre between targets and solutions. This metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\hat{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways. 
 
 In the first summation, $\lambda_1$ is multiplied by all the distances calculated when there was more energy in the target than the solution, since $\delta_{k1} = 1$ only when $x_k \ge \tilde{x}_k$. Similarly in the second summation, $\lambda_2$ is multiplied by all the distances when the solution provided more energy to a frequency than the target. Therefore, the relation between $\lambda_1$ and $\lambda_2$ determines whether a solution is penalized more for undershooting or overshooting the target.
 
@@ -343,19 +350,19 @@ We calculated the distance between the target samples and our orchestrated solut
 d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k| \\
 \end{equation}
 where 
-%$
-%\delta_{k1} = 
-%\begin{cases}
-%1, \text{if   } x_k \ge \tilde{x}_k \\
-%0, \text{otherwise}
-%\end{cases} 
-%$, $
-%\delta_{k2} = 
-%\begin{cases}
-%1, \text{if   } x_k < \tilde{x}_k \\
-%0, \text{otherwise}
-%\end{cases}.
-%$\\
+$
+\delta_{k1} = 
+\begin{cases}
+1, \text{if   } x_k \ge \tilde{x}_k \\
+0, \text{otherwise}
+\end{cases} 
+$, $
+\delta_{k2} = 
+\begin{cases}
+1, \text{if   } x_k < \tilde{x}_k \\
+0, \text{otherwise}
+\end{cases}.
+$\\
 
 While our model is not able to outperform Orchidea, it shows consistent results. We find that the CNN and ResNet give similar accuracies during training, but perform differently when tasked with orchestrating targets. Overall, CNN seems to better emulate the timbre in its orchestrations, where ResNet is better for recreating the harmonic content of the target. 
 
