@@ -260,7 +260,7 @@ Strings give similar results across both models. An interesting point to notice 
 \section{Orchestration Experiments}
 \label{sec:orchestration}
 
-After training the neural models for classification, we finally tested them for the task of target-based computer-assisted orchestration. For this purpose, we decided to use the models trained on combinations of 10 instruments, namely French Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet, and Clarinet. Each class, in this model, represents an instrument-pitch pair. 
+After training the neural models for classification, we finally tested them for the task of target-based computer-assisted orchestration. For this purpose, we decided to use the models trained on combinations of 10 instruments: French Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet, and Clarinet. Each class, in this model, represents an instrument-pitch pair. 
 
 To orchestrate, a target sound is input to the model, and the 10 classes with the highest probability are extracted. These 10 classes are the instrument-pitch pairs that are most represented in the target, and can be from any combination of the 10 instruments. 
 
