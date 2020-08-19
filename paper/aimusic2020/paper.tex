@@ -205,7 +205,7 @@ Since each class is independent, we are able to take the sigmoid activation and 
 
 \subsection{ResNet}
 
-The second and more deep model that we trained as classifier was the well known deep residual network \emph{ResNet}. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. Besides, to make the model more suitable to our problem, we decided to reduce the number of parameters and to reset the output channel numbers of each block with 32, 64, 32, 32 respectively.
+The second and deeper model that we trained as classifier was the well known deep residual network \emph{ResNet}. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. Besides, to make the model more suitable to our problem, we decided to reduce the number of parameters and to reset the output channel numbers of each block with 32, 64, 32, 32 respectively.
 
 \subsection{Classification results}
 
@@ -304,7 +304,7 @@ We evaluated our orchestrations both qualitatively and quantitatively by compari
 
 Orchidea implements many advanced features that are not supported by our models. For example, it is able to apply symbolic constraints to the search, hence allowing only specific instrumental combinations or playing styles. It is also able to reduce the search space by applying harmonic analysis on the target sound, and create sparse solutions that do not use every instrument specified.
 
-In order to have a more fair comparison, we did not allow Orchidea to use any of the advanced features: we did not apply any symbolic constraints or harmonic analysis and we forced it forced to use all 10 instruments in each solution. This creates a more fair comparison, since our models are unable to create constrained or sparse solutions.
+In order to have a fairer comparison, we did not allow Orchidea to use any of the advanced features: we did not apply any symbolic constraints or harmonic analysis and we forced it forced to use all 10 instruments in each solution. This creates a more fair comparison, since our models are unable to create constrained or sparse solutions.
 
 Qualitative evaluation was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution. For example, one of the samples of a bell had partials that loosely represented a C minor chord, so we checked if the orchestration contained the notes of the chord.
 
