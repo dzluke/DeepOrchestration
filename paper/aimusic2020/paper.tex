@@ -111,7 +111,7 @@ The codebase for this paper can be found at: \url{https://github.com/dzluke/Deep
 %	\caption{Diagram of the CNN with LSTM architecture. \label{cnn_lstm}}
 %\end{figure}
 
-\subsection{From orchestration to classification}
+\subsection{From Orchestration to Classification}
 
 In this paper, we model assisted orchestration as a classification problem. The general methodology is as follows:
 \begin{enumerate}
@@ -144,7 +144,7 @@ The choice of using the Mel spectrogram and MFCCs as input features for classifi
 Such setup proved to be successful in \cite{Salamon17}.
 
 
-\subsection{Data augmentation}
+\subsection{Data Augmentation}
 
 In order to increase variability in the generated data for the neural models, we also used two methods of data augmentation as described in \cite{Salamon17, Bhardwaj17}; more specifically, we used pitch shifting and partial feature dropout.
 
@@ -202,7 +202,7 @@ Since each class is independent, we are able to take the sigmoid activation and 
 
 The second and deeper model that we trained as classifier was the well known deep residual network \emph{ResNet}. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. Besides, to make the model more suitable to our problem, we decided to reduce the number of parameters and to reset the output channel numbers of each block with 32, 64, 32, 32 respectively.
 
-\subsection{Classification results}
+\subsection{Classification Results}
 
 During training, the loss function used to optimize the inner parameters of the model was binary cross entropy, as it is the common choice for multiclass multilabel classification frameworks. However, the value of the loss function alone is difficult to interpret.
 %For this reason we created a complementary function $f$ to be used for evaluation only. This function compares a vector of expected outputs $\overline{X}$ with the estimated output from the model $\hat{X}$ by using the following function
@@ -233,7 +233,7 @@ ResNet outperforms the CNN regardless of the number of samples used in the combi
 \caption{Best overall accuracy for CNN with LSTM (50 epochs, 200k samples per epoch) and ResNet (20 epochs, 400k samples per epoch) depending on the number of instruments in the combinations used for training. \label{cnn_vs_resnet}}
 \end{figure}
 
-Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum accuracy computed using the function $f$ from Eqn. \ref{eval}. For ResNet, the variance in accuracy is much smaller until $N$ reaches 5, at which point it becomes similar to the CNN. The results on both figures show consistency on the relative accuracy of instruments, which was for us the first step towards the validation of this method. Flute, Trombone and Trumpet yield the worst results for both models. 
+Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum test accuracy for each model. For ResNet, the variance in accuracy is much smaller until $N$ reaches 5, at which point it becomes similar to the CNN. The results on both figures show consistency on the relative accuracy of instruments, which was for us the first step towards the validation of this method. Flute, Trombone and Trumpet yield the worst results for both models. 
 
 While it is not easy to explain these differences in accuracy, we hypothesize this being related to the nature of peculiar spectral and temporal morphology of each instrument. For example, flute notes tend to exhibit a steep spectral rolloff, with most of the energy captured by the first few partials. Moreover, the noisy nature of the transient portions of these notes is not well represented by frequency-based descriptions such as Mel spectra. These two factors combined, could make the disentanglement of the flute from the analyzed combination more difficult.
 
@@ -257,7 +257,7 @@ Strings give similar results across both models. An interesting point to notice 
 \end{figure}
 
 
-\section{Orchestration experiments}
+\section{Orchestration Experiments}
 \label{sec:orchestration}
 
 After training the neural models for classification, we finally tested them for the task of target-based computer-assisted orchestration. For this purpose, we decided to use the models trained on combinations of 10 instruments, namely French Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet, and Clarinet. Each class, in this model, represents an instrument-pitch pair. 
