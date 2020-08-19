@@ -57,7 +57,7 @@
 
 % the affiliations are given next; don't give your e-mail address
 % unless you accept that it will be published
-\institute{Unviersity of California, Berkeley \and InstituteB\\ \email{author@phdsrus.ac.uk}}
+\institute{University of California, Berkeley \and InstituteB\\ \email{author@phdsrus.ac.uk}}
 
 %
 % NB: a more complex sample for affiliations and the mapping to the
@@ -95,7 +95,7 @@ This method is motivated by the good results obtained in previous research on mu
 
 In this paper we do preliminary experiments with two deep architectures: a convolutional neural network (CNN) with a long short-term memory (LSTM) unit in the middle and \emph{ResNet}, a well known residual architecture that already yielded good results for image classification \cite{He15}. We chose to use a CNN because of its success in audio classification \cite{Hershey17} and we decided to include an LSTM unit in it because of its ability to learn long term dependencies in data \cite{Hochreiter97}, which is important given the temporal nature of audio.
 
-After training these models on varying combinations of 10 instruments, we used them for orchestration. More specifically, we orchestrated 15 target sounds by feeding them to the networks and synthesizing a solution from the most likely samples output from the system. We then compared our orchestrations to Orchidea's solutions for the same targets, through both qualitative and quantitative means. For quantitative comparison, we computed a specific distance metric on the FFTs of the target and solution, comparing the distance between Orchidea's solution and the target and our model's solution and the target.
+After training these models on varying combinations of 10 instruments, we used them for orchestration. More specifically, we orchestrated 15 target sounds by feeding them to the networks and synthesizing a solution from the most likely samples output from the system. We then compared our orchestrations to Orchidea's solutions for the same targets, through both qualitative and quantitative means. For quantitative comparison, we computed a specific distance metric on the amplitude spectrum of the target and solution, comparing the distance between Orchidea's solution and the target and our model's solution and the target.
 
 Next sections will be as follows: section \ref{sec:models} will describe the dataset we used for experiments and the models we trained as classifiers, showing the classification results. Sections \ref{sec:orchestration} and \ref{sec:conclusions} will present, respectively, the results of orchestration experiments using the trained models and the conclusions of our preliminary study on neural approaches for target-based computer-assisted orchestration.
 
@@ -142,11 +142,11 @@ Two neural classifiers, instead, have been trained on the more complex problem o
 
 To create the input data for training the classifiers, we used the \emph{TinySOL} database. TinySOL is a subset of the Studio On Line (SOL) database created by IRCAM \cite{Cella2020b}. TinySOL contains 1,529 samples from 12 instruments. The instruments come from different orchestral families: strings, woodwinds, and brass. Each sample is one instrument playing a single note in the \emph{ordinario} playing style, with one of three dynamics: \textit{pp}, \textit{mf}, or \textit{ff} (for example \texttt{Flute-C4-pp} or \texttt{Clarinet-D5-mf}). 
 
-The instruments and ranges over which they were recorded are summarized in table \ref{tab:ranges}. 
+%The instruments and ranges over which they were recorded are summarized in table \ref{tab:ranges}. 
 
 For a given number of instruments $N$, each input to our models is a combination of $N$ TinySOL samples chosen among an orchestra of 10 instruments. The data is generated in by selecting $N$ random TinySOL samples, leading to a variety of instruments, pitches, and dynamics; we did not allow the same instrument to be chosen more than three times in order to ensure variety in the mixtures. Then the chosen samples are combined to be played simultaneously and normalized by the number of instruments and the Mel frequency cepstral coefficients (MFCCs) and the Mel spectrogram of the mixture are computed to be used as the input features for the baseline classifiers and the neural classifiers respectively. The resulting combination has a sample rate of $44100$Hz and is padded or trimmed to be exactly 4 seconds long.
 
-The choice of using the Mel spectrogram and MFCCs as input features for classification models is common in music information retrieval \cite{McKinney2003} and can be considered to be an appropriate representation of sound and musical signals. The Mel spectrogram is generated using an FFT hop length of 2048 samples (the window of each FFT was $46$ms wide), and a number of Mel bins equal to 128. Therefore, the Mel features fed to the model were matrices of size $128\times 345$. We used the Librosa package in Python to compute the features; more details on the exact computations can be found in \cite{mcfee15}. The choice of the hop length was made by doing a compromise between the amount of information extracted by each FFT window, and the ability to capture changes in the dynamic, assuming that no change faster than $10$ms would be allowed.
+The choice of using the Mel spectrogram and MFCCs as input features for classification models is common in music information retrieval \cite{McKinney2003} and can be considered to be an appropriate representation of sound and musical signals. The Mel spectrogram is generated using an FFT hop length of 2048 samples (the window of each FFT was $46$ms wide), and a number of Mel bins equal to 128. Therefore, the Mel features fed to the model were matrices of size $128\times 345$. We used the Librosa package in Python to compute the features; more details on the exact computations can be found in \cite{mcfee15}. The choice of the hop length was made by doing a compromise between the amount of information extracted by each FFT window, and the ability to capture changes in the dynamic, assuming that no change faster than $10$ms would be allowed. Such setup proved to be successful in \cite{Salamon17}.
 
 
 \subsection{Data augmentation}
@@ -193,15 +193,15 @@ In the rest of this section, we will show the classification results of the two 
 
 \subsection{CNN with LSTM}
 
-The first deep model we trained as a classifier for musical instruments and pitches was a CNN with a LSTM unit. 
+The first deep model we trained as a classifier for musical instruments and pitches was a CNN with a LSTM unit, whose structure is inspired by the one successfully used in \cite{Salamon17}. The LSTM unit was added in order to provide a way to learn long term dependencies in the data \cite{Hochreiter97}, which is relevant given the sequential nature of audio.
 
-CNNs show good performance on classification problems for their ability to extract spatial features, and have shown success in audio classification \cite{Hershey17}. LSTM units provide a way to learn long term dependencies in the data \cite{Hochreiter97}, which is relevant given the sequential nature of audio.
+%CNNs show good performance on classification problems for their ability to extract spatial features, and have shown success in audio classification \cite{Hershey17}. LSTM units provide a way to learn long term dependencies in the data \cite{Hochreiter97}, which is relevant given the sequential nature of audio.
 
 Our architecture is made of four convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a $2 \times 2$  MaxPool layer with a stride of 2. The kernel size is $3 \times 3$ with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32, and 32.
 
-Following the first three convolutional layers, there is an LSTM layer with 32 outputs. After the LSTM layer, there is a final convolutional layer yielding a tensor of dimensions $32\times 8 \times 21$. We flatten the outputs and feed them into fully a connected layer with Dropout, then another another fully connected layer. Finally, the sigmoid function is applied to the final layer. 
+Following the first three convolutional layers, there is an LSTM layer which outputs 32 matrices. After the LSTM layer, there is a final convolutional layer yielding a tensor of dimensions $32\times 8 \times 21$. We flatten the outputs and feed them into fully a connected layer with Dropout, then another another fully connected layer. Finally, the sigmoid function is applied to the final layer. 
 
-Since each class is independent, we are able to take the sigmoid activation and use binary classification for each class. The model architecture is shown in Figure \ref{cnn_lstm}.
+Since each class is independent, we are able to take the sigmoid activation and use binary classification for each class. %The model architecture is shown in Figure \ref{cnn_lstm}.
 
 \subsection{ResNet}
 
@@ -215,9 +215,6 @@ During training, the loss function used to optimize the inner parameters of the 
 f(\overline{X}, \hat{X}) = \frac{1}{N}<\overline{X}, M_N(\hat{X})>
 \label{eval}
 \end{equation}
-
-where
-
 \begin{equation}
 M_N(\hat{X})_i = \left\{\begin{array}{ll}
 1 \text{ if } i \in I_N(\hat{X})\\
@@ -308,7 +305,7 @@ In order to have a fairer comparison, we did not allow Orchidea to use any of th
 
 Qualitative evaluation was done through an acoustic inspection of the solution, paying close attention to timbre and pitch. For targets that had harmonic content, it was noted if the partials present in the target were also represented in the orchestrated solution. For example, one of the samples of a bell had partials that loosely represented a C minor chord, so we checked if the orchestration contained the notes of the chord.
 
-For quantitative evaluation, we used the distance metric defined in Eqn. \ref{distance} to calculate differences in timbre between targets and solutions. This metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\hat{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways. 
+For quantitative evaluation, we used the distance metric defined in Eqn. \ref{distance} to calculate differences in timbre between targets and solutions. This metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization. The equation takes in the full amplitude spectrum of the target $x$ and full amplitude spectrum of the solution $\hat{x}$. Then for each bin $k$ of the amplitude spectrum, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways. 
 
 We calculated the distance between the target samples and our orchestrated solutions. We then orchestrated the same targets with Orchidea and calculated the distance for Orchidea's solutions. A comparison of these results is in Table \ref{orch_eval}.
 
