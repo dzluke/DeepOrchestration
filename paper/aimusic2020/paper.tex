@@ -40,7 +40,7 @@
 \mainmatter  % start of an individual contribution
 
 % first the title is needed
-\title{Neural Models for Target-Based Computer-Assisted Musical Orchestration: A Preliminary Study}
+\title{A Study on Neural Models for Target-Based Computer-Assisted Musical Orchestration}
 
 % a short form should be given in case it is too long for the running head
 \titlerunning{Neural Models for Target-Based Computer-Assisted Musical Orchestration}
@@ -51,14 +51,14 @@
 % their surnames. This ensures that the names appear correctly in
 % the running heads and the author index.
 %
-\author{Carmine Emanuele Cella\inst{1}\and Luke Dzwonczyk\inst{1}\and Alejandro Saldarriaga-Fuertes\inst{1}\and Hongfu Liu\inst{2}\and Helene-Camille Crayencour\inst{3}}
+\author{Carmine Emanuele Cella\inst{1}\and Luke Dzwonczyk\inst{1}\and Alejandro Saldarriaga-Fuertes\inst{1}\and Hongfu Liu\inst{1}\and Helene-Camille Crayencour\inst{2}}
 %
 % if the names of the authors are too long for the running head, please use the format: AuthorA et al.
 \authorrunning{Carmine Emanuele Cella et al.}
 
 % the affiliations are given next; don't give your e-mail address
 % unless you accept that it will be published
-\institute{University of California, Berkeley \and InstituteB\\ \email{ , dz.luke@berkeley.edu, }}
+\institute{University of California, Berkeley \and Centrale Sup\'elec, L2S, Univ. Paris-Saclay, CNRS \\ \email{carmine.cella@berkeley.edu, dz.luke@berkeley.edu }}
 
 %
 % NB: a more complex sample for affiliations and the mapping to the
@@ -81,7 +81,7 @@ Target-based computer-assisted orchestration can be thought of as the process of
 
 \begin{figure}
 	\centering
-	\includegraphics[scale=0.17]{../latex/figs/method.png}
+	\includegraphics[scale=0.20]{../latex/figs/method.png}
 	\caption{An overview of the proposed method for assisted orchestration with neural models. Instruments and pitches are determined as peaks of the output probability distribution, while the dynamics are computed by quantizing the probabilities. \label{fig:method}}
 \end{figure}
 
@@ -221,13 +221,13 @@ Strings give similar results across both models. An interesting point to notice 
 
 \begin{figure}
 \centering
-\begin{subfigure}{.65\textwidth}
+\begin{subfigure}{.52\textwidth}
   \centering
   \includegraphics[width=0.9\linewidth]{../latex/figs/Acc_vs_N_CNN.png}
   \caption{CNN with LSTM}
   \label{best_acc_cnn}
 \end{subfigure}%
-\begin{subfigure}{.65\textwidth}
+\begin{subfigure}{.52\textwidth}
   \centering
   \includegraphics[width=0.9\linewidth]{../latex/figs/Acc_vs_N_ResNet.png}
   \caption{ResNet}
@@ -249,10 +249,8 @@ Since we decided not to train our models to classify the dynamics of a sample, t
 In order to test our models for orchestration, we used 15 targets from the Orchidea distribution. These targets represent a variety of signal types but are mostly static, in the sense that they do not change sensibly over time. Some of the targets were made of instrumental samples and chords, others are bells or gongs, and some do not feature any musical instruments
 
 \begin{table*}
-  \centering
-     \caption{Quantitative comparison of orchestrations as ratios to Orchidea. Eqn. \ref{distance} was used to compute distances between orchestrations and targets. What is shown is the ratio between the distance calculated and Orchidea's distance for the same target. A value less than 1 means that the model performed worse (i.e. had a larger distance), and a value greater than 1 means the model performed better than Orchidea. The last column shows the ratio of the average distances for the model across all targets.}\label{orch_eval}
 	\centering    
-    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c}
+  \resizebox{\columnwidth}{!}{\begin{tabular}{|c|c|c|c|c|c|c|c|c|c}
      \hline
       \textbf{Model} & \textbf{Ob + Bn} & \textbf{Bn} & \textbf{Bass cl.} & \textbf{Bell 1} & \textbf{Bell 2} & \textbf{Multiph. 1} & \textbf{Car horn} & \textbf{Boat} $\ldots$ \\
       \hline
@@ -267,8 +265,8 @@ In order to test our models for orchestration, we used 15 targets from the Orchi
       \hline
       $\ldots$  & 0.61 & 0.86 & 0.51 & 0.37 & 0.71 & \textbf{1.03} & \textbf{1.05} & 0.66 \\
       \hline
-    \end{tabular}
-
+    \end{tabular}}
+    \caption{Quantitative comparison of orchestrations as ratios to Orchidea. Eqn. \ref{distance} was used to compute distances between orchestrations and targets. What is shown is the ratio between the distance calculated and Orchidea's distance for the same target. A value less than 1 means that the model performed worse (i.e. had a larger distance), and a value greater than 1 means the model performed better than Orchidea. The last column shows the ratio of the average distances for the model across all targets.}\label{orch_eval}
 \end{table*}
 
 \subsection{Evaluation}
