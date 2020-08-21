@@ -51,14 +51,14 @@
 % their surnames. This ensures that the names appear correctly in
 % the running heads and the author index.
 %
-\author{Carmine Emanuele Cella\inst{1}\and Luke Dzwonczyk\inst{1}\and Alejandro Saldarriaga-Fuertes\inst{1}\and Hongfu Liu\inst{1}\and Helene-Camille Crayencour\inst{2}}
+\author{Carmine Emanuele Cella\inst{1}\and Luke Dzwonczyk\inst{1}\and Alejandro Saldarriaga-Fuertes\inst{1}\and Hongfu Liu\inst{1}\and H\'el\`ene-Camille Crayencour\inst{2}}
 %
 % if the names of the authors are too long for the running head, please use the format: AuthorA et al.
 \authorrunning{Carmine Emanuele Cella et al.}
 
 % the affiliations are given next; don't give your e-mail address
 % unless you accept that it will be published
-\institute{University of California, Berkeley \and Centrale Sup\'elec, L2S, Univ. Paris-Saclay, CNRS \\ \email{carmine.cella@berkeley.edu, dz.luke@berkeley.edu }}
+\institute{CNMAT - University of California, Berkeley \and Centrale Sup\'elec, L2S, Univ. Paris-Saclay, CNRS \\ \email{carmine.cella@berkeley.edu, dz.luke@berkeley.edu }}
 
 %
 % NB: a more complex sample for affiliations and the mapping to the
@@ -75,7 +75,7 @@ In this paper we will perform a preliminary exploration on how neural networks c
 %
 \section{Introduction}\label{sec:introduction}
 
-The development of computational tools to assist and inspire the musical composition process constitutes an import research area known as \emph{Computer-Assisted Composition (CAC)} \cite{FerVic2013, Ari2005}. Within CAC, target-based computer-assisted orchestration is an important example of how machine learning can be used for {enhancing} and {assisting} music creativity \cite{Maresz2003}. 
+The development of computational tools to assist and inspire the musical composition process constitutes an important research area known as \emph{Computer-Assisted Composition (CAC)} \cite{FerVic2013, Ari2005}. Within CAC, target-based computer-assisted orchestration is a compelling case of how machine learning can be used for {enhancing} and {assisting} music creativity \cite{Maresz2003}. 
 
 Target-based computer-assisted orchestration can be thought of as the process of searching for the best combinations of sounds in a database of instrumental samples, to match a target sound under a specific similarity metric and specific sets of constraints. A solution to this problem is a set of orchestral scores that represent the mixtures of audio samples in the database, ranked by similarity with the target sound. 
 
@@ -182,11 +182,19 @@ Following the first three convolutional layers, there is an LSTM layer which out
 
 \subsection{ResNet}
 
-The second and deeper model that we trained as classifier was the well known deep residual network \emph{ResNet}. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. To make the model more suitable to our problem, we decided to reduce the number of parameters and to reset the output channel numbers of each block with 32, 64, 32, 32 respectively.
+The second and deeper model that we trained as classifier was the well known deep residual network \emph{ResNet} \cite{He15}. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. To make the model more suitable to our problem, we decided to reduce the number of parameters and to reset the output channel numbers of each block with 32, 64, 32, 32 respectively.
 
 \subsection{Classification Results}
 
 During training, the loss function used to optimize the inner parameters of the model was binary cross entropy, as it is the common choice for multiclass multilabel classification frameworks. However, the value of the loss function alone is difficult to interpret.
+
+
+\begin{figure}
+  \center{
+  \includegraphics[scale=0.4]{../latex/figs/CNN_vs_ResNet.png}}
+  \caption{Best overall accuracy for CNN with LSTM (50 epochs, 200k samples per epoch) and ResNet (20 epochs, 400k samples per epoch) depending on the number of instruments in the combinations used for training. \label{cnn_vs_resnet}}
+  \end{figure}
+  
 %For this reason we created a complementary function $f$ to be used for evaluation only. This function compares a vector of expected outputs $\overline{X}$ with the estimated output from the model $\hat{X}$ by using the following function
 %
 %\begin{equation}
@@ -207,34 +215,30 @@ Different experiments were made by varying the number $N$ of samples in each mix
 %The CNN was trained on 200,000 generated samples over 50 epochs, and ResNet was 	trained on 400,000 generated samples over 20 epochs. Fig. \ref{cnn_vs_resnet} shows the best overall test accuracy achieved by both models across the number of samples $N$.
 ResNet outperforms the CNN regardless of the number of samples used in the combination. This result is consistent with previous research \cite{He15}, as residual networks usually perform well in classification problems.
 
-\begin{figure}
-\center{
-\includegraphics[scale=0.4]{../latex/figs/CNN_vs_ResNet.png}}
-\caption{Best overall accuracy for CNN with LSTM (50 epochs, 200k samples per epoch) and ResNet (20 epochs, 400k samples per epoch) depending on the number of instruments in the combinations used for training. \label{cnn_vs_resnet}}
-\end{figure}
 
+\begin{figure}
+  \centering
+  \begin{subfigure}{.52\textwidth}
+    \centering
+    \includegraphics[width=0.9\linewidth]{../latex/figs/Acc_vs_N_CNN.png}
+    \caption{CNN with LSTM}
+    \label{best_acc_cnn}
+  \end{subfigure}%
+  \begin{subfigure}{.52\textwidth}
+    \centering
+    \includegraphics[width=0.9\linewidth]{../latex/figs/Acc_vs_N_ResNet.png}
+    \caption{ResNet}
+    \label{best_acc_resnet}
+  \end{subfigure}
+  \caption{Best overall accuracy and for each instrument obtained by the CNN with LSTM and the ResNet depending on the number of instruments in the combinations}
+  \end{figure}
+
+  
 Fig. \ref{best_acc_cnn} and Fig. \ref{best_acc_resnet} show the maximum test accuracy for each model. For ResNet, the variance in accuracy is much smaller until $N$ reaches 5, at which point it becomes similar to the CNN. The results on both figures show consistency on the relative accuracy of instruments, which was for us the first step towards the validation of this method. Flute, Trombone and Trumpet yield the worst results for both models. 
 
 While it is not easy to explain these differences in accuracy, we hypothesize this being related to the nature of peculiar spectral and temporal morphology of each instrument. For example, flute notes tend to exhibit a steep spectral rolloff, with most of the energy captured by the first few partials. Moreover, the noisy nature of the transient portions of these notes is not well represented by frequency-based descriptions such as Mel spectra. These two factors combined, could make the disentanglement of the flute from the analyzed combination more difficult.
 
 Strings give similar results across both models. An interesting point to notice is the very high accuracy of Oboe on both models. This could indicate that there is an optimal spectral shape that maximizes the probability of being detected in such classification framework.
-
-\begin{figure}
-\centering
-\begin{subfigure}{.52\textwidth}
-  \centering
-  \includegraphics[width=0.9\linewidth]{../latex/figs/Acc_vs_N_CNN.png}
-  \caption{CNN with LSTM}
-  \label{best_acc_cnn}
-\end{subfigure}%
-\begin{subfigure}{.52\textwidth}
-  \centering
-  \includegraphics[width=0.9\linewidth]{../latex/figs/Acc_vs_N_ResNet.png}
-  \caption{ResNet}
-  \label{best_acc_resnet}
-\end{subfigure}
-\caption{Best overall accuracy and for each instrument obtained by the CNN with LSTM and the ResNet depending on the number of instruments in the combinations}
-\end{figure}
 
 
 \section{Orchestration Experiments}
@@ -288,6 +292,7 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 
 A comparison of distances between our solutions and targets and Orchidea's solutions and targets is in Table \ref{orch_eval}. While our model is not able to outperform Orchidea, it shows consistent results. We find that the CNN and ResNet give similar accuracies during training, but perform differently when tasked with orchestrating targets. Overall, CNN seems to better emulate the timbre in its orchestrations, where ResNet is better for recreating the harmonic content of the target. You can listen to the targets and orchestrated solutions from Orchidea, ResNet, and the CNN with LSTM at \url{https://dzluke.github.io/DeepOrchestration/}.
 
+
 \section{Conclusions}
 \label{sec:conclusions}
 
@@ -295,7 +300,7 @@ Target-based computer-assisted orchestration through deep learning models seems 
 
 The first natural extension would be to support sparsity in our models. Our current models orchestrate all targets using a constant number of instruments and are not able to drop specific instruments from the solution. This does not take into account the density of different targets. Sparse solutions, in which the model decides how many samples should be used to best represent the target, would allow a small number of samples to be used for sonically sparse sounds and many to be used for sonically dense sounds. %This would generate more meaningful orchestrations that would compare more favourably to the state of the art.
 
-Another important extension would be to create a more powerful embedding spaces for the target and combinations. In \cite{Gillick19} the authors propose to use LSTM-based models to predict the embedding features for the combinations used during the optimisation process in assisted orchestration. We believe that by combining their prediction model with our classification models could generate more faithful representations and improve the overall quality of generated orchestrations.
+Another important extension would be to create a more powerful embedding spaces for the target and combinations. In \cite{Gillick19} the authors propose to use LSTM-based models to predict the embedding features for the combinations used during the optimisation process in assisted orchestration. We believe that by combining their prediction model with our classification models we could generate more faithful representations and improve the overall quality of generated orchestrations.
 
 
 %\subsection{Interpreting the Latent Space}
