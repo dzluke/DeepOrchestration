@@ -159,7 +159,7 @@ For a given number of instruments $N$, each input to our models is a combination
 
 \begin{itemize}
 \item $N$ random TinySOL samples are selected, leading to a variety of instruments, pitches, and dynamics; we did not allow the same instrument to be chosen more than three times in order to ensure variety in the mixtures;
-\item the chosen samples are combined to be played simultaneously and normalized by the number of instruments;
+\item the chosen samples are combined to be played simultaneously, and the resulting sum is normalized by the number of instruments;
 \item the Mel frequency cepstral coefficients (MFCCs) and the Mel spectrogram of the mixture are computed to be used as the input features for the baseline classifiers and the neural classifiers respectively.
 \end{itemize}
 
@@ -283,8 +283,8 @@ More specifically, the function $M_N(\hat{X})$ takes as an input a vector of pro
 
 Different experiments were made by varying the number $N$ of samples in each mixture. We used an orchestra of 10 instruments containing Horn, Oboe, Violin, Viola, Cello, Flute, Trombone, Bassoon, Trumpet in C and Clarinet in Bb.
 
-Then, for both CNN with LSTM and ResNet, we computed the maximum accuracy over the epochs. 
-The CNN was trained on 200,000 generated samples over 50 epochs, and ResNet was trained on 400,000 generated samples over 20 epochs. Fig. \ref{cnn_vs_resnet} shows the best overall test accuracy achieved by both models across the number of samples $N$.\\
+Then, for both CNN with LSTM and ResNet, we computed the accuracy on the test sets across epochs, and kept the best one as an indicator of the performance of the models. 
+The CNN was trained on 200,000 generated samples over 50 epochs, and ResNet was trained on 400,000 generated samples over 20 epochs. Fig. \ref{cnn_vs_resnet} shows the best overall test accuracy achieved by both models across the number of samples $N$ per mixture.\\
 
 ResNet outperforms the CNN regardless of the number of samples used in the combination. This result is consistent with previous research \cite{He15}, as residual networks usually perform well in classification problems.
 
