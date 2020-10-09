@@ -1,4 +1,4 @@
-This repository serves as the code base for the paper "Neural Models for Target-Based Computer-Assisted Musical Orchestration: A Preliminary Study"
+This repository serves as the code base for the paper "A Study on Neural Models for Target-Based Computer-Assisted Musical Orchestration"
 
 **Visit our github.io page to listen to orchestrated examples**: https://dzluke.github.io/DeepOrchestration/
 
