@@ -250,7 +250,7 @@ Since each class is independent, we are able to take the sigmoid activation and 
 
 \subsection{ResNet}
 
-The second and more deep model that we trained as classifier was the well known deep residual network \emph{ResNet}. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. Besides, to make the model more suitable to our problem, we decided to reduce the number of parameters and to reset the output channel numbers of each block with 32, 64, 32, 32 respectively.
+The second and more deep model that we trained as classifier was the well known deep residual network \emph{ResNet}. Specifically, we used 18-layer ResNet, which allows information to pass directly from the input to the final layer of each block. To make the model more suitable to our problem, we decided to use an architecture with 4 blocks whose outputs are of size 32, 64, 32 and 32 respectively.
 
 \subsection{Classification results}
 
