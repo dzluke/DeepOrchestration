@@ -9,7 +9,7 @@ import soundfile as sf
 from model import OrchMatchNet
 from OrchDataset import RawDatabase
 from train import getPosNMax
-from parameters import GLOBAL_PARAMS, SimParams
+from parameters import GLOBAL_PARAMS
 
 """ 
 To run this file:
@@ -28,7 +28,7 @@ to be the path to this folder
 tinysol_path = './TinySOL'
 
 # path to target samples
-target_path = './target_samples'
+target_path = './targets'
 
 # number of samples to be used in solution
 n = 10
@@ -397,13 +397,3 @@ if __name__ == "__main__":
                 f.write('Target: {}; Ratio: {:,.8f}\n\n'.format(target['name'], target['ratio']))
 
     print('Finished writing ratios.')
-
-
-
-    
-
-
-
-
-
-    
