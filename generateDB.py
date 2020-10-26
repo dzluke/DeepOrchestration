@@ -1,6 +1,4 @@
 import os
-import itertools
-import argparse
 from functools import reduce
 import librosa
 import numpy as np
@@ -11,13 +9,16 @@ from parameters import GLOBAL_PARAMS
 def getSampleMetaData(path,name):
     s = {}
     s['path'] = path
-    y,sr=librosa.load(path,sr=None)
-    nb_samples = int(GLOBAL_PARAMS.TIME_LENGTH*sr)
-    if len(y) < nb_samples:
-        y = np.append(y, np.zeros((1,(nb_samples-len(y))), dtype=np.float32))
-    else:
-        y = y[:nb_samples]
-    s['stft'] = librosa.stft(y=y,hop_length=GLOBAL_PARAMS.MEL_HOP_LENGTH,n_fft=GLOBAL_PARAMS.N_FFT)
+    s['stft'] = {}
+    X = np.linspace((1-GLOBAL_PARAMS.coeff_freq_shift_data_augment)*GLOBAL_PARAMS.RATE, (1+GLOBAL_PARAMS.coeff_freq_shift_data_augment)*GLOBAL_PARAMS.RATE, 5)
+    for freq in X:
+        y,sr=librosa.load(path,sr=int(freq))
+        nb_samples = int(GLOBAL_PARAMS.TIME_LENGTH*GLOBAL_PARAMS.RATE)
+        if len(y) < nb_samples:
+            y = np.append(y, np.zeros((1,(nb_samples-len(y))), dtype=np.float32))
+        else:
+            y = y[:nb_samples]
+        s['stft'][int(freq)] = librosa.stft(y=y,hop_length=GLOBAL_PARAMS.MEL_HOP_LENGTH,n_fft=GLOBAL_PARAMS.N_FFT)
     t = name.split('.')[0].split('-')
     s['instrument'] = t[0]
     s['style'] = t[1]
@@ -29,14 +30,17 @@ def getSampleMetaData(path,name):
     return s
     
 
-def recursiveSearch(path):
+def recursiveSearch(path, i=0):
     l = []
+    s = i
     for x in os.listdir(path):
         p = os.path.join(path,x)
         if os.path.isdir(p):
-            l.extend(recursiveSearch(p))
+            l.extend(recursiveSearch(p,s))
         elif os.path.isfile(p) and p.split('.')[-1] == 'wav':
+            print("Sample {}".format(s))
             l.append(getSampleMetaData(p,x))
+            s += 1
     return l
 
 def getPitchRange(d):

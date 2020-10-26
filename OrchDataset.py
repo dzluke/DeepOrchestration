@@ -10,6 +10,7 @@ import numpy as np
 import os
 import pickle
 import random
+import hashlib
 
 from parameters import GLOBAL_PARAMS
 
@@ -67,6 +68,30 @@ class IndexIncrementor:
     def isOver(self):
         return self.count >= self.max_count
             
+class HashTable:
+    def __init__(self, max_depth, depth=0):
+        self.depth = depth
+        self.max_depth = max_depth
+        if max_depth == depth+1:
+            self.data = []
+        else:
+            self.data = {}
+            for i in '0123456789abcdef':
+                self.data[i] = HashTable(max_depth,depth+1)
+            
+    def isin(self, h):
+        if self.max_depth == self.depth+1:
+            return h in self.data
+        else:
+            return self.data[h[self.depth]].isin(h)
+    
+    def add(self, h):
+        if self.max_depth == self.depth+1:
+            return self.data.append(h)
+        else:
+            return self.data[h[self.depth]].add(h)
+        
+
 
 class RawDatabase:
     '''
@@ -77,6 +102,13 @@ class RawDatabase:
         self.db,self.pr = generateDBLabels(path, random_granularity, instr_filter)
         self.random_granularity = random_granularity
         self.instr_filter = instr_filter
+        
+    def save(self, path):
+        print("Saving RDB...")
+        f = open(path, 'wb')
+        pickle.dump(self, f)
+        f.close()
+        print("Done")
         
 class OrchDataSet(data.Dataset):
     '''
@@ -98,9 +130,7 @@ class OrchDataSet(data.Dataset):
         
         # For data augmentation, a set of mel basis is generated, using slightly shifted
         # sample rates. This ensures frequency variation of the selected samples.
-        self.mel_basis = []
-        for i in np.linspace(-GLOBAL_PARAMS.coeff_freq_shift_data_augment,GLOBAL_PARAMS.coeff_freq_shift_data_augment,100):
-            self.mel_basis.append(librosa.filters.mel(GLOBAL_PARAMS.RATE*(1+i), GLOBAL_PARAMS.N_FFT, n_mels=GLOBAL_PARAMS.N_MELS))
+        self.mel_basis = librosa.filters.mel(GLOBAL_PARAMS.RATE, GLOBAL_PARAMS.N_FFT, n_mels=GLOBAL_PARAMS.N_MELS)
             
         # Create delay filters for data augmentation
         # Delay is a periodic geometric decaying sequence of impulses with an offset
@@ -144,23 +174,29 @@ class OrchDataSet(data.Dataset):
         if not nb_samples is None:
             self.nb_samples = min(self.nb_samples,nb_samples)
         
-        # Generates the list of all possible instrument combinations and randomizes it
-        self.instr_comb = list(itertools.combinations(self.db.keys(), self.N))
-        random.shuffle(self.instr_comb)
-        
-        # Initialize IndexIncrementor objects for each combination
-        self.indexes = [IndexIncrementor(N,[len(self.db[i[x]]) for x in range(N)]) for i in self.instr_comb]
-        
-        
-        self.index_comb = 0
+        self.list_instr = list(self.db.keys())
+        self.list_sr = np.linspace((1-GLOBAL_PARAMS.coeff_freq_shift_data_augment)*GLOBAL_PARAMS.RATE, (1+GLOBAL_PARAMS.coeff_freq_shift_data_augment)*GLOBAL_PARAMS.RATE, 5)
+        self.list_sr = [int(x) for x in self.list_sr]
         
         # Store in self.data all the combinations
         print("Generating the Dataset")
         self.data = []
-        for i in range(self.nb_samples):
-            self.data.append(self.getNextSample())
+        hash_data = HashTable(4)
+        i = 0
+        while i < self.nb_samples:
+            is_in_hash = True
+            while is_in_hash:
+                samp_comb = self.getNextSample()
+                # Use hash of the combination to avoid same data twice
+                hash_comb = ';'.join(['_'.join([str(y) for y in x]) for x in samp_comb])
+                hash_comb = hashlib.sha256(bytes(hash_comb, 'utf')).hexdigest()
+                
+                is_in_hash = hash_data.isin(hash_comb)
+            self.data.append(samp_comb)
+            hash_data.add(hash_comb)
             if i % 1000 == 0:
                 print("{}/{} samples done".format(i, self.nb_samples))
+            i += 1
         print("Finished generating the Dataset")
     
     def getNextSample(self):
@@ -169,20 +205,35 @@ class OrchDataSet(data.Dataset):
             the list of instrument combinations, and for each one, choose a combination
             of pitches chosen in the pitch bins pointetd by the corresponding IndexIncrementor objects.
         '''
-        ii = self.indexes[self.index_comb]
-        pitch_indexes = ii.index
-        sample_list_to_combine = [(self.instr_comb[self.index_comb][x],
-                                   pitch_indexes[x],
-                                   random.randint(0,len(self.db[self.instr_comb[self.index_comb][x]][pitch_indexes[x]])-1)) for x in range(self.N)]
-           
-        ii.incr()
-        if ii.isOver():
-            ii.restart()
-            
-        self.index_comb += 1
-        if self.index_comb == len(self.instr_comb):
-            self.index_comb = 0
         
+        # Combination of instruments chosen (note that the same instrument can appear multiple times,
+        # but avoid more than three times)
+        comb = []
+        while len(comb) < self.N:
+            selected_instr = self.list_instr[random.randint(0, len(self.list_instr)-1)]
+            if comb.count(selected_instr) < 3:
+                comb.append(selected_instr)
+        
+        # Will contain the formatted version of the combination, with instruments, pitches, 
+        sample_list_to_combine = []
+        
+        for samp_instr in comb:
+            acceptable = False
+            while not acceptable:
+                samp_pitch_class = random.randint(0,len(self.db[samp_instr])-1)
+                if len(self.db[samp_instr][samp_pitch_class]) == 0:
+                    acceptable = False
+                else:
+                    samp_samp = random.randint(0,len(self.db[samp_instr][samp_pitch_class])-1)
+                    samp_rate = self.list_sr[random.randint(0,4)]
+                    
+                    # A sample is acceptable if it is not too close from the an already chohsen sample
+                    # ie instrument + pitch range
+                    acceptable = len([x for x in sample_list_to_combine if x[0] == samp_instr and x[1] == samp_pitch_class]) == 0
+            sample_list_to_combine.append((samp_instr,
+                                          samp_pitch_class,
+                                          samp_samp,
+                                          samp_rate))
         return sample_list_to_combine
 
     def save(self, path):
@@ -197,6 +248,7 @@ class OrchDataSet(data.Dataset):
         '''
             Loads a list of combinations from a pickle file.
         '''
+        print("Loading dataset from file {}".format(path))
         f = open(path, 'rb')
         self.data = pickle.load(f)
         self.nb_samples = len(self.data)
@@ -223,12 +275,12 @@ class OrchDataSet(data.Dataset):
             samp = self.db[i[0]][i[1]][i[2]]
             list_samp.append(samp)
             if stft is None:
-                stft = np.copy(samp['stft'])
+                stft = np.copy(samp['stft'][i[3]])
             else:
-                stft += samp['stft']
+                stft += samp['stft'][i[3]]
         stft = stft / self.N
         s = np.real(stft*np.conjugate(stft))
-        mel_spec = np.dot(self.mel_basis[random.randint(0,len(self.mel_basis)-1)], s)
+        mel_spec = np.dot(self.mel_basis, s)
         
         zero_row = np.random.rand(mel_spec.shape[0]) < GLOBAL_PARAMS.prop_zero_row
         zero_col = np.random.rand(mel_spec.shape[1]) < GLOBAL_PARAMS.prop_zero_col

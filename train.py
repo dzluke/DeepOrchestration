@@ -16,7 +16,7 @@ from matplotlib.animation import FuncAnimation
 
 from model import OrchMatchNet
 from parameters import GLOBAL_PARAMS, SimParams
-from OrchDataset_2 import OrchDataSet,RawDatabase
+from OrchDataset import OrchDataSet,RawDatabase
 
 class Timer:
     def __init__(self, size_buffer):

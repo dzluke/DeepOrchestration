@@ -1,0 +1,103 @@
+\relax 
+\citation{FerVic2013}
+\citation{Ari2005}
+\citation{Maresz2003}
+\citation{Carpentier2010}
+\citation{Cella18}
+\citation{Cella2020}
+\@writefile{toc}{\contentsline {title}{A Study on Neural Models for Target-Based Computer-Assisted Musical Orchestration}{1}\protected@file@percent }
+\@writefile{toc}{\authcount {5}}
+\@writefile{toc}{\contentsline {author}{Carmine Emanuele Cella\unskip {}\and Luke Dzwonczyk\unskip {}\and Alejandro Saldarriaga-Fuertes\unskip {}\and Hongfu Liu\unskip {}\and H\'el\`ene-Camille Crayencour\unskip {}}{1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}\protected@file@percent }
+\newlabel{sec:introduction}{{1}{1}}
+\citation{Benetos07}
+\citation{Kitahara05}
+\citation{lostanlen16}
+\citation{Bian19}
+\citation{He15}
+\citation{Hershey17}
+\citation{Hochreiter97}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces An overview of the proposed method for assisted orchestration with neural models. Instruments and pitches are determined as peaks of the output probability distribution, while the dynamics are computed by quantizing the probabilities. \relax }}{2}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:method}{{1}{2}}
+\citation{Cella2020b}
+\citation{McKinney2003}
+\citation{Salamon17}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Neural models}{3}\protected@file@percent }
+\newlabel{sec:models}{{2}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}From Orchestration to Classification}{3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Dataset}{3}\protected@file@percent }
+\newlabel{sec:dataset}{{2.2}{3}}
+\citation{Salamon17}
+\citation{Bhardwaj17}
+\citation{scikit-learn}
+\citation{Salamon17}
+\citation{Hochreiter97}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Data Augmentation}{4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Baselines}{4}\protected@file@percent }
+\newlabel{sec:baseline}{{2.4}{4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}CNN with LSTM}{4}\protected@file@percent }
+\citation{He15}
+\citation{He15}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}ResNet}{5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Classification Results}{5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Best overall accuracy for CNN with LSTM (50 epochs, 200k samples per epoch) and ResNet (20 epochs, 400k samples per epoch) depending on the number of instruments in the combinations used for training. \relax }}{6}\protected@file@percent }
+\newlabel{cnn_vs_resnet}{{2}{6}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Orchestration Experiments}{6}\protected@file@percent }
+\newlabel{sec:orchestration}{{3}{6}}
+\newlabel{best_acc_cnn}{{3a}{7}}
+\newlabel{sub@best_acc_cnn}{{a}{7}}
+\newlabel{best_acc_resnet}{{3b}{7}}
+\newlabel{sub@best_acc_resnet}{{b}{7}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Best overall accuracy and for each instrument obtained by the CNN with LSTM and the ResNet depending on the number of instruments in the combinations\relax }}{7}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Quantitative comparison of orchestrations as ratios to Orchidea. Eqn. 1\hbox {} was used to compute distances between orchestrations and targets. What is shown is the ratio between the distance of Orchidea's solution to the target and our solution's distance to the same target. A value less than 1 means that our model performed worse (i.e. had a larger distance), and a value greater than 1 means our model performed better than Orchidea. The last column shows the ratio of the average distances for the model across all targets.\relax }}{7}\protected@file@percent }
+\newlabel{orch_eval}{{1}{7}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Evaluation}{7}\protected@file@percent }
+\citation{Cella2020}
+\citation{Gillick19}
+\newlabel{distance}{{1}{8}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Conclusions}{8}\protected@file@percent }
+\newlabel{sec:conclusions}{{4}{8}}
+\bibstyle{apacite}
+\bibdata{paper}
+\bibcite{Ari2005}{\citeauthoryear {Ariza}{Ariza}{{\APACyear {2005}}}}
+\APACbibcite{Ari2005}{\citeauthoryear {Ariza}{Ariza}{{\APACyear {2005}}}}
+\bibcite{Benetos07}{\citeauthoryear {Benetos, Kotti,{}\ \BBA{} Kotropoulos}{Benetos\ \BOthers {.}}{{\APACyear {2007}}}}
+\APACbibcite{Benetos07}{\citeauthoryear {Benetos, Kotti,{}\ \BBA{} Kotropoulos}{Benetos\ \BOthers {.}}{{\APACyear {2007}}}}
+\bibcite{Bhardwaj17}{\citeauthoryear {Bhardwaj}{Bhardwaj}{{\APACyear {2017}}}}
+\APACbibcite{Bhardwaj17}{\citeauthoryear {Bhardwaj}{Bhardwaj}{{\APACyear {2017}}}}
+\bibcite{Bian19}{\citeauthoryear {Bian\ \BOthers {.}}{Bian\ \BOthers {.}}{{\APACyear {2019}}}}
+\APACbibcite{Bian19}{\citeauthoryear {Bian\ \BOthers {.}}{Bian\ \BOthers {.}}{{\APACyear {2019}}}}
+\bibcite{Carpentier2010}{\citeauthoryear {Carpentier, Tardieu, Harvey, Assayag,{}\ \BBA{} Saint-James}{Carpentier\ \BOthers {.}}{{\APACyear {2010}}}}
+\APACbibcite{Carpentier2010}{\citeauthoryear {Carpentier, Tardieu, Harvey, Assayag,{}\ \BBA{} Saint-James}{Carpentier\ \BOthers {.}}{{\APACyear {2010}}}}
+\bibcite{Cella2020}{\citeauthoryear {Cella}{Cella}{{\APACyear {2020}}}}
+\APACbibcite{Cella2020}{\citeauthoryear {Cella}{Cella}{{\APACyear {2020}}}}
+\bibcite{Cella18}{\citeauthoryear {Cella\ \BBA{} Esling}{Cella\ \BBA{} Esling}{{\APACyear {2018}}}}
+\APACbibcite{Cella18}{\citeauthoryear {Cella\ \BBA{} Esling}{Cella\ \BBA{} Esling}{{\APACyear {2018}}}}
+\bibcite{Cella2020b}{\citeauthoryear {Cella\ \BOthers {.}}{Cella\ \BOthers {.}}{{\APACyear {2020}}}}
+\APACbibcite{Cella2020b}{\citeauthoryear {Cella\ \BOthers {.}}{Cella\ \BOthers {.}}{{\APACyear {2020}}}}
+\bibcite{FerVic2013}{\citeauthoryear {Fernandez\ \BBA{} Vico}{Fernandez\ \BBA{} Vico}{{\APACyear {2013}}}}
+\APACbibcite{FerVic2013}{\citeauthoryear {Fernandez\ \BBA{} Vico}{Fernandez\ \BBA{} Vico}{{\APACyear {2013}}}}
+\bibcite{Gillick19}{\citeauthoryear {Gillick, Cella,{}\ \BBA{} Bamman}{Gillick\ \BOthers {.}}{{\APACyear {2019}}}}
+\APACbibcite{Gillick19}{\citeauthoryear {Gillick, Cella,{}\ \BBA{} Bamman}{Gillick\ \BOthers {.}}{{\APACyear {2019}}}}
+\bibcite{He15}{\citeauthoryear {He, Zhang, Ren,{}\ \BBA{} Sun}{He\ \BOthers {.}}{{\APACyear {2015}}}}
+\APACbibcite{He15}{\citeauthoryear {He, Zhang, Ren,{}\ \BBA{} Sun}{He\ \BOthers {.}}{{\APACyear {2015}}}}
+\bibcite{Hershey17}{\citeauthoryear {Hershey\ \BOthers {.}}{Hershey\ \BOthers {.}}{{\APACyear {2016}}}}
+\APACbibcite{Hershey17}{\citeauthoryear {Hershey\ \BOthers {.}}{Hershey\ \BOthers {.}}{{\APACyear {2016}}}}
+\bibcite{Hochreiter97}{\citeauthoryear {Hochreiter\ \BBA{} Schmidhuber}{Hochreiter\ \BBA{} Schmidhuber}{{\APACyear {1997}}}}
+\APACbibcite{Hochreiter97}{\citeauthoryear {Hochreiter\ \BBA{} Schmidhuber}{Hochreiter\ \BBA{} Schmidhuber}{{\APACyear {1997}}}}
+\bibcite{Kitahara05}{\citeauthoryear {Kitahara, Goto,{}\ \BBA{} Okuno}{Kitahara\ \BOthers {.}}{{\APACyear {2005}}}}
+\APACbibcite{Kitahara05}{\citeauthoryear {Kitahara, Goto,{}\ \BBA{} Okuno}{Kitahara\ \BOthers {.}}{{\APACyear {2005}}}}
+\bibcite{lostanlen16}{\citeauthoryear {Lostanlen\ \BBA{} Cella}{Lostanlen\ \BBA{} Cella}{{\APACyear {2016}}}}
+\APACbibcite{lostanlen16}{\citeauthoryear {Lostanlen\ \BBA{} Cella}{Lostanlen\ \BBA{} Cella}{{\APACyear {2016}}}}
+\@writefile{toc}{\contentsline {section}{References}{9}\protected@file@percent }
+\bibcite{Maresz2003}{\citeauthoryear {Maresz}{Maresz}{{\APACyear {2013}}}}
+\APACbibcite{Maresz2003}{\citeauthoryear {Maresz}{Maresz}{{\APACyear {2013}}}}
+\bibcite{mcfee15}{\citeauthoryear {McFee\ \BOthers {.}}{McFee\ \BOthers {.}}{{\APACyear {2015}}}}
+\APACbibcite{mcfee15}{\citeauthoryear {McFee\ \BOthers {.}}{McFee\ \BOthers {.}}{{\APACyear {2015}}}}
+\bibcite{McKinney2003}{\citeauthoryear {Mckinney\ \BBA{} Breebaart}{Mckinney\ \BBA{} Breebaart}{{\APACyear {2003}}}}
+\APACbibcite{McKinney2003}{\citeauthoryear {Mckinney\ \BBA{} Breebaart}{Mckinney\ \BBA{} Breebaart}{{\APACyear {2003}}}}
+\bibcite{scikit-learn}{\citeauthoryear {Pedregosa\ \BOthers {.}}{Pedregosa\ \BOthers {.}}{{\APACyear {2011}}}}
+\APACbibcite{scikit-learn}{\citeauthoryear {Pedregosa\ \BOthers {.}}{Pedregosa\ \BOthers {.}}{{\APACyear {2011}}}}
+\bibcite{Salamon17}{\citeauthoryear {Salamon\ \BBA{} Bello}{Salamon\ \BBA{} Bello}{{\APACyear {2017}}}}
+\APACbibcite{Salamon17}{\citeauthoryear {Salamon\ \BBA{} Bello}{Salamon\ \BBA{} Bello}{{\APACyear {2017}}}}
