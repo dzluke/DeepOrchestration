@@ -1,0 +1,15 @@
+[ orchestra Fl Ob ClBb Bn Hn TpC Tbn Vn Va Vc ]
+[ segment 0
+	[ solution 1
+		[ note 4882.09 Fl ord A#4 pp N /Winds/Fl/Fl-ord-A#4-pp.wav 0 ]
+		[ note 4882.09 Ob ord D5 pp N /Winds/Ob/Ob-ord-D5-pp.wav 0 ]
+		[ note 4882.09 ClBb ord G3 pp N /Winds/ClBb/ClBb-ord-G3-pp.wav 0 ]
+		[ note 4882.09 Bn ord E4 pp N /Winds/Bn/Bn-ord-E4-pp.wav 0 ]
+		[ note 4882.09 Hn ord G3 pp N /Brass/Hn/Hn-ord-G3-pp.wav 0 ]
+		[ note 4882.09 TpC ord G3 pp N /Brass/TpC/TpC-ord-G3-pp.wav 0 ]
+		[ note 4882.09 Tbn ord G3 pp N /Brass/Tbn/Tbn-ord-G3-pp.wav 0 ]
+		[ note 4882.09 Vn ord D#7 ff N /Strings/Vn/Vn-ord-D#7-ff.wav 0 ]
+		[ note 4882.09 Va ord E4 mf 2c /Strings/Va/Va-ord-E4-mf-2c.wav 0 ]
+		[ note 4882.09 Vc ord C2 mf 4c /Strings/Vc/Vc-ord-C2-mf-4c.wav 0 ]
+	]
+]

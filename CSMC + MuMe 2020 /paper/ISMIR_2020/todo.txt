@@ -1,0 +1,71 @@
+Introduction of assisted orchestration
+State of the art is Orchidea
+Try deep learning methods
+Explain that we trained a classifier to use for orchestration
+3 types of classification
+
+Baseline with tables
+Document how we generated the data
+Justify the models
+
+Explain the porblem we have
+Explain the models
+	Baseline
+	CNN
+	ResNet
+Say what we did with the model and draw conclusions
+
+Evaluation is done on orchestration, not classification
+Two tables : classification results and orchestration results
+
+For classification
+
+To compute distance, compute FFT on samples of generated orchestration, and then apply the distance using abs value of FFT
+
+
+
+Plot what helped to take the decisions
+If the model is a non standard model, we would need a diagram
+Latent space of the CNN
+
+Table saying classification for each instrument given different N
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Add as many references as we can (almost for every sentence)
+Give the essential for the references, formatting can be done later
+Look for the most cited paper, most accepted
+Introduction should be two columns, explain more in detail the goal and why we framed that as a 
+
+{Inspected by Carmine}
+Interpretation of same instruments :
+	1. Amount of data (is it consistent accross instrument)
+	2. Nature of the instrument (too complex or too simple)
+	3. Transience : Flute is basically noise, and FFT doesn't handle that well (same level acrosss frequencies)
+
+we think this would be the reason but further work would be needed
+
+latent space, especially the two last convolutional layers, and see what lstm does to the batch of data
+
+put the 5 authors
+
+Cite the github of the code
+
+We didn't do better than state of the art but we got consistent results
