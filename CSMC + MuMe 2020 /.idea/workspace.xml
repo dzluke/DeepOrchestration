@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="1c8b6f95-9b2e-4bdd-ab4f-20927cdd7725" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../Figure_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrchDataset.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../augment.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../baseline_classification.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../class.index" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../comp_CNN_CNNLSTM.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../dataset.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../db/400000.pkl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../generateDB.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../latent_space_vis.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../model.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_Beethoven_chord1.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_Beethoven_chord2.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_Bn-ord-C#3-pp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_Trompe_attaque-MN.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_WinchesterBell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_YanBn-mul-PG-ST12.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_archeos-bell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_bass_clarinet.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_boat_docking.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_car-horn.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_girl-scream.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_gong_c#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_mix_ObA4_BnC#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_reed_bone.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestrated_wind-harp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=10/orchestration_results.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_Beethoven_chord1.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_Beethoven_chord2.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_Bn-ord-C#3-pp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_Trompe_attaque-MN.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_WinchesterBell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_YanBn-mul-PG-ST12.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_archeos-bell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_bass_clarinet.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_boat_docking.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_car-horn.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_girl-scream.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_gong_c#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_mix_ObA4_BnC#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_reed_bone.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestrated_wind-harp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=2/orchestration_results.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_Beethoven_chord1.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_Beethoven_chord2.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_Bn-ord-C#3-pp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_Trompe_attaque-MN.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_WinchesterBell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_YanBn-mul-PG-ST12.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_archeos-bell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_bass_clarinet.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_boat_docking.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_car-horn.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_girl-scream.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_gong_c#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_mix_ObA4_BnC#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_reed_bone.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestrated_wind-harp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=3/orchestration_results.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_Beethoven_chord1.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_Beethoven_chord2.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_Bn-ord-C#3-pp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_Trompe_attaque-MN.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_WinchesterBell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_YanBn-mul-PG-ST12.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_archeos-bell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_bass_clarinet.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_boat_docking.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_car-horn.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_girl-scream.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_gong_c#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_mix_ObA4_BnC#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_reed_bone.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestrated_wind-harp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/cnn_n=5/orchestration_results.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/new_models/CNN_epoch39.pth" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/new_models/ResNet_epoch19.pth" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/new_models/ResNet_epoch9.pth" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/new_models/cnn_params/params.pkl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/new_models/resnet_params/params.pkl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/Beethoven_chord1.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/Beethoven_chord1.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/Beethoven_chord2.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/Beethoven_chord2.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/Bn-ord-C#3-pp.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/Bn-ord-C#3-pp.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/Trompe_attaque-MN.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/Trompe_attaque-MN.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/WinchesterBell.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/WinchesterBell.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/YanBn-mul-PG-ST12.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/YanBn-mul-PG-ST12.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/archeos-bell.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/archeos-bell.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/bass_clarinet.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/bass_clarinet.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/boat_docking.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/boat_docking.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/car-horn.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/car-horn.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/girl-scream.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/girl-scream.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/gong_c#3.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/gong_c#3.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/mix_ObA4_BnC#3.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/mix_ObA4_BnC#3.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/orchestration_results.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/reed_bone.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/reed_bone.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/wind-harp.wav.solution/connection.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/orchidea_solutions/wind-harp.wav.solution/connection.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/params_cnn/epoch_49.pth" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/params_cnn/params.pkl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/params_resnet/epoch_24.pth" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/params_resnet/params.pkl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_Beethoven_chord1.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_Beethoven_chord2.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_Bn-ord-C#3-pp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_Trompe_attaque-MN.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_WinchesterBell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_YanBn-mul-PG-ST12.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_archeos-bell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_bass_clarinet.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_boat_docking.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_car-horn.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_girl-scream.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_gong_c#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_mix_ObA4_BnC#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_reed_bone.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestrated_wind-harp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=10/orchestration_results.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_Beethoven_chord1.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_Beethoven_chord2.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_Bn-ord-C#3-pp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_Trompe_attaque-MN.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_WinchesterBell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_YanBn-mul-PG-ST12.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_archeos-bell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_bass_clarinet.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_boat_docking.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_car-horn.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_girl-scream.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_gong_c#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_mix_ObA4_BnC#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_reed_bone.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestrated_wind-harp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=2/orchestration_results.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_Beethoven_chord1.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_Beethoven_chord2.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_Bn-ord-C#3-pp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_Trompe_attaque-MN.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_WinchesterBell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_YanBn-mul-PG-ST12.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_archeos-bell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_bass_clarinet.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_boat_docking.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_car-horn.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_girl-scream.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_gong_c#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_mix_ObA4_BnC#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_reed_bone.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestrated_wind-harp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=3/orchestration_results.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_Beethoven_chord1.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_Beethoven_chord2.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_Bn-ord-C#3-pp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_Trompe_attaque-MN.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_WinchesterBell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_YanBn-mul-PG-ST12.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_archeos-bell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_bass_clarinet.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_boat_docking.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_car-horn.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_girl-scream.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_gong_c#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_mix_ObA4_BnC#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_reed_bone.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestrated_wind-harp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../orchestrated_targets/resnet_n=5/orchestration_results.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../outputs.npy" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/Deep learning approaches on musical assisted-orchestration- an.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/CNN_acc.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/ISMIR2020template.aux" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/ISMIR2020template.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/ISMIR2020template.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/ISMIR2020template.synctex.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/ISMIR2020template.tex" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/ISMIRtemplate.bib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/ResNet_acc.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/cite.sty" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/88x31.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/Acc_vs_N_CNN.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/Acc_vs_N_ResNet.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/CNN10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/CNN4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/CNN5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/CNN6.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/CNN7.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/CNN8.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/CNN9.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/CNN_LSTM_diagram.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/CNN_vs_ResNet.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/CNN_with_LSTM.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/ResNet.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/ResNet10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/cc_by.eps" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/cc_by.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/latent_space_layer0.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/latent_space_layer1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/latent_space_layer2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/latent_space_layer3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/latent_space_layer4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/latent_space_layer5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/figs/method.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/ismir.sty" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/paper.aux" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/paper.bbl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/paper.bib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/paper.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/paper.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/paper.synctex.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/paper.tex" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/paper_e_correction.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/ISMIR_2020/todo.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/CSMC_MUME_LaTeX_Template.bib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/CSMC_MUME_LaTeX_Template.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/CSMC_MUME_LaTeX_Template.tex" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/llncs.cls" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/llncs.dem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/paper.aux" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/paper.bbl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/paper.bib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/paper.blg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/paper.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/paper.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/paper.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/paper.synctex.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/paper.tex" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/CSMC_MUME_LaTeX_Template.bib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/CSMC_MUME_LaTeX_Template_DEMOPAPER.tex" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/CSMC_MUME_LaTeX_Template_FULLPAPER.aux" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/CSMC_MUME_LaTeX_Template_FULLPAPER.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/CSMC_MUME_LaTeX_Template_FULLPAPER.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/CSMC_MUME_LaTeX_Template_FULLPAPER.synctex.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/CSMC_MUME_LaTeX_Template_FULLPAPER.tex" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/CSMC_MUME_LaTeX_Template_WIPPAPER.tex" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/CSMC_MUME_Word_Template_DEMOPAPER.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/CSMC_MUME_Word_Template_FULLPAPER.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/CSMC_MUME_Word_Template_WIPPAPER.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/graphic.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/llncs.cls" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/llncs.dem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../paper/csmc_mume_2020/templates_aimusic2020/llncs.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../parameters.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../plot.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../process_OrchDB.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../process_TinySOL.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../resnet.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../script_generate_rdb.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../showOutputs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/Beethoven_chord1.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/Beethoven_chord2.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/Bn-ord-C#3-pp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/Trompe_attaque-MN.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/WinchesterBell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/YanBn-mul-PG-ST12.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/archeos-bell.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/bass_clarinet.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/boat_docking.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/car-horn.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/girl-scream.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/gong_c#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/mix_ObA4_BnC#3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/reed_bone.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../targets/wind-harp.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../train.py" beforeDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-3148">
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="width" value="1920" />
+    <option name="height" value="1080" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="CSMC + MuMe 2020 " type="b2602c69:ProjectViewProjectNode" />
+              <item name="CSMC + MuMe 2020 " type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1c8b6f95-9b2e-4bdd-ab4f-20927cdd7725" name="Default Changelist" comment="" />
+      <created>1604970165579</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1604970165579</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="23" width="1280" height="777" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4977169" visible="true" weight="0.25767368" />
+      <window_info id="Favorites" order="1" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.36058393" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Structure" order="3" sideWeight="0.5022831" side_tool="true" visible="true" weight="0.15185784" />
+    </layout>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3148">
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
