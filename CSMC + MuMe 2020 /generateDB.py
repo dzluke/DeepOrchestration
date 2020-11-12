@@ -31,17 +31,23 @@ def getSampleMetaData(path,name):
     
 
 def recursiveSearch(path, i=0):
-    l = []
+    """
+    create a list sample metadata dictionaries for each sample in path
+    @param path: path to database
+    @param i:
+    @return: list of sample metadata dictionaries
+    """
+    samples_metadata = []
     s = i
     for x in os.listdir(path):
-        p = os.path.join(path,x)
+        p = os.path.join(path, x)
         if os.path.isdir(p):
-            l.extend(recursiveSearch(p,s))
+            samples_metadata.extend(recursiveSearch(p, s))
         elif os.path.isfile(p) and p.split('.')[-1] == 'wav':
-            print("Sample {}".format(s))
-            l.append(getSampleMetaData(p,x))
+            print("Sample {}, Path: {}".format(s, p))
+            samples_metadata.append(getSampleMetaData(p, x))
             s += 1
-    return l
+    return samples_metadata
 
 def getPitchRange(d):
     pr = set()
@@ -64,27 +70,32 @@ def generateDBLabels(path, nb_pitch_range = 1, instr_filter=None):
         Note that if the global paramaters MEL_HOP_LENGTH, N_FFT or TIME_LENGTH are modified,
         this function needs to be called again
     '''
-    l = recursiveSearch(path)
-    if not instr_filter is None:
-        l = [x for x in l if x['instrument'] in instr_filter]
+    samples = recursiveSearch(path)
+    # we sort the sample list so that the ordering of the samples is the same on every machine.
+    # otherwise, the indices in the labels could correspond to different samples
+    # because of differences in file structure on different machines
+    samples.sort(key=lambda s: s['path'])
+
+    if instr_filter is not None:
+        samples = [x for x in samples if x['instrument'] in instr_filter]
     instr_db = {}
-    for i in l:
+    for i in samples:
         if i["instrument"] not in instr_db:
             instr_db[i["instrument"]] = []
         instr_db[i["instrument"]].append(i)
-    pr = getPitchRange(l)
+    pitch_range = getPitchRange(samples)
     
-    db = {}
+    database = {}
     
-    nb_pitch_classes = nb_pitch_range or len(pr)
+    nb_pitch_classes = nb_pitch_range or len(pitch_range)
     for i in instr_db:
-        db[i] = [[] for i in range(nb_pitch_classes)]
-    for x in l:
-        x['pitch_idx'] = pr.index(x['pitch_name'])
-        db[x['instrument']][int(x['pitch_idx']*nb_pitch_classes/len(pr))].append(x)
+        database[i] = [[] for i in range(nb_pitch_classes)]
+    for x in samples:
+        x['pitch_idx'] = pitch_range.index(x['pitch_name'])
+        database[x['instrument']][int(x['pitch_idx']*nb_pitch_classes/len(pitch_range))].append(x)
         
-    for i in db:
-        db[i] = [x for x in db[i] if len(x) > 0]
-        for j in db[i]:
+    for i in database:
+        database[i] = [x for x in database[i] if len(x) > 0]
+        for j in database[i]:
             random.shuffle(j)
-    return db,pr
+    return database, pitch_range
