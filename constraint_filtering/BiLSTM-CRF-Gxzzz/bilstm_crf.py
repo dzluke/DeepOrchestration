@@ -13,21 +13,39 @@ class BiLSTMCRF(nn.Module):
             tag_vocab (Vocab): vocabulary of tags
             embed_size (int): embedding size
             hidden_size (int): hidden state size
+
+            len: how many discrete inputs come from the data point (number of words)
+            b: batch size
+            e: # of features per input (word)
+            K: # of classes (I think)
         """
         super(BiLSTMCRF, self).__init__()
         self.dropout_rate = dropout_rate
         self.embed_size = embed_size
-        self.hidden_size = hidden_size
-        self.sent_vocab = sent_vocab
-        self.tag_vocab = tag_vocab
-        self.embedding = nn.Embedding(len(sent_vocab), embed_size)
+        self.hidden_size = hidden_size  # "the number of features in the hidden state" of the LSTM
+        self.sent_vocab = sent_vocab  # inputs
+        self.tag_vocab = tag_vocab  # labels
+        self.embedding = nn.Embedding(len(sent_vocab), embed_size)  # embeds sentences into feature space
         self.dropout = nn.Dropout(dropout_rate)
+
         self.encoder = nn.LSTM(input_size=embed_size, hidden_size=hidden_size, bidirectional=True)
+
+        # not sure what this is. a linear layer from hidden size * 2 to # of possible labels? or # of samples?
+        # I think len(self.tag_vocab) = K, meaning K is the number of classes
+        # emit_score is emission score
         self.hidden2emit_score = nn.Linear(hidden_size * 2, len(self.tag_vocab))
-        self.transition = nn.Parameter(torch.randn(len(self.tag_vocab), len(self.tag_vocab)))  # shape: (K, K)
+
+        # CRF transition matrix, shape: (K, K)
+        self.transition = nn.Parameter(torch.randn(len(self.tag_vocab), len(self.tag_vocab)))
 
     def forward(self, sentences, tags, sen_lengths):
         """
+        takes in sentences, featurizes them (embeds them in feature space)
+        calls encode on them, which puts them through the BiLSTM
+        calculates and returns the CRF loss
+
+        not sure what 'mask' is for
+
         Args:
             sentences (tensor): sentences, shape (b, len). Lengths are in decreasing order, len is the length
                                 of the longest sentence
@@ -45,6 +63,10 @@ class BiLSTMCRF(nn.Module):
 
     def encode(self, sentences, sent_lengths):
         """ BiLSTM Encoder
+
+        puts featurized sentences thru the BiLSTM
+        not sure what emit_score is or what hidden2emit_score does
+
         Args:
             sentences (tensor): sentences with word embeddings, shape (len, b, e)
             sent_lengths (list): sentence lengths
@@ -60,6 +82,9 @@ class BiLSTMCRF(nn.Module):
 
     def cal_loss(self, tags, mask, emit_score):
         """ Calculate CRF loss
+
+        uses the CRF transition matrix
+
         Args:
             tags (tensor): a batch of tags, shape (b, len)
             mask (tensor): mask for the tags, shape (b, len), values in PAD position is 0
@@ -67,14 +92,14 @@ class BiLSTMCRF(nn.Module):
         Returns:
             loss (tensor): loss of the batch, shape (b,)
         """
-        batch_size, sent_len = tags.shape
+        batch_size, max_len = tags.shape  # max_len is the length of the longest sentence
         # calculate score for the tags
         score = torch.gather(emit_score, dim=2, index=tags.unsqueeze(dim=2)).squeeze(dim=2)  # shape: (b, len)
         score[:, 1:] += self.transition[tags[:, :-1], tags[:, 1:]]
         total_score = (score * mask.type(torch.float)).sum(dim=1)  # shape: (b,)
         # calculate the scaling factor
         d = torch.unsqueeze(emit_score[:, 0], dim=1)  # shape: (b, 1, K)
-        for i in range(1, sent_len):
+        for i in range(1, max_len):
             n_unfinished = mask[:, i].sum()
             d_uf = d[: n_unfinished]  # shape: (uf, 1, K)
             emit_and_transition = emit_score[: n_unfinished, i].unsqueeze(dim=1) + self.transition  # shape: (uf, K, K)
@@ -92,6 +117,11 @@ class BiLSTMCRF(nn.Module):
 
     def predict(self, sentences, sen_lengths):
         """
+        makes label predictions for input sentences
+        embeds sentences in feature space
+        encodes embedded sentences
+        uses transition matrix
+
         Args:
             sentences (tensor): sentences, shape (b, len). Lengths are in decreasing order, len is the length
                                 of the longest sentence
