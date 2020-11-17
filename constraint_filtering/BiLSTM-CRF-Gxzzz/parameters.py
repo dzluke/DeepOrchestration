@@ -27,29 +27,6 @@ class SimParams:
         self.prop_zero_row = 0.01
         self.prop_zero_col = 0.01
         self.noise_kernel_var = 0.0001
-
-        # maps a class (instr, pitch) to an index in the label
-        # nested dict, usage is class_indices[instrument][pitch]
-        self.class_indices = {}
-
-    def createClassIndices(self, raw_database):
-        """
-        populates the class_indices dictionary, which maps an (instr, pitch) pair to an index in the label
-        @param raw_database:
-        @return: None
-        """
-        i = 0
-        for instrument in raw_database.db:
-            if instrument in self.instr_filter:
-                self.class_indices[instrument] = {}
-                pitches = set()
-                for octave in raw_database.db[instrument]:
-                    for sample in octave:
-                        pitches.add(sample['pitch_name'])
-                for pitch in pitches:
-                    self.class_indices[instrument][pitch] = i
-                    i += 1
-        print("parameters.py: Calculated {} classes".format(i))
         
     def load_parameters(self, path):
         f = open(path + '/params.pkl', 'rb')

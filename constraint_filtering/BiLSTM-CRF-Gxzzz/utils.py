@@ -26,27 +26,6 @@ def read_corpus(filepath):
     return sentences, tags
 
 
-def generate_train_dev_dataset(filepath, sent_vocab, tag_vocab, train_proportion=0.8):
-    """ Read corpus from given file path and split it into train and dev parts
-    Args:
-        filepath: file path
-        sent_vocab: sentence vocab
-        tag_vocab: tag vocab
-        train_proportion: proportion of training data
-    Returns:
-        train_data: data for training, list of tuples, each containing a sentence and corresponding tag.
-        dev_data: data for development, list of tuples, each containing a sentence and corresponding tag.
-    """
-    sentences, tags = read_corpus(filepath)
-    sentences = words2indices(sentences, sent_vocab)
-    tags = words2indices(tags, tag_vocab)
-    data = list(zip(sentences, tags))
-    random.shuffle(data)
-    n_train = int(len(data) * train_proportion)
-    train_data, dev_data = data[: n_train], data[n_train:]
-    return train_data, dev_data
-
-
 def batch_iter(data, batch_size=32, shuffle=True):
     """ Yield batch of (sent, tag), by the reversed order of source length.
     Args:

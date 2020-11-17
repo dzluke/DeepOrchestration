@@ -151,7 +151,7 @@ class OrchDataSet(data.Dataset):
     '''
         Main class for generating the dataset.
     '''
-    def __init__(self, raw_db, class_encoder, feature_type):
+    def __init__(self, raw_db, feature_type):
         '''
             To avoid unnecessary computations when trying new settings, the RawDatabase
             object is passed as an argument.
@@ -193,8 +193,23 @@ class OrchDataSet(data.Dataset):
         if feature_type not in ['mfcc', 'mel']:
             raise Exception("Feature type must be mfcc or mel")
         self.feature_type = feature_type
+
+        # maps a class (instr, pitch) to an index in the label
+        # nested dict, usage is class_indices[instrument][pitch]
+        self.class_indices = {}
+        self.num_classes = None
+        self.createClassIndices(raw_db)
+
+        def class_encoder(list_samp):
+            label = [0 for _ in range(self.num_classes)]
+            for sample in list_samp:
+                index = self.class_indices[sample['instrument']][sample['pitch_name']]
+                label[index] = 1
+            return np.array(label).astype(np.float32)
         
         self.class_encoder = class_encoder
+
+
     
     def generate(self, N, nb_samples=None):
         '''
@@ -272,6 +287,26 @@ class OrchDataSet(data.Dataset):
                                           samp_samp,
                                           samp_rate))
         return sample_list_to_combine
+
+    def createClassIndices(self, raw_database):
+        """
+        populates the class_indices dictionary, which maps an (instr, pitch) pair to an index in the label
+        @param raw_database:
+        @return: None
+        """
+        i = 0
+        for instrument in raw_database.db:
+            if instrument in self.instr_filter:
+                self.class_indices[instrument] = {}
+                pitches = set()
+                for octave in raw_database.db[instrument]:
+                    for sample in octave:
+                        pitches.add(sample['pitch_name'])
+                for pitch in pitches:
+                    self.class_indices[instrument][pitch] = i
+                    i += 1
+        print("createClassIndices: Calculated {} classes".format(i))
+        self.num_classes = i
 
     def save(self, path):
         '''
@@ -428,14 +463,8 @@ for instrument in GLOBAL_PARAMS.class_indices.keys():
 
 print("OrchDataset.py: Calculated {} classes".format(num_classes))
 
-def class_encoder(list_samp):
-    label = [0 for _ in range(num_classes)]
-    for sample in list_samp:
-        index = GLOBAL_PARAMS.class_indices[sample['instrument']][sample['pitch_name']]
-        label[index] = 1
-    return np.array(label).astype(np.float32)
 
 
-orch_db = OrchDataSet(raw_db, class_encoder, 'mel')
+orch_db = OrchDataSet(raw_db, 'mel')
 # orch_db.generate(GLOBAL_PARAMS.N)
 # orch_db.save("SAVED_ORCH_DATABASE")

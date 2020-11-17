@@ -30,6 +30,11 @@ import torch.nn as nn
 import bilstm_crf
 import utils
 import random
+import pickle
+from os import path
+
+from OrchDataset import RawDatabase, OrchDataSet
+from parameters import GLOBAL_PARAMS
 
 
 def train(args):
@@ -37,11 +42,32 @@ def train(args):
     Args:
         args: dict that contains options in command
     """
-    sent_vocab = Vocab.load(args['SENT_VOCAB'])
-    tag_vocab = Vocab.load(args['TAG_VOCAB'])
-    train_data, dev_data = utils.generate_train_dev_dataset(args['TRAIN'], sent_vocab, tag_vocab)
-    print('num of training examples: %d' % (len(train_data)))
-    print('num of development examples: %d' % (len(dev_data)))
+
+    # load data
+    if path.exists("SAVED_RAW_DATABASE"):
+        print("Loading raw database...")
+        with open("SAVED_RAW_DATABASE", 'rb') as pickle_file:
+            raw_db = pickle.load(pickle_file)
+    else:
+        print("Creating raw database. This will take a few minutes...")
+        raw_db = RawDatabase(GLOBAL_PARAMS.path, GLOBAL_PARAMS.rdm_granularity, GLOBAL_PARAMS.instr_filter)
+    print("Done.")
+
+    train_data = OrchDataSet(raw_db, GLOBAL_PARAMS.FEATURE_TYPE)
+    num_training_samples = int(GLOBAL_PARAMS.train_proportion * GLOBAL_PARAMS.nb_samples)
+    train_data.generate(GLOBAL_PARAMS.N, num_training_samples)
+
+    test_data = OrchDataSet(raw_db, GLOBAL_PARAMS.FEATURE_TYPE)
+    num_test_samples = GLOBAL_PARAMS.nb_samples - num_training_samples
+    test_data.generate(GLOBAL_PARAMS.N, num_test_samples)
+
+    train_data = torch.utils.data.DataLoader(dataset=train_data,
+                                             batch_size=GLOBAL_PARAMS.batch_size,
+                                             shuffle=True)
+
+    test_data = torch.utils.data.DataLoader(dataset=test_data,
+                                            batch_size=GLOBAL_PARAMS.batch_size,
+                                            shuffle=False)
 
     max_epoch = int(args['--max-epoch'])
     log_every = int(args['--log-every'])
@@ -202,3 +228,10 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+def class_encoder(list_samp):
+    label = [0 for _ in range(num_classes)]
+    for sample in list_samp:
+        index = GLOBAL_PARAMS.class_indices[sample['instrument']][sample['pitch_name']]
+        label[index] = 1
+    return np.array(label).astype(np.float32)
