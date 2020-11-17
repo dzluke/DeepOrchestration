@@ -78,7 +78,7 @@ def train(args):
     device = torch.device('cuda' if args['--cuda'] else 'cpu')
     patience, decay_num = 0, 0
 
-    model = bilstm_crf.BiLSTMCRF(sent_vocab, tag_vocab, float(args['--dropout-rate']), int(args['--embed-size']),
+    model = bilstm_crf.BiLSTMCRF(train_data.num_classes, float(args['--dropout-rate']), int(args['--embed-size']),
                                  int(args['--hidden-size'])).to(device)
     for name, param in model.named_parameters():
         if 'weight' in name:
@@ -213,25 +213,29 @@ def cal_dev_loss(model, dev_data, batch_size, sent_vocab, tag_vocab, device):
     model.train(is_training)
     return loss / n_sentences
 
-
-def main():
-    args = docopt(__doc__)
-    random.seed(0)
-    torch.manual_seed(0)
-    if args['--cuda']:
-        torch.cuda.manual_seed(0)
-    if args['train']:
-        train(args)
-    elif args['test']:
-        test(args)
-
-
-if __name__ == '__main__':
-    main()
-
 def class_encoder(list_samp):
     label = [0 for _ in range(num_classes)]
     for sample in list_samp:
         index = GLOBAL_PARAMS.class_indices[sample['instrument']][sample['pitch_name']]
         label[index] = 1
     return np.array(label).astype(np.float32)
+
+def main():
+    # args = docopt(__doc__)
+    # random.seed(0)
+    # torch.manual_seed(0)
+    # if args['--cuda']:
+    #     torch.cuda.manual_seed(0)
+    # if args['train']:
+    #     train(args)
+    # elif args['test']:
+    #     test(args)
+    args = {}
+    args['train'] = True
+    args['--max-epoch'] = 5
+    train({'train': True})
+
+
+if __name__ == '__main__':
+    main()
+

@@ -6,7 +6,7 @@ import utils
 
 
 class BiLSTMCRF(nn.Module):
-    def __init__(self, sent_vocab, num_classes, dropout_rate=0.5, embed_size=256, hidden_size=256):
+    def __init__(self, num_classes, dropout_rate=0.5, embed_size=256, hidden_size=256):
         """ Initialize the model
         Args:
             sent_vocab (Vocab): vocabulary of words
@@ -23,7 +23,6 @@ class BiLSTMCRF(nn.Module):
         self.dropout_rate = dropout_rate
         self.embed_size = embed_size
         self.hidden_size = hidden_size  # "the number of features in the hidden state" of the LSTM
-        self.sent_vocab = sent_vocab  # inputs
         self.num_classes = num_classes  # labels
         self.dropout = nn.Dropout(dropout_rate)
 
@@ -43,8 +42,6 @@ class BiLSTMCRF(nn.Module):
         2. calls encode on them, which puts them through the BiLSTM
         3. calculates and returns the CRF loss
 
-        not sure what 'mask' is for
-
         Args:
             input_batch (tensor): sentences, shape (b, len, e). len is the (max?) number of segments
             labels (tensor): corresponding tags, shape (b, len)
@@ -52,8 +49,12 @@ class BiLSTMCRF(nn.Module):
         Returns:
             loss (tensor): loss on the batch, shape (b,)
         """
-        # cant figure out what the mask represents or what it is for
-        mask = (input_batch != self.sent_vocab[self.sent_vocab.PAD]).to(self.device)  # shape: (b, len)
+        # mask has the same size as input_batch
+        # it has True in every place where the word is not <PAD> and false where the word is <PAD>
+        # mask = (input_batch != self.sent_vocab[self.sent_vocab.PAD]).to(self.device)  # shape: (b, len)
+        # for now, let's have mask be an entire array of True
+        # later we can try removing mask entirely, since I don't think it is necessary
+        mask = torch.full(input_batch.shape, True, dtype=bool)
         input_batch = input_batch.transpose()  # shape: (len, b, e)
         emit_score = self.encode(input_batch, sen_lengths)  # shape: (b, len, K)
         loss = self.cal_loss(labels, mask, emit_score)  # shape: (b,)
@@ -86,7 +87,8 @@ class BiLSTMCRF(nn.Module):
 
         Args:
             tags (tensor): a batch of tags, shape (b, len)
-            mask (tensor): mask for the tags, shape (b, len), values in PAD position is 0
+            mask (tensor): mask for the tags, shape (b, len),
+                values in PAD position is 0, otherwise 1
             emit_score (tensor): emit matrix, shape (b, len, K)
         Returns:
             loss (tensor): loss of the batch, shape (b,)
@@ -129,7 +131,8 @@ class BiLSTMCRF(nn.Module):
             tags (list[list[str]]): predicted tags for the batch
         """
         batch_size = sentences.shape[0]
-        mask = (sentences != self.sent_vocab[self.sent_vocab.PAD])  # shape: (b, len)
+        # mask = (sentences != self.sent_vocab[self.sent_vocab.PAD])  # shape: (b, len)
+        mask = torch.full(sentences.shape, True, dtype=bool)
         sentences = sentences.transpose(0, 1)  # shape: (len, b)
         sentences = self.embedding(sentences)  # shape: (len, b, e)
         emit_score = self.encode(sentences, sen_lengths)  # shape: (b, len, K)
@@ -152,7 +155,6 @@ class BiLSTMCRF(nn.Module):
 
     def save(self, filepath):
         params = {
-            'sent_vocab': self.sent_vocab,
             'num_classes': self.num_classes,
             'args': dict(dropout_rate=self.dropout_rate, embed_size=self.embed_size, hidden_size=self.hidden_size),
             'state_dict': self.state_dict()

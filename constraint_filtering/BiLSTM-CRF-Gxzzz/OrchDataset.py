@@ -296,7 +296,7 @@ class OrchDataSet(data.Dataset):
         """
         i = 0
         for instrument in raw_database.db:
-            if instrument in self.instr_filter:
+            if instrument in GLOBAL_PARAMS.instr_filter:
                 self.class_indices[instrument] = {}
                 pitches = set()
                 for octave in raw_database.db[instrument]:
@@ -448,23 +448,23 @@ class HashTable:
 #############################################################
 
 
-print("Loading raw database...")
-with open("SAVED_RAW_DATABASE", 'rb') as pickle_file:
-    raw_db = pickle.load(pickle_file)
-print("Done.")
+# print("Loading raw database...")
+# with open("SAVED_RAW_DATABASE", 'rb') as pickle_file:
+#     raw_db = pickle.load(pickle_file)
+# print("Done.")
+#
+# print("Creating class_indices dict...")
+# GLOBAL_PARAMS.createClassIndices(raw_db)
+# print("Done.")
+#
+# num_classes = 0
+# for instrument in GLOBAL_PARAMS.class_indices.keys():
+#     num_classes += len(GLOBAL_PARAMS.class_indices[instrument])
+#
+# print("OrchDataset.py: Calculated {} classes".format(num_classes))
 
-print("Creating class_indices dict...")
-GLOBAL_PARAMS.createClassIndices(raw_db)
-print("Done.")
-
-num_classes = 0
-for instrument in GLOBAL_PARAMS.class_indices.keys():
-    num_classes += len(GLOBAL_PARAMS.class_indices[instrument])
-
-print("OrchDataset.py: Calculated {} classes".format(num_classes))
 
 
-
-orch_db = OrchDataSet(raw_db, 'mel')
+# orch_db = OrchDataSet(raw_db, 'mel')
 # orch_db.generate(GLOBAL_PARAMS.N)
 # orch_db.save("SAVED_ORCH_DATABASE")
