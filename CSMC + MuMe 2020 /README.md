@@ -2,6 +2,8 @@ This repository serves as the code base for the paper ["A Study on Neural Models
 
 **Visit our github.io page to listen to orchestrated examples**: https://dzluke.github.io/DeepOrchestration/
 
+Download the TinySOL database: https://zenodo.org/record/3685367#.X7V8thNKgWo
+
 ## train.py
 
 Used to train the model.
