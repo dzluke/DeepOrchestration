@@ -164,7 +164,7 @@ class OrchDataSet(data.Dataset):
             feature_type defines whether the features generated are mel spectrograms or mfcc.
             It must be either 'mel' or 'mfcc'.
         '''
-        
+
         # For data augmentation, a set of mel basis is generated, using slightly shifted
         # sample rates. This ensures frequency variation of the selected samples.
         self.mel_basis = librosa.filters.mel(GLOBAL_PARAMS.RATE, GLOBAL_PARAMS.N_FFT, n_mels=GLOBAL_PARAMS.N_MELS)
@@ -210,6 +210,7 @@ class OrchDataSet(data.Dataset):
         self.class_encoder = class_encoder
 
 
+
     
     def generate(self, N, nb_samples=None):
         '''
@@ -226,7 +227,7 @@ class OrchDataSet(data.Dataset):
         if not nb_samples is None:
             self.nb_samples = min(self.nb_samples,nb_samples)
         
-        self.list_instr = list(self.db.keys())
+        self.list_instr = GLOBAL_PARAMS.instr_filter
         self.list_sr = np.linspace((1-GLOBAL_PARAMS.coeff_freq_shift_data_augment)*GLOBAL_PARAMS.RATE, (1+GLOBAL_PARAMS.coeff_freq_shift_data_augment)*GLOBAL_PARAMS.RATE, 5)
         self.list_sr = [int(x) for x in self.list_sr]
         
@@ -362,9 +363,9 @@ class OrchDataSet(data.Dataset):
         if self.feature_type == 'mfcc':
             pow_db = librosa.power_to_db(mel_spec)
             mfcc = librosa.feature.mfcc(S=pow_db)
-            return torch.tensor(np.array([mfcc])), self.class_encoder(list_samp)
+            return torch.tensor(mfcc), self.class_encoder(list_samp)
         elif self.feature_type == 'mel':
-            return torch.tensor(np.array([mel_spec])), self.class_encoder(list_samp)
+            return torch.tensor(mel_spec), self.class_encoder(list_samp)
 
 
 class IndexIncrementor:

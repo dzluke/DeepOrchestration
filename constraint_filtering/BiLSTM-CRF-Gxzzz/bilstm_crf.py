@@ -6,12 +6,11 @@ import utils
 
 
 class BiLSTMCRF(nn.Module):
-    def __init__(self, num_classes, dropout_rate=0.5, embed_size=256, hidden_size=256):
+    def __init__(self, num_classes, feature_size, dropout_rate=0.5, hidden_size=256):
         """ Initialize the model
         Args:
-            sent_vocab (Vocab): vocabulary of words
             num_classes:
-            embed_size (int): embedding size (# of features per word)
+            feature_size (int): embedding size, # of features
             hidden_size (int): hidden state size
 
             len: how many discrete inputs come from the data point (number of words)
@@ -21,12 +20,12 @@ class BiLSTMCRF(nn.Module):
         """
         super(BiLSTMCRF, self).__init__()
         self.dropout_rate = dropout_rate
-        self.embed_size = embed_size
+        self.feature_size = feature_size
         self.hidden_size = hidden_size  # "the number of features in the hidden state" of the LSTM
         self.num_classes = num_classes  # labels
         self.dropout = nn.Dropout(dropout_rate)
 
-        self.LSTM = nn.LSTM(input_size=embed_size, hidden_size=hidden_size, bidirectional=True)
+        self.LSTM = nn.LSTM(input_size=feature_size, hidden_size=hidden_size, bidirectional=True)
 
         # a linear layer from hidden size * 2 to # of possible labels? or # of samples?
         # I think len(self.tag_vocab) = K, meaning K is the number of classes
@@ -36,7 +35,7 @@ class BiLSTMCRF(nn.Module):
         # CRF transition matrix, shape: (K, K)
         self.transition = nn.Parameter(torch.randn(self.num_classes, self.num_classes))
 
-    def forward(self, input_batch, labels, sen_lengths):
+    def forward(self, input_batch, labels):
         """
         1. takes in sentences, featurizes them (embeds them in feature space)
         2. calls encode on them, which puts them through the BiLSTM
@@ -54,13 +53,15 @@ class BiLSTMCRF(nn.Module):
         # mask = (input_batch != self.sent_vocab[self.sent_vocab.PAD]).to(self.device)  # shape: (b, len)
         # for now, let's have mask be an entire array of True
         # later we can try removing mask entirely, since I don't think it is necessary
+
+        # input shape (b, s, N_MELS, t)
         mask = torch.full(input_batch.shape, True, dtype=bool)
-        input_batch = input_batch.transpose()  # shape: (len, b, e)
-        emit_score = self.encode(input_batch, sen_lengths)  # shape: (b, len, K)
+        input_batch = input_batch.transpose(0, 1)  # shape: (len, b, e)
+        emit_score = self.encode(input_batch)  # shape: (b, len, K)
         loss = self.cal_loss(labels, mask, emit_score)  # shape: (b,)
         return loss
 
-    def encode(self, input_batch, sent_lengths):
+    def encode(self, input_batch):
         """ BiLSTM Encoder
 
         puts featurized sentences thru the BiLSTM
@@ -73,34 +74,36 @@ class BiLSTMCRF(nn.Module):
             emit_score (tensor): emit score, shape (b, len, K)
         """
         # I think we won't need to do any padding, so can probably remove sent_lengths param
-        padded_sentences = pack_padded_sequence(input_batch, sent_lengths)
-        hidden_states, _ = self.LSTM(padded_sentences)
-        hidden_states, _ = pad_packed_sequence(hidden_states, batch_first=True)  # shape: (b, len, 2h)
+        # padded_sentences = pack_padded_sequence(input_batch, sent_lengths)
+        hidden_states, _ = self.LSTM(input_batch)
+        # hidden_states, _ = pad_packed_sequence(hidden_states, batch_first=True)  # shape: (b, len, 2h)
         emit_score = self.hidden2emit_score(hidden_states)  # shape: (b, len, K)
         emit_score = self.dropout(emit_score)  # shape: (b, len, K)
         return emit_score
 
-    def cal_loss(self, tags, mask, emit_score):
+    def cal_loss(self, labels, mask, emit_score):
         """ Calculate CRF loss
 
         uses the CRF transition matrix
 
         Args:
-            tags (tensor): a batch of tags, shape (b, len)
+            labels (tensor): a batch of tags, shape (b, len)
             mask (tensor): mask for the tags, shape (b, len),
                 values in PAD position is 0, otherwise 1
             emit_score (tensor): emit matrix, shape (b, len, K)
         Returns:
             loss (tensor): loss of the batch, shape (b,)
         """
-        batch_size, max_len = tags.shape  # max_len is the length of the longest sentence
-        # calculate score for the tags
-        score = torch.gather(emit_score, dim=2, index=tags.unsqueeze(dim=2)).squeeze(dim=2)  # shape: (b, len)
-        score[:, 1:] += self.transition[tags[:, :-1], tags[:, 1:]]
+        batch_size, num_classes = labels.shape
+        # calculate score for the labels
+        index = labels.unsqueeze(dim=2).long()  # had to cast this from float to long in order for the next line to run
+        score = torch.gather(emit_score, dim=2, index=index)
+        score = score.squeeze(dim=2)  # shape: (b, len)
+        score[:, 1:] += self.transition[labels[:, :-1], labels[:, 1:]]
         total_score = (score * mask.type(torch.float)).sum(dim=1)  # shape: (b,)
         # calculate the scaling factor
         d = torch.unsqueeze(emit_score[:, 0], dim=1)  # shape: (b, 1, K)
-        for i in range(1, max_len):
+        for i in range(1, num_classes):
             n_unfinished = mask[:, i].sum()
             d_uf = d[: n_unfinished]  # shape: (uf, 1, K)
             emit_and_transition = emit_score[: n_unfinished, i].unsqueeze(dim=1) + self.transition  # shape: (uf, K, K)
@@ -156,7 +159,7 @@ class BiLSTMCRF(nn.Module):
     def save(self, filepath):
         params = {
             'num_classes': self.num_classes,
-            'args': dict(dropout_rate=self.dropout_rate, embed_size=self.embed_size, hidden_size=self.hidden_size),
+            'args': dict(dropout_rate=self.dropout_rate, feature_size=self.feature_size, hidden_size=self.hidden_size),
             'state_dict': self.state_dict()
         }
         torch.save(params, filepath)

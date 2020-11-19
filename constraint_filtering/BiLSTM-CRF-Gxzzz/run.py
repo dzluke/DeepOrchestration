@@ -1,7 +1,7 @@
 """
 Usage:
-    run.py train TRAIN SENT_VOCAB TAG_VOCAB [options]
-    run.py test TEST RESULT SENT_VOCAB TAG_VOCAB MODEL [options]
+    run.py train [options]
+    run.py test [options]
 
 Options:
     --dropout-rate=<float>              dropout rate [default: 0.5]
@@ -61,13 +61,15 @@ def train(args):
     num_test_samples = GLOBAL_PARAMS.nb_samples - num_training_samples
     test_data.generate(GLOBAL_PARAMS.N, num_test_samples)
 
-    train_data = torch.utils.data.DataLoader(dataset=train_data,
+    train_dataset = torch.utils.data.DataLoader(dataset=train_data,
                                              batch_size=GLOBAL_PARAMS.batch_size,
                                              shuffle=True)
 
-    test_data = torch.utils.data.DataLoader(dataset=test_data,
+    test_dataset = torch.utils.data.DataLoader(dataset=test_data,
                                             batch_size=GLOBAL_PARAMS.batch_size,
                                             shuffle=False)
+
+    feature_shape = train_data[0][0].shape
 
     max_epoch = int(args['--max-epoch'])
     log_every = int(args['--log-every'])
@@ -78,7 +80,7 @@ def train(args):
     device = torch.device('cuda' if args['--cuda'] else 'cpu')
     patience, decay_num = 0, 0
 
-    model = bilstm_crf.BiLSTMCRF(train_data.num_classes, float(args['--dropout-rate']), int(args['--embed-size']),
+    model = bilstm_crf.BiLSTMCRF(train_data.num_classes, feature_shape[1], float(args['--dropout-rate']),
                                  int(args['--hidden-size'])).to(device)
     for name, param in model.named_parameters():
         if 'weight' in name:
@@ -94,15 +96,17 @@ def train(args):
 
     print('start training...')
     for epoch in range(max_epoch):
-        for sentences, tags in utils.batch_iter(train_data, batch_size=int(args['--batch-size'])):
+        for i, (data, labels) in enumerate(train_dataset):
             train_iter += 1
-            current_batch_size = len(sentences)
-            sentences, sent_lengths = utils.pad(sentences, sent_vocab[sent_vocab.PAD], device)
-            tags, _ = utils.pad(tags, tag_vocab[tag_vocab.PAD], device)
+            current_batch_size = data.shape[0]
+            # sentences, sent_lengths = utils.pad(sentences, sent_vocab[sent_vocab.PAD], device)
+            # tags, _ = utils.pad(tags, tag_vocab[tag_vocab.PAD], device)
+            data.to(device)
+            labels.to(device)
 
             # back propagation
             optimizer.zero_grad()
-            batch_loss = model(sentences, tags, sent_lengths)  # shape: (b,)
+            batch_loss = model(data, labels)  # shape: (b,)
             loss = batch_loss.mean()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=float(args['--clip_max_norm']))
@@ -110,26 +114,26 @@ def train(args):
 
             record_loss_sum += batch_loss.sum().item()
             record_batch_size += current_batch_size
-            record_tgt_word_sum += sum(sent_lengths)
+            # record_tgt_word_sum += sum(sent_lengths)
 
             cum_loss_sum += batch_loss.sum().item()
             cum_batch_size += current_batch_size
-            cum_tgt_word_sum += sum(sent_lengths)
+            # cum_tgt_word_sum += sum(sent_lengths)
 
             if train_iter % log_every == 0:
-                print('log: epoch %d, iter %d, %.1f words/sec, avg_loss %f, time %.1f sec' %
-                      (epoch + 1, train_iter, record_tgt_word_sum / (time.time() - record_start),
+                print('log: epoch %d, iter %d, %.1f data/sec, avg_loss %f, time %.1f sec' %
+                      (epoch + 1, train_iter, record_batch_size / (time.time() - record_start),
                        record_loss_sum / record_batch_size, time.time() - record_start))
-                record_loss_sum, record_batch_size, record_tgt_word_sum = 0, 0, 0
+                record_loss_sum, record_batch_size = 0, 0
                 record_start = time.time()
 
             if train_iter % validation_every == 0:
-                print('dev: epoch %d, iter %d, %.1f words/sec, avg_loss %f, time %.1f sec' %
-                      (epoch + 1, train_iter, cum_tgt_word_sum / (time.time() - cum_start),
+                print('dev: epoch %d, iter %d, %.1f data/sec, avg_loss %f, time %.1f sec' %
+                      (epoch + 1, train_iter, cum_batch_size / (time.time() - cum_start),
                        cum_loss_sum / cum_batch_size, time.time() - cum_start))
-                cum_loss_sum, cum_batch_size, cum_tgt_word_sum = 0, 0, 0
+                cum_loss_sum, cum_batch_size = 0, 0
 
-                dev_loss = cal_dev_loss(model, dev_data, 64, sent_vocab, tag_vocab, device)
+                dev_loss = cal_dev_loss(model, test_dataset, GLOBAL_PARAMS.batch_size, device)
                 if dev_loss < min_dev_loss * float(args['--patience-threshold']):
                     min_dev_loss = dev_loss
                     model.save(model_save_path)
@@ -188,7 +192,7 @@ def test(args):
                 result_file.write('\n')
 
 
-def cal_dev_loss(model, dev_data, batch_size, sent_vocab, tag_vocab, device):
+def cal_dev_loss(model, test_dataset, batch_size, device):
     """ Calculate loss on the development data
     Args:
         model: the model being trained
@@ -202,38 +206,34 @@ def cal_dev_loss(model, dev_data, batch_size, sent_vocab, tag_vocab, device):
     """
     is_training = model.training
     model.eval()
-    loss, n_sentences = 0, 0
+    loss, num_data_points = 0, 0
     with torch.no_grad():
-        for sentences, tags in utils.batch_iter(dev_data, batch_size, shuffle=False):
-            sentences, sent_lengths = utils.pad(sentences, sent_vocab[sent_vocab.PAD], device)
-            tags, _ = utils.pad(tags, tag_vocab[sent_vocab.PAD], device)
-            batch_loss = model(sentences, tags, sent_lengths)  # shape: (b,)
+        for i, (data, labels) in enumerate(test_dataset):
+            # sentences, sent_lengths = utils.pad(sentences, sent_vocab[sent_vocab.PAD], device)
+            # tags, _ = utils.pad(tags, tag_vocab[sent_vocab.PAD], device)
+            data.to(device)
+            labels.to(device)
+            batch_loss = model(data, labels)  # shape: (b,)
             loss += batch_loss.sum().item()
-            n_sentences += len(sentences)
+            num_data_points += batch_size
     model.train(is_training)
-    return loss / n_sentences
+    return loss / num_data_points
 
-def class_encoder(list_samp):
-    label = [0 for _ in range(num_classes)]
-    for sample in list_samp:
-        index = GLOBAL_PARAMS.class_indices[sample['instrument']][sample['pitch_name']]
-        label[index] = 1
-    return np.array(label).astype(np.float32)
 
 def main():
-    # args = docopt(__doc__)
-    # random.seed(0)
-    # torch.manual_seed(0)
-    # if args['--cuda']:
-    #     torch.cuda.manual_seed(0)
-    # if args['train']:
-    #     train(args)
-    # elif args['test']:
-    #     test(args)
-    args = {}
-    args['train'] = True
-    args['--max-epoch'] = 5
-    train({'train': True})
+    args = docopt(__doc__)
+    random.seed(0)
+    torch.manual_seed(0)
+    if args['--cuda']:
+        torch.cuda.manual_seed(0)
+    if args['train']:
+        train(args)
+    elif args['test']:
+        test(args)
+    # args = {}
+    # args['train'] = True
+    # args['--max-epoch'] = 5
+    # train({'train': True})
 
 
 if __name__ == '__main__':
