@@ -133,7 +133,7 @@ def prob_to_dynamic(probs):
             dynamics.append('pp')
     return dynamics    
 
-# given a list of indices, return the corresponding [instrument, pitch] in lab_class
+# given a list of indices, return the corresponding [instrument, pitch] in sample2index
 def get_classes(indices):
     classes = [None for i in indices]
     for instrument, pitch_dict in lab_class.items():
@@ -297,7 +297,7 @@ if __name__ == "__main__":
         else:
             state_path = './orchestrated_targets/new_models/ResNet_epoch19.pth'
 
-        lab_class = GLOBAL_PARAMS.lab_class
+        lab_class = GLOBAL_PARAMS.sample2index
 
         # calculate num classes
         num_classes = 0

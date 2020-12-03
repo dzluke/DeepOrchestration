@@ -183,12 +183,12 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
             # outputs is a vector of probabilities
             outputs = model(trains)
 
-            fake_constraints = torch.ones_like(outputs)
+            constraints = calculateConstraint(labels)
 
             if loss_min is None:
-                loss_min = float(criterion(labels, fake_constraints))
+                loss_min = float(criterion(labels, constraints))
 
-            loss = criterion(outputs, fake_constraints)
+            loss = criterion(outputs, constraints)
 
             ds.save(outputs.cpu().detach().numpy(), labels.cpu().detach().numpy(), float(loss), loss_min, epoch, i)
 
@@ -355,8 +355,30 @@ def getAccuracyLoadedModel(model_dir, epoch, raw_db = None, tst = True):
                 print("Test set {}/{}".format(k, len(dataset_load)))
 
 
-#rdb = RawDatabase(path, rdm_granularity, instr_filter)
-#test('./model/nb_pitch_range_1/epoch_19.pth', rdb, 12)
+def calculateConstraint(labels):
+    """
+    takes in a single label, not a batch
+    harmonic constraints: include sample if exact note is present in training data
+    :param labels: shape (num_labels,)
+    :return: tensor shape (batch size, num features) with binary values
+    """
+    constraints = torch.zeros_like(labels)
+    for i in range(labels.shape[0]):
+        label = labels[i]
+        pitches_to_include = set()  # list of pitches allowed in the orchestration
+        indices = label.nonzero(as_tuple=True)[0]
+        for index in indices.tolist():
+            instr, pitch = GLOBAL_PARAMS.index2sample[index]
+            pitches_to_include.add(pitch)
+        # this part might be slow
+        for instr, pitches in GLOBAL_PARAMS.sample2index.items():
+            for pitch in pitches_to_include:
+                if pitch in pitches:
+                    index = GLOBAL_PARAMS.sample2index[instr][pitch]
+                    constraints[i][index] = 1.0
+    return constraints
+
+
 
 
 if __name__ == '__main__':
@@ -391,25 +413,24 @@ if __name__ == '__main__':
         rdb = pickle.load(f)
     print("Database loaded")
     
-    GLOBAL_PARAMS.lab_class = {}
+    GLOBAL_PARAMS.sample2index = {}
     tot_size = 0
-    for i in rdb.db:
-        GLOBAL_PARAMS.lab_class[i] = {}
-        a = set()
-        for k in rdb.db[i]:
-            for j in k:
-                a.add(j['pitch_name'])
-        for x in a:
-            GLOBAL_PARAMS.lab_class[i][x] = tot_size
-            tot_size += 1
-        
-    
-    #tot_size = sum(len(GLOBAL_PARAMS.lab_class[k]) for k in GLOBAL_PARAMS.lab_class)
-        
+    for instr in rdb.db:
+        if instr in GLOBAL_PARAMS.instr_filter:
+            GLOBAL_PARAMS.sample2index[instr] = {}
+            pitches = set()
+            for k in rdb.db[instr]:
+                for j in k:
+                    pitches.add(j['pitch_name'])
+            for pitch in pitches:
+                GLOBAL_PARAMS.sample2index[instr][pitch] = tot_size
+                GLOBAL_PARAMS.index2sample.append((instr, pitch))
+                tot_size += 1
+
     def class_encoder(list_samp):
         label = [0 for i in range(tot_size)]
         for s in list_samp:
-            label[GLOBAL_PARAMS.lab_class[s['instrument']][s['pitch_name']]] = 1
+            label[GLOBAL_PARAMS.sample2index[s['instrument']][s['pitch_name']]] = 1
         return np.array(label).astype(np.float32)
     
     def evaluate(preds, labels):
@@ -420,8 +441,8 @@ if __name__ == '__main__':
     
         result['acc'] = np.sum(preds*labels)/max(1.0, np.sum(labels))
         pitch_acc = {}
-        for i in GLOBAL_PARAMS.lab_class:
-            l = [GLOBAL_PARAMS.lab_class[i][x] for x in GLOBAL_PARAMS.lab_class[i]]
+        for i in GLOBAL_PARAMS.sample2index:
+            l = [GLOBAL_PARAMS.sample2index[i][x] for x in GLOBAL_PARAMS.sample2index[i]]
             f = np.zeros(preds.shape, dtype = np.float32)
             f[:,min(l):max(l)+1] = 1.0
             f = labels*f

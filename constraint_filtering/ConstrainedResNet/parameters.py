@@ -11,10 +11,10 @@ class SimParams:
         self.FEATURE_TYPE = 'mel'
         
         self.N = 2
-        self.nb_samples = 40000
+        self.nb_samples = 4000
         self.rdm_granularity = 10
         self.nb_pitch_range = 8
-        self.instr_filter = ['Hn','Ob','Vn','Va', 'Vc', 'Fl', 'Tbn', 'Bn', 'TpC', 'ClBb'][:10]
+        self.instr_filter = ['Hn', 'Ob', 'Vn', 'Va', 'Vc', 'Fl', 'Tbn', 'Bn', 'TpC', 'ClBb'][:10]
         self.batch_size = 16
         self.model_type = 'resnet'
         self.nb_epoch = 2
@@ -27,8 +27,13 @@ class SimParams:
         self.prop_zero_row = 0.01
         self.prop_zero_col = 0.01
         self.noise_kernel_var = 0.0001
-        
-        self.lab_class = {} # Contains the labels
+
+        # nested dictionary, usage: sample2index[instrument][pitch] = index in label vector
+        self.sample2index = {}
+        # index i in index2sample gives a tuple (instr, pitch) that corresponds
+        # to the sample in index i in the label vector
+        # this is used to create constraints
+        self.index2sample = []
         
     def load_parameters(self, path):
         f = open(path + '/params.pkl', 'rb')

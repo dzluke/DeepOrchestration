@@ -174,7 +174,6 @@ class OrchDataSet(data.Dataset):
         if not nb_samples is None:
             self.nb_samples = min(self.nb_samples,nb_samples)
         
-        self.list_instr = list(self.db.keys())
         self.list_sr = np.linspace((1-GLOBAL_PARAMS.coeff_freq_shift_data_augment)*GLOBAL_PARAMS.RATE, (1+GLOBAL_PARAMS.coeff_freq_shift_data_augment)*GLOBAL_PARAMS.RATE, 5)
         self.list_sr = [int(x) for x in self.list_sr]
         
@@ -210,7 +209,7 @@ class OrchDataSet(data.Dataset):
         # but avoid more than three times)
         comb = []
         while len(comb) < self.N:
-            selected_instr = self.list_instr[random.randint(0, len(self.list_instr)-1)]
+            selected_instr = GLOBAL_PARAMS.instr_filter[random.randint(0, len(GLOBAL_PARAMS.instr_filter)-1)]
             if comb.count(selected_instr) < 3:
                 comb.append(selected_instr)
         

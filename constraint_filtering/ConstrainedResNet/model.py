@@ -129,18 +129,21 @@ class SemanticLoss(nn.Module):
     def forward(self, probs, constraints):
         """
 
-        :param probs:
-        :param constraints: binary 0/1 vector
+        :param probs: shape (batch size, num classes)
+        :param constraints: binary 0/1 vector shape (batch size, num classes)
         :return: loss (scalar)
         """
-        literals = torch.mul(probs, constraints)
-        inverse_constraints = torch.logical_not(constraints)
-        negated_literals = torch.mul(probs, inverse_constraints)
-        negated_literals = torch.sub(torch.ones(negated_literals.shape), negated_literals)
-        loss = torch.mul(torch.prod(literals, dim=1, dtype=float), torch.prod(negated_literals, dim=1, dtype=float))
-        loss = -1 * torch.log(loss)
-        loss = torch.mean(loss)
-        return loss
+        mask = constraints == 1
+        literals = probs[mask]  # samples we want to include
+        inverse_mask = torch.logical_not(constraints)
+        negated_literals = probs[inverse_mask]  # samples we don't want
+        negated_literals = torch.sub(torch.ones(negated_literals.shape), negated_literals)  # (1 - p)
+        literals = torch.sum(torch.log(literals))  # log(xy) = log(x) + log(y)
+        negated_literals = torch.sum(torch.log(negated_literals))
+        loss = torch.add(literals, negated_literals)  # p + (1 - p)
+        loss = torch.mul(loss, torch.full(loss.shape, -1))
+        loss = torch.div(loss, torch.full_like(loss, probs.shape[0]))  # average by diving by batch size
+        return loss  # scalar
 
 
 
