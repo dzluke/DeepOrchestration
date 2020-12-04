@@ -14,7 +14,7 @@ import librosa.display
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-from model import OrchMatchNet, SemanticLoss
+from model import OrchMatchNet, CustomLoss
 from parameters import GLOBAL_PARAMS
 from OrchDataset import OrchDataSet,RawDatabase
 
@@ -151,8 +151,7 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = model.to(device)
 
-    # criterion = nn.BCELoss()
-    criterion = SemanticLoss()
+    criterion = CustomLoss(0.001)
     sig = F.sigmoid
 
     best_acc = 0
@@ -183,12 +182,13 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
             # outputs is a vector of probabilities
             outputs = model(trains)
 
+            # TODO: Change constraints to be a result of analysis of the harmonic peaks
             constraints = calculateConstraint(labels)
 
             if loss_min is None:
-                loss_min = float(criterion(labels, constraints))
+                loss_min = float(criterion(labels, labels, constraints))
 
-            loss = criterion(outputs, constraints)
+            loss = criterion(outputs, labels, constraints)
 
             ds.save(outputs.cpu().detach().numpy(), labels.cpu().detach().numpy(), float(loss), loss_min, epoch, i)
 

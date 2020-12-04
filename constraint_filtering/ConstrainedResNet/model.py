@@ -129,21 +129,37 @@ class SemanticLoss(nn.Module):
     def forward(self, probs, constraints):
         """
 
-        :param probs: shape (batch size, num classes)
-        :param constraints: binary 0/1 vector shape (batch size, num classes)
+        :param probs: output of network. has shape (batch size, num classes)
+        :param constraints: binary 0/1 vector. has shape (batch size, num classes)
         :return: loss (scalar)
         """
         mask = constraints == 1
-        literals = probs[mask]  # samples we want to include
         inverse_mask = torch.logical_not(constraints)
-        negated_literals = probs[inverse_mask]  # samples we don't want
+        literals = probs[mask]  # probs of samples we want to include
+        negated_literals = probs[inverse_mask]  # probs of samples we don't want
         negated_literals = torch.sub(torch.ones(negated_literals.shape), negated_literals)  # (1 - p)
         literals = torch.sum(torch.log(literals))  # log(xy) = log(x) + log(y)
         negated_literals = torch.sum(torch.log(negated_literals))
         loss = torch.add(literals, negated_literals)  # p + (1 - p)
         loss = torch.mul(loss, torch.full(loss.shape, -1))
-        loss = torch.div(loss, torch.full_like(loss, probs.shape[0]))  # average by diving by batch size
+        loss = torch.div(loss, torch.full(loss.shape, probs.shape[0]))  # average by diving by batch size
         return loss  # scalar
 
 
+class CustomLoss(nn.Module):
+    """
+    A loss function that is a sum of Binary Cross Entropy Loss and Semantic Loss
+    CustomLoss = BCELoss + w * SemanticLoss
+    """
+    def __init__(self, semantic_weight):
+        super(CustomLoss, self).__init__()
+        self.semantic_weight = semantic_weight
+        self.BCELoss = nn.BCELoss()
+        self.SemanticLoss = SemanticLoss()
+
+    def forward(self, probs, labels, constraints):
+        bce_loss = self.BCELoss(probs, labels)
+        semantic_loss = self.SemanticLoss(probs, constraints)
+        semantic_loss = self.semantic_weight * semantic_loss
+        return bce_loss + semantic_loss
 

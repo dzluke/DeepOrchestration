@@ -14,9 +14,6 @@ import hashlib
 
 from parameters import GLOBAL_PARAMS
 
-def showSample(s):
-    print(s[1])
-    librosa.display.specshow(s[0], x_axis='time',y_axis='mel',sr=44100)
 
 class IndexIncrementor:
     '''
@@ -67,7 +64,8 @@ class IndexIncrementor:
     
     def isOver(self):
         return self.count >= self.max_count
-            
+
+
 class HashTable:
     def __init__(self, max_depth, depth=0):
         self.depth = depth
@@ -90,7 +88,6 @@ class HashTable:
             return self.data.append(h)
         else:
             return self.data[h[self.depth]].add(h)
-        
 
 
 class RawDatabase:
@@ -291,4 +288,4 @@ class OrchDataSet(data.Dataset):
             mfcc = librosa.feature.mfcc(S=pow_db)
             return torch.tensor(np.array([mfcc])), self.class_encoder(list_samp)
         elif self.feature_type == 'mel':
-            return torch.tensor(np.array([mel_spec])), self.class_encoder(list_samp)
+            return torch.tensor([mel_spec]), self.class_encoder(list_samp)
