@@ -136,10 +136,12 @@ class SemanticLoss(nn.Module):
         mask = constraints == 1
         inverse_mask = torch.logical_not(constraints)
         literals = probs[mask]  # probs of samples we want to include
+        num_literals = literals.shape[0]
         negated_literals = probs[inverse_mask]  # probs of samples we don't want
         negated_literals = torch.sub(torch.ones(negated_literals.shape), negated_literals)  # (1 - p)
         literals = torch.sum(torch.log(literals))  # log(xy) = log(x) + log(y)
         negated_literals = torch.sum(torch.log(negated_literals))
+        negated_literals = torch.mul(negated_literals, num_literals)  # log(x^y) = y*log(x)
         loss = torch.add(literals, negated_literals)  # p + (1 - p)
         loss = torch.mul(loss, torch.full(loss.shape, -1))
         loss = torch.div(loss, torch.full(loss.shape, probs.shape[0]))  # average by diving by batch size
@@ -157,9 +159,15 @@ class CustomLoss(nn.Module):
         self.BCELoss = nn.BCELoss()
         self.SemanticLoss = SemanticLoss()
 
+        self.bce_loss_list = []
+        self.semantic_loss_list = []
+
     def forward(self, probs, labels, constraints):
         bce_loss = self.BCELoss(probs, labels)
         semantic_loss = self.SemanticLoss(probs, constraints)
         semantic_loss = self.semantic_weight * semantic_loss
+        # print("------------------------")
+        # print("BCE Loss: {:.3f}, Semantic Loss: {:.3f}".format(bce_loss, semantic_loss))
+        self.bce_loss_list.append(bce_loss)
+        self.semantic_loss_list.append(semantic_loss)
         return bce_loss + semantic_loss
-
