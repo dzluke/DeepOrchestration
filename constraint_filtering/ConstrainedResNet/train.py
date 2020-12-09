@@ -202,6 +202,8 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
                     epoch + 1, GLOBAL_PARAMS.nb_epoch, i+1, size_train_load, out_num*total_loss/50))
                 total_loss = 0
 
+        graph_loss(criterion.bce_loss_list, criterion.semantic_loss_list, epoch + 1, criterion.semantic_weight)
+
         if (epoch+1) % 5 == 0:
             model.eval()
 
@@ -378,6 +380,14 @@ def calculateConstraint(labels):
                     constraints[i][index] = 1.0
     return constraints
 
+
+def graph_loss(bce_loss_list, semantic_loss_list, epoch, semantic_weight):
+    plt.title("Loss after {} epochs; {} samples per epoch; semantic weight = {}"
+              .format(epoch, GLOBAL_PARAMS.nb_samples, semantic_weight))
+    plt.plot(bce_loss_list[1:], label="BCE Loss")
+    plt.plot(semantic_loss_list[1:], label="Semantic Loss")
+    plt.legend()
+    plt.show()
 
 
 
