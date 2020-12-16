@@ -11,10 +11,10 @@ class SimParams:
         self.FEATURE_TYPE = 'mel'
         
         self.N = 2
-        self.nb_samples = 4000
+        self.nb_samples = 500
         self.rdm_granularity = 10
         self.nb_pitch_range = 8
-        self.instr_filter = ['Hn', 'Ob', 'Vn', 'Va', 'Vc', 'Fl', 'Tbn', 'Bn', 'TpC', 'ClBb'][:10]
+        self.instr_filter = ['Hn', 'Ob', 'Vn', 'Va', 'Vc', 'Fl', 'Tbn', 'Bn', 'TpC', 'ClBb'][:self.N]
         self.batch_size = 16
         self.model_type = 'resnet'
         self.nb_epoch = 2
@@ -34,6 +34,8 @@ class SimParams:
         # to the sample in index i in the label vector
         # this is used to create constraints
         self.index2sample = []
+
+        self.harmonic_threshold = 5e-7
         
     def load_parameters(self, path):
         f = open(path + '/params.pkl', 'rb')

@@ -264,12 +264,17 @@ class OrchDataSet(data.Dataset):
                 - If 'mfcc' is selected, compute the mfcc and return it
         '''
         stft = None
-        list_samp = []
+        sample_metadata_list = []
+        sample_length = int(GLOBAL_PARAMS.TIME_LENGTH*GLOBAL_PARAMS.RATE)
+        audio_combination = np.zeros(sample_length)  # sum of audio signals, used to calculate constraints
         sample_list_to_combine = self.data[idx]
         
         for i in sample_list_to_combine:
             samp = self.db[i[0]][i[1]][i[2]]
-            list_samp.append(samp)
+            sample_metadata_list.append(samp)
+            audio, _ = librosa.load(samp['path'], sr=None)
+            audio = librosa.util.fix_length(audio, sample_length)
+            audio_combination += audio
             if stft is None:
                 stft = np.copy(samp['stft'][i[3]])
             else:
@@ -282,10 +287,10 @@ class OrchDataSet(data.Dataset):
         zero_col = np.random.rand(mel_spec.shape[1]) < GLOBAL_PARAMS.prop_zero_col
         mel_spec[zero_row] = 0.
         mel_spec[:,zero_col] = 0.
-        
+
         if self.feature_type == 'mfcc':
             pow_db = librosa.power_to_db(mel_spec)
             mfcc = librosa.feature.mfcc(S=pow_db)
-            return torch.tensor(np.array([mfcc])), self.class_encoder(list_samp)
+            return torch.tensor(np.array([mfcc])), self.class_encoder(sample_metadata_list)
         elif self.feature_type == 'mel':
-            return torch.tensor([mel_spec]), self.class_encoder(list_samp)
+            return torch.tensor([mel_spec]), self.class_encoder(sample_metadata_list), audio_combination

@@ -70,6 +70,7 @@ def generateDBLabels(path, nb_pitch_range = 1, instr_filter=None):
         Note that if the global paramaters MEL_HOP_LENGTH, N_FFT or TIME_LENGTH are modified,
         this function needs to be called again
     '''
+    # TODO: replace recursiveSearch with librosa.util.find_files()
     samples = recursiveSearch(path)
     # we sort the sample list so that the ordering of the samples is the same on every machine.
     # otherwise, the indices in the labels could correspond to different samples

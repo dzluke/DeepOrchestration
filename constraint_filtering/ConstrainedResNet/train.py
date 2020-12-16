@@ -11,6 +11,8 @@ import pickle
 import os
 from functools import reduce
 import librosa.display
+
+# remove matplotlib imports once no longer plotting loss
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
@@ -144,10 +146,10 @@ def main(resume_model, rdb = None):
 
     # train model
     train(model, save_path, optimizer, train_load, test_load, start_epoch, out_num)
-    
+
+
 def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_num):
     print("Starting training")
-    # model = torch.nn.DataParallel(model)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = model.to(device)
 
@@ -166,12 +168,27 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
     loss_min = None
         
     ds = DataSaver(save_path + '/outputs.npy')
+
+    # real time loss plot
+    # fig = plt.figure()
+    # ax = fig.add_subplot(1, 1, 1)
+
+    # def graph_loss(frame, criterion):
+    #     plt.title("Loss; {} samples per epoch; semantic weight = {}"
+    #               .format(GLOBAL_PARAMS.nb_samples, criterion.semantic_weight))
+    #     ax.plot(criterion.bce_loss_list, label="BCE Loss")
+    #     ax.plot(criterion.semantic_loss_list, label="Semantic Loss")
+    #     plt.legend()
+    #     plt.show()
+    #
+    # animate = FuncAnimation(fig, graph_loss, fargs=(criterion), interval=10000)
+    # plt.show()
     
     for epoch in range(start_epoch, GLOBAL_PARAMS.nb_epoch):
         print("Epoch {}".format(epoch))
         model.train()
         
-        for i, (trains, labels) in enumerate(train_load):
+        for i, (trains, labels, audio_combos) in enumerate(train_load):
             print("Step {}".format(i))
             timer.stop()
             timer.estimate(size_train_load*(GLOBAL_PARAMS.nb_epoch-epoch-1) + (size_train_load-i-1))
@@ -183,7 +200,7 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
             outputs = model(trains)
 
             # TODO: Change constraints to be a result of analysis of the harmonic peaks
-            constraints = calculateConstraint(labels)
+            constraints = calculateConstraint(audio_combos, labels)
 
             if loss_min is None:
                 loss_min = float(criterion(labels, labels, constraints))
@@ -202,7 +219,7 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
                     epoch + 1, GLOBAL_PARAMS.nb_epoch, i+1, size_train_load, out_num*total_loss/50))
                 total_loss = 0
 
-        graph_loss(criterion.bce_loss_list, criterion.semantic_loss_list, epoch + 1, criterion.semantic_weight)
+        # graph_loss(criterion.bce_loss_list, criterion.semantic_loss_list, epoch + 1, criterion.semantic_weight)
 
         if (epoch+1) % 5 == 0:
             model.eval()
@@ -357,22 +374,21 @@ def getAccuracyLoadedModel(model_dir, epoch, raw_db = None, tst = True):
                 print("Test set {}/{}".format(k, len(dataset_load)))
 
 
-def calculateConstraint(labels):
+def calculateConstraint(audio_combos, labels):
     """
-    takes in a single label, not a batch
     harmonic constraints: include sample if exact note is present in training data
-    :param labels: shape (num_labels,)
+    :param audio_combos: shape (batch_size, GLOBAL_PARAMS.TIME_LENGTH * GLOBAL_PARAMS.RATE)
     :return: tensor shape (batch size, num features) with binary values
     """
     constraints = torch.zeros_like(labels)
     for i in range(labels.shape[0]):
+        audio = audio_combos[i]
         label = labels[i]
-        pitches_to_include = set()  # list of pitches allowed in the orchestration
-        indices = label.nonzero(as_tuple=True)[0]
-        for index in indices.tolist():
-            instr, pitch = GLOBAL_PARAMS.index2sample[index]
-            pitches_to_include.add(pitch)
+        # list of pitches allowed in the orchestration
+        pitches_to_include = get_harmonic_peaks(audio, GLOBAL_PARAMS.harmonic_threshold)
         # this part might be slow
+        # it may be faster to create a list of tuples (instr, pitch) then iterate
+        # thru this list and get the indices
         for instr, pitches in GLOBAL_PARAMS.sample2index.items():
             for pitch in pitches_to_include:
                 if pitch in pitches:
@@ -381,14 +397,40 @@ def calculateConstraint(labels):
     return constraints
 
 
-def graph_loss(bce_loss_list, semantic_loss_list, epoch, semantic_weight):
-    plt.title("Loss after {} epochs; {} samples per epoch; semantic weight = {}"
-              .format(epoch, GLOBAL_PARAMS.nb_samples, semantic_weight))
-    plt.plot(bce_loss_list[1:], label="BCE Loss")
-    plt.plot(semantic_loss_list[1:], label="Semantic Loss")
-    plt.legend()
-    plt.show()
+def get_harmonic_peaks(audio, thresh):
+    """
+    TODO: do we want to use librosa.util.peak_pick()?
+    returns a list of pitches that correspond to the harmonic peaks whose magnitude
+    is greater than 'thresh' in 'audio'
+    :param audio: audio signal of shape (len,). output of librosa.load()
+    :param thresh: scalar. peaks with magnitudes larger than this will be selected
+    :return: a set of pitches (with octaves)
+    """
+    nyquist = GLOBAL_PARAMS.RATE / 2
+    n = next_power_of_2(audio.size)
+    fft = np.abs(np.fft.rfft(audio, n))
+    fft /= (np.max(fft) * n)  # normalize
 
+    peaks = []  # peaks as indices
+    if fft[0] > fft[1] and fft[0] > thresh:
+        peaks.append(0)
+
+    for i in range(1, fft.size - 1):
+        curr = fft[i]
+        prev = fft[i - 1]
+        next = fft[i + 1]
+
+        if curr > prev and curr > next and curr > thresh:
+            peaks.append(i)
+
+    # peaks as frequencies
+    frequency_peaks = [(nyquist / n) * i for i in peaks]
+    notes = set(librosa.hz_to_note(frequency_peaks, octave=True))
+    return notes
+
+
+def next_power_of_2(x):
+    return 1 if x == 0 else 2**(x - 1).bit_length()
 
 
 if __name__ == '__main__':
