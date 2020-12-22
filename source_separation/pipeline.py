@@ -1,9 +1,12 @@
 import random
 import subprocess
 import numpy as np
+import soundfile as sf
+import librosa
 
 TARGETS_PATH = ""
 CONFIG_PATH = "orch_config.txt"
+SAMPLING_RATE = 44100
 
 targets = None  # TODO
 
@@ -37,17 +40,18 @@ def set_config_parameter(config_file_path, parameter, value):
         config_file.write('\n')
 
 
-def orchestrate(target_path, config_file_path):
+def orchestrate(target, config_file_path):
     """
-    Orchestrate the audio at 'target_path' given the parameters defined in 'config_file_path'
-    :param target_path: path to the .wav to be orchestrated
+    Orchestrate 'target' given the parameters defined in 'config_file_path'
+    :param target: sound file as numpy array, shape (len,)
     :param config_file_path: path to Orchidea config text file
-    :return: None
+    :return: orchestrated solution as numpy array, shape (len,)
     """
-    cmd = ["./orchestrate", target_path, config_file_path]
+    sf.write('target.wav', target, samplerate=SAMPLING_RATE)
+    cmd = ["./orchestrate", target, config_file_path]
     subprocess.run(cmd, stdout=subprocess.DEVNULL)  # this suppresses output
-    # TODO: will need to rename output file here so it isn't overwritten after every loop
-    # could rename with 'mv name new_name' passed to os.system()
+    solution = librosa.load('connection.wav', sr=None)
+    return solution
 
 
 def assign_orchestras(num_orchestras):
@@ -124,15 +128,14 @@ if __name__ == "__main__":
         set_config_parameter(CONFIG_PATH, 'orchestra', full_orchestra)
         for onset_threshold in thresholds:
             set_config_parameter(CONFIG_PATH, 'onsets_threshold', onset_threshold)
-            orchestrate(target, CONFIG_PATH)
-            # TODO: load orchestrated solution and compute distance
-            full_target_error += spectral_distance()
+            solution = orchestrate(target, CONFIG_PATH)
+            full_target_error += spectral_distance(target, solution)
         full_target_error /= len(thresholds)  # average of distances
 
         # separate target into subtargets using different separator functions
 
         # nested list; len(subtargets) = num_subtargets and len(subtargets[i]) = # of separation functions
-        # all_subtargets[i][k] is the ith subtarget separated via separation algorithm k
+        # all_subtargets[i][j] is the ith subtarget separated via separation algorithm j
         all_subtargets = [[] for _ in range(num_subtargets)]
         for separator in separation_functions:
             subtargets = separator(target, num_subtargets)
@@ -140,10 +143,20 @@ if __name__ == "__main__":
                 all_subtargets[i].append(subtargets[i])
 
         # orchestrate subtargets with different segmentation thresholds
-        orchestrated_subtargets =
-        for subtargets in all_subtargets:
-            for subtarget in subtargets:
-
+        orchestras = assign_orchestras(num_subtargets)
+        # orchestrated_subtargets[i][j][k] is the ith subtarget, separated with algorithm j, orchestrated with threshold k
+        orchestrated_subtargets = [[[] for _ in range(len(separation_functions))] for _ in range (num_subtargets) ]
+        for i in range(len(all_subtargets)):
+            subtargets = all_subtargets[i]
+            for j in range(len(subtargets)):
+                subtarget = subtargets[j]
+                orchestra = orchestras[j]
+                set_config_parameter(CONFIG_PATH, 'orchestra', orchestra)
+                for threshold in threshold:
+                    # orchestrate with threshold
+                    set_config_parameter(CONFIG_PATH, 'onsets_threshold', threshold)
+                    solution = orchestrate(subtarget, CONFIG_PATH)
+                    orchestrated_subtargets[i][j].append(solution)
 
         # create all possible combinations of orchestrated subtargets
 
