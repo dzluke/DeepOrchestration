@@ -133,11 +133,7 @@ def create_combinations(samples):
     :param samples: nested list
     :return: list of combinations
     """
-    assert len(samples) > 1
-    combinations = [()]
-    for lst in samples:
-        combinations = itertools.product(combinations, lst)
-        combinations = [list(x[0]) + [x[1]] for x in combinations]
+    combinations = itertools.product(*samples)
     combinations = map(combine, combinations)
     return combinations
 
