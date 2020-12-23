@@ -1,5 +1,6 @@
 import random
 import subprocess
+import itertools
 import numpy as np
 import soundfile as sf
 import librosa
@@ -18,6 +19,7 @@ full_orchestra = ['Bn', 'ClBb', 'Fl', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc', 'Vn'
 # the first parameter is audio as a numpy array (the output of librosa.load)
 # the second parameter is the number of subtargets to separate the target into
 separation_functions = []
+num_separation_functions = len(separation_functions)
 
 thresholds = []  # onset thresholds for dynamic orchestration
 
@@ -120,6 +122,41 @@ def next_power_of_2(x):
     return 1 if x == 0 else 2**(x - 1).bit_length()
 
 
+def create_combinations(samples):
+    """
+    given a nested list of samples, create combinations.
+    example:
+        samples = [[s1, s2], [s3, s4]], where s1 through s4 are different samples
+        creates combinations [s1, s3], [s1, s4], [s2, s3], [s2, s4]
+        then it combines every list to be played simultaneously
+        and returns a list of length 4, where the first element is s1 and s3 played together, etc
+    :param samples: nested list
+    :return: list of combinations
+    """
+    assert len(samples) > 1
+    combinations = [()]
+    for lst in samples:
+        combinations = itertools.product(combinations, lst)
+        combinations = [list(x[0]) + [x[1]] for x in combinations]
+    combinations = map(combine, combinations)
+    return combinations
+
+
+def combine(samples):
+    """
+    combine all samples in 'samples' to play simultaneously
+    :param samples: list of audio signals where each element is a numpy array
+    :return: single audio signal as numpy array, shape (len,) where len is the length of the longest sample in 'samples'
+    """
+    max_length = max(samples, key=lambda x: x.size)
+    samples = [librosa.util.fix_length(y, max_length) for y in samples]
+    combination = np.zeros(max_length)
+    for sample in samples:
+        combination += sample
+    combination /= len(samples)  # normalize by number of samples
+    return combination
+
+
 if __name__ == "__main__":
 
     for target in targets:
@@ -134,21 +171,22 @@ if __name__ == "__main__":
 
         # separate target into subtargets using different separator functions
 
-        # nested list; len(subtargets) = num_subtargets and len(subtargets[i]) = # of separation functions
-        # all_subtargets[i][j] is the ith subtarget separated via separation algorithm j
-        all_subtargets = [[] for _ in range(num_subtargets)]
+        # all_subtargets[i] is a list of subtargets as output by the ith separation function
+        all_subtargets = []
         for separator in separation_functions:
             subtargets = separator(target, num_subtargets)
-            for i in range(num_subtargets):
-                all_subtargets[i].append(subtargets[i])
+            all_subtargets.append(subtargets)
 
         # orchestrate subtargets with different segmentation thresholds
         orchestras = assign_orchestras(num_subtargets)
-        # orchestrated_subtargets[i][j][k] is the ith subtarget, separated with algorithm j, orchestrated with threshold k
-        orchestrated_subtargets = [[[] for _ in range(len(separation_functions))] for _ in range (num_subtargets) ]
+        # orchestrated_subtargets[i][j][k] is
+        # the jth subtarget, separated via algorithm i, orchestrated with threshold k
+        orchestrated_subtargets = [[[] for _ in range(num_subtargets)] for _ in range(num_separation_functions)]
         for i in range(len(all_subtargets)):
+            # for each separation algorithm
             subtargets = all_subtargets[i]
             for j in range(len(subtargets)):
+                # for each subtarget
                 subtarget = subtargets[j]
                 orchestra = orchestras[j]
                 set_config_parameter(CONFIG_PATH, 'orchestra', orchestra)
@@ -158,6 +196,15 @@ if __name__ == "__main__":
                     solution = orchestrate(subtarget, CONFIG_PATH)
                     orchestrated_subtargets[i][j].append(solution)
 
-        # create all possible combinations of orchestrated subtargets
+        # create all possible combinations of orchestrated subtargets and calculate distance
 
-
+        # distances[i] is the avg distance for separation algorithm i
+        distances = []
+        for subtargets in orchestrated_subtargets:
+            # for each separation algorithm
+            combinations = create_combinations(subtargets)
+            distance = 0
+            for solution in combinations:
+                distance += spectral_distance(target, solution)
+            distance /= len(combinations)
+            distances.append(distance)
