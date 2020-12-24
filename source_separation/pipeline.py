@@ -155,18 +155,21 @@ def combine(samples):
 
 if __name__ == "__main__":
 
+    full_target_distances = []  # distances for non-separated targets
+    separated_target_distances = []  # distances for separated targets
+
     for target in targets:
-        # orchestrate full (non-segmented) target with Orchidea
-        full_target_error = 0
+        # orchestrate full (non-separated) target with Orchidea
+        full_target_distance = 0
         set_config_parameter(CONFIG_PATH, 'orchestra', full_orchestra)
         for onset_threshold in thresholds:
             set_config_parameter(CONFIG_PATH, 'onsets_threshold', onset_threshold)
             solution = orchestrate(target, CONFIG_PATH)
-            full_target_error += spectral_distance(target, solution)
-        full_target_error /= len(thresholds)  # average of distances
+            full_target_distance += spectral_distance(target, solution)
+        full_target_distance /= len(thresholds)  # average of distances
+        full_target_distances.append(full_target_distance)
 
         # separate target into subtargets using different separator functions
-
         # all_subtargets[i] is a list of subtargets as output by the ith separation function
         all_subtargets = []
         for separator in separation_functions:
@@ -193,7 +196,6 @@ if __name__ == "__main__":
                     orchestrated_subtargets[i][j].append(solution)
 
         # create all possible combinations of orchestrated subtargets and calculate distance
-
         # distances[i] is the avg distance for separation algorithm i
         distances = []
         for subtargets in orchestrated_subtargets:
@@ -204,3 +206,4 @@ if __name__ == "__main__":
                 distance += spectral_distance(target, solution)
             distance /= len(combinations)
             distances.append(distance)
+        separated_target_distances.append(distances)
