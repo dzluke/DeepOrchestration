@@ -1,27 +1,39 @@
 import random
 import subprocess
 import itertools
+import os
 import numpy as np
 import soundfile as sf
 import librosa
 
-TARGETS_PATH = ""
+# path to the TinySOL database
+TINYSOL_PATH = "../TinySOL"
+# path to the analysis file of TinySOL, ex: TinySOL.spectrum.db
+DB_PATH = "../TinySOL.spectrum.db"
 CONFIG_PATH = "orch_config.txt"
 SAMPLING_RATE = 44100
 
-targets = None  # TODO
+targets = ["../csmc_mume_2020/targets/WinchesterBell.wav",
+           "../csmc_mume_2020/targets/car-horn.wav"]
 
 num_subtargets = 2
 
 full_orchestra = ['Bn', 'ClBb', 'Fl', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc', 'Vn']
 
+def fake_separation_function(audio, num_subtargets):
+    """ for testing only """
+    subtargets = []
+    for i in range(num_subtargets):
+        subtargets.append(audio.copy())
+    return subtargets
+
 # if possible, this should be a list of functions where each function takes two parameters
 # the first parameter is audio as a numpy array (the output of librosa.load)
 # the second parameter is the number of subtargets to separate the target into
-separation_functions = []
+separation_functions = [fake_separation_function]
 num_separation_functions = len(separation_functions)
 
-thresholds = []  # onset thresholds for dynamic orchestration
+thresholds = [0, 0.3, 0.9]  # onset thresholds for dynamic orchestration
 
 
 
@@ -38,7 +50,7 @@ def set_config_parameter(config_file_path, parameter, value):
         config_file.write(parameter + " ")
         if parameter == 'orchestra':
             value = " ".join(value)  # turns a list of instruments into a string of instruments
-        config_file.write(value)
+        config_file.write(str(value))
         config_file.write('\n')
 
 
@@ -49,10 +61,10 @@ def orchestrate(target, config_file_path):
     :param config_file_path: path to Orchidea config text file
     :return: orchestrated solution as numpy array, shape (len,)
     """
-    sf.write('target.wav', target, samplerate=SAMPLING_RATE)
-    cmd = ["./orchestrate", target, config_file_path]
+    sf.write("target.wav", target, samplerate=SAMPLING_RATE)
+    cmd = ["./orchestrate", "target.wav", config_file_path]
     subprocess.run(cmd, stdout=subprocess.DEVNULL)  # this suppresses output
-    solution = librosa.load('connection.wav', sr=None)
+    solution, _ = librosa.load('connection.wav', sr=None)
     return solution
 
 
@@ -135,7 +147,7 @@ def create_combinations(samples):
     """
     combinations = itertools.product(*samples)
     combinations = map(combine, combinations)
-    return combinations
+    return list(combinations)
 
 
 def combine(samples):
@@ -145,6 +157,7 @@ def combine(samples):
     :return: single audio signal as numpy array, shape (len,) where len is the length of the longest sample in 'samples'
     """
     max_length = max(samples, key=lambda x: x.size)
+    max_length = max_length.size
     samples = [librosa.util.fix_length(y, max_length) for y in samples]
     combination = np.zeros(max_length)
     for sample in samples:
@@ -154,12 +167,21 @@ def combine(samples):
 
 
 if __name__ == "__main__":
+    # distances for non-separated targets
+    # full_target_distances[i] is the average across thresholds for distance of full target i
+    full_target_distances = []
+    # distances for separated targets
+    # separated_target_distances[i] is a list of avg distances for each separation function for target i
+    separated_target_distances = []
 
-    full_target_distances = []  # distances for non-separated targets
-    separated_target_distances = []  # distances for separated targets
+    set_config_parameter(CONFIG_PATH, 'sound_paths', TINYSOL_PATH)
+    set_config_parameter(CONFIG_PATH, 'db_files', DB_PATH)
 
-    for target in targets:
+    for target_path in targets:
+        target, SAMPLING_RATE = librosa.load(target_path, sr=None)
+
         # orchestrate full (non-separated) target with Orchidea
+        print("Orchestrating full target")
         full_target_distance = 0
         set_config_parameter(CONFIG_PATH, 'orchestra', full_orchestra)
         for onset_threshold in thresholds:
@@ -170,6 +192,7 @@ if __name__ == "__main__":
         full_target_distances.append(full_target_distance)
 
         # separate target into subtargets using different separator functions
+        print("Separating target into subtargets")
         # all_subtargets[i] is a list of subtargets as output by the ith separation function
         all_subtargets = []
         for separator in separation_functions:
@@ -177,6 +200,7 @@ if __name__ == "__main__":
             all_subtargets.append(subtargets)
 
         # orchestrate subtargets with different segmentation thresholds
+        print("Orchestrating subtargets with different thresholds")
         orchestras = assign_orchestras(num_subtargets)
         # orchestrated_subtargets[i][j][k] is
         # the jth subtarget, separated via algorithm i, orchestrated with threshold k
@@ -189,13 +213,14 @@ if __name__ == "__main__":
                 subtarget = subtargets[j]
                 orchestra = orchestras[j]
                 set_config_parameter(CONFIG_PATH, 'orchestra', orchestra)
-                for threshold in threshold:
+                for threshold in thresholds:
                     # orchestrate with threshold
                     set_config_parameter(CONFIG_PATH, 'onsets_threshold', threshold)
                     solution = orchestrate(subtarget, CONFIG_PATH)
                     orchestrated_subtargets[i][j].append(solution)
 
         # create all possible combinations of orchestrated subtargets and calculate distance
+        print("Combining subtargets and calculating distance")
         # distances[i] is the avg distance for separation algorithm i
         distances = []
         for subtargets in orchestrated_subtargets:
@@ -207,3 +232,10 @@ if __name__ == "__main__":
             distance /= len(combinations)
             distances.append(distance)
         separated_target_distances.append(distances)
+
+    print("Full Target Avg Distances:", full_target_distances)
+    print("Separated Target Avg Distances:", separated_target_distances)
+
+    # remove files created during pipeline
+    for file in ['target.wav', 'segments.txt']:
+        os.remove(file)
