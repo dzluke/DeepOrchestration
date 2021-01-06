@@ -1,10 +1,15 @@
-import random
+import os
 import subprocess
 import itertools
-import os
+from pathlib import Path
+import random
 import numpy as np
 import soundfile as sf
 import librosa
+
+import torch
+
+from utils import load_model, apply_model
 
 # path to the TinySOL database
 TINYSOL_PATH = "../TinySOL"
@@ -20,6 +25,23 @@ num_subtargets = 2
 
 full_orchestra = ['Bn', 'ClBb', 'Fl', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc', 'Vn']
 
+
+def separate(audio, model_name, num_subtargets):
+    """
+    Separate the audio into the given
+    :param audio: audio as a numpy array or pytorch Tensor
+    :param model_name: name of the model ('demucs' or...)
+    :param num_subtargets: the number of subtargerts to estimate from the mix
+    """
+    if not type(audio) == torch.Tensor:
+        audio = torch.Tensor(audio)
+
+    model_path = Path('models').joinpath(str(num_subtargets) + '_sources')
+    model = load_model(model_path)
+
+    return apply_model(model, audio, shifts=None, split=False, progress=False)
+
+
 def fake_separation_function(audio, num_subtargets):
     """ for testing only """
     subtargets = []
@@ -34,7 +56,6 @@ separation_functions = [fake_separation_function]
 num_separation_functions = len(separation_functions)
 
 thresholds = [0, 0.3, 0.9]  # onset thresholds for dynamic orchestration
-
 
 
 def set_config_parameter(config_file_path, parameter, value):
