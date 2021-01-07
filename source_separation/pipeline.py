@@ -3,6 +3,7 @@ import subprocess
 import itertools
 from pathlib import Path
 import random
+from shutil import copyfile
 import numpy as np
 import soundfile as sf
 import librosa
@@ -18,17 +19,14 @@ TINYSOL_PATH = "../TinySOL"
 DB_PATH = "../TinySOL.spectrum.db"
 CONFIG_PATH = "orch_config.txt"
 SAMPLING_RATE = 44100
-
 targets = ["../csmc_mume_2020/targets/WinchesterBell.wav",
            "../csmc_mume_2020/targets/car-horn.wav"]
-
 num_subtargets = 2
-
 full_orchestra = ['Bn', 'ClBb', 'Fl', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc', 'Vn']
-
 TEMP_OUTPUT_PATH = "./TEMP"
-TDCNNpp_model_path = "../../sound-separation/pre-trained/dcase2020_fuss/baseline_model"
+TDCNNpp_model_path = "./trained_TDCNNpp"
 TDCNNpp_nb_sub_targets = 4
+
 
 def clearTemp():
     """
@@ -37,6 +35,7 @@ def clearTemp():
     
     if os.path.exists(TEMP_OUTPUT_PATH):
         os.rmdir(TEMP_OUTPUT_PATH)
+
 
 def separate(audio_path, model_name, num_subtargets, *args):
     """
@@ -84,14 +83,13 @@ def separate(audio_path, model_name, num_subtargets, *args):
         
     return sub_targets, sr
 
-    """
-    model_path = Path('models').joinpath(str(num_subtargets) + '_sources')
-    model = load_model(model_path)
+    # model_path = Path('models').joinpath(str(num_subtargets) + '_sources')
+    # model = load_model(model_path)
+    #
+    # return apply_model(model, audio, shifts=None, split=False, progress=False)
 
-    return apply_model(model, audio, shifts=None, split=False, progress=False)
-    """
 
-import itertools
+
 def gen_perm_group(l, n):
     if n > 0 and len(l) == 0:
         return None
@@ -113,21 +111,14 @@ def generate_separation_functions(model_name, num_sub_targets):
     l = []
     if model_name == "TDCNN++":
         for perm in gen_perm_group(list(range(TDCNNpp_nb_sub_targets)), num_sub_targets):
-            l.append(lambda a, n : separate(a, "TDCNN++", n, perm))
+            l.append(lambda a, n: separate(a, "TDCNN++", n, perm))
     return l
 
-def fake_separation_function(audio_path, num_subtargets):
-    """ for testing only """
-    subtargets = []
-    audio, _ = librosa.load(audio_path, sr=None)
-    for i in range(num_subtargets):
-        subtargets.append(audio.copy())
-    return subtargets
 
-# if possible, this should be a list of functions where each function takes two parameters
-# the first parameter is path to audio
+# a list of functions where each function takes two parameters
+# the first parameter is audio
 # the second parameter is the number of subtargets to separate the target into
-separation_functions = [fake_separation_function]
+separation_functions = generate_separation_functions("TDCNN++", num_subtargets)
 num_separation_functions = len(separation_functions)
 
 thresholds = [0, 0.3, 0.9]  # onset thresholds for dynamic orchestration
@@ -157,7 +148,7 @@ def orchestrate(target, config_file_path):
     :param config_file_path: path to Orchidea config text file
     :return: orchestrated solution as numpy array, shape (len,)
     """
-    sf.write("target.wav", target, samplerate=SAMPLING_RATE)
+    sf.write('target.wav', target, samplerate=SAMPLING_RATE)
     cmd = ["./orchestrate", "target.wav", config_file_path]
     subprocess.run(cmd, stdout=subprocess.DEVNULL)  # this suppresses output
     solution, _ = librosa.load('connection.wav', sr=None)
@@ -270,6 +261,8 @@ if __name__ == "__main__":
     # separated_target_distances[i] is a list of avg distances for each separation function for target i
     separated_target_distances = []
 
+    copyfile('orch_config_template.txt', CONFIG_PATH)
+
     set_config_parameter(CONFIG_PATH, 'sound_paths', TINYSOL_PATH)
     set_config_parameter(CONFIG_PATH, 'db_files', DB_PATH)
 
@@ -292,7 +285,7 @@ if __name__ == "__main__":
         # all_subtargets[i] is a list of subtargets as output by the ith separation function
         all_subtargets = []
         for separator in separation_functions:
-            subtargets = separator(target_path, num_subtargets)
+            subtargets, sr = separator(target_path, num_subtargets)
             all_subtargets.append(subtargets)
 
         # orchestrate subtargets with different segmentation thresholds

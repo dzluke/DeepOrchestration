@@ -32,114 +32,66 @@ onsets_timegate		.1
 export_solutions	0
 t60					2.8
 dry_wet				.8 .4
-sound_paths ../TinySOL
-db_files ../TinySOL.spectrum.db
-orchestra Bn ClBb Fl Hn Ob Tbn TpC Va Vc Vn
-onsets_threshold 0
-sound_paths ../TinySOL
-db_files ../TinySOL.spectrum.db
-orchestra Bn ClBb Fl Hn Ob Tbn TpC Va Vc Vn
-onsets_threshold 0
-onsets_threshold 0.3
-onsets_threshold 0.9
-orchestra Bn Vc Va Vn Fl
+
 sound_paths ../TinySOL
 db_files ../TinySOL.spectrum.db
 orchestra Bn ClBb Fl Hn Ob Tbn TpC Va Vc Vn
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-orchestra Vn ClBb Va Ob Bn
+orchestra Fl Ob Vn ClBb Hn
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-orchestra TpC Fl Hn Vc Tbn
+orchestra Va Tbn Bn TpC Vc
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-sound_paths ../TinySOL
-db_files ../TinySOL.spectrum.db
-orchestra Bn ClBb Fl Hn Ob Tbn TpC Va Vc Vn
+orchestra Fl Ob Vn ClBb Hn
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-orchestra Vn Ob Vc Va Tbn
+orchestra Va Tbn Bn TpC Vc
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-orchestra Bn Hn TpC Fl ClBb
+orchestra Fl Ob Vn ClBb Hn
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-sound_paths ../TinySOL
-db_files ../TinySOL.spectrum.db
-orchestra Bn ClBb Fl Hn Ob Tbn TpC Va Vc Vn
+orchestra Va Tbn Bn TpC Vc
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-orchestra Bn Hn TpC Vc Vn
+orchestra Fl Ob Vn ClBb Hn
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-orchestra Fl Va ClBb Tbn Ob
+orchestra Va Tbn Bn TpC Vc
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-sound_paths ../TinySOL
-db_files ../TinySOL.spectrum.db
-orchestra Bn ClBb Fl Hn Ob Tbn TpC Va Vc Vn
+orchestra Fl Ob Vn ClBb Hn
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-orchestra ClBb Ob Va Bn Vc
+orchestra Va Tbn Bn TpC Vc
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-orchestra Fl Hn Vn Tbn TpC
+orchestra Fl Ob Vn ClBb Hn
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-sound_paths ../TinySOL
-db_files ../TinySOL.spectrum.db
-orchestra Bn ClBb Fl Hn Ob Tbn TpC Va Vc Vn
+orchestra Va Tbn Bn TpC Vc
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-orchestra Hn Fl Vn Ob ClBb
+orchestra Fl Ob Vn ClBb Hn
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
-orchestra Vc Bn Tbn Va TpC
-onsets_threshold 0
-onsets_threshold 0.3
-onsets_threshold 0.9
-sound_paths ../TinySOL
-db_files ../TinySOL.spectrum.db
-orchestra Bn ClBb Fl Hn Ob Tbn TpC Va Vc Vn
-onsets_threshold 0
-sound_paths ../TinySOL
-db_files ../TinySOL.spectrum.db
-orchestra Bn ClBb Fl Hn Ob Tbn TpC Va Vc Vn
-onsets_threshold 0
-onsets_threshold 0.3
-onsets_threshold 0.9
-orchestra Fl Ob Va TpC Bn
-onsets_threshold 0
-onsets_threshold 0.3
-onsets_threshold 0.9
-orchestra Vc Vn ClBb Tbn Hn
-onsets_threshold 0
-onsets_threshold 0.3
-onsets_threshold 0.9
-orchestra Bn ClBb Fl Hn Ob Tbn TpC Va Vc Vn
-onsets_threshold 0
-onsets_threshold 0.3
-onsets_threshold 0.9
-orchestra ClBb Ob Bn Va Vn
-onsets_threshold 0
-onsets_threshold 0.3
-onsets_threshold 0.9
-orchestra Vc Tbn Hn TpC Fl
+orchestra Va Tbn Bn TpC Vc
 onsets_threshold 0
 onsets_threshold 0.3
 onsets_threshold 0.9
