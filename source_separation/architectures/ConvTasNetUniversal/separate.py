@@ -20,8 +20,8 @@ import numpy as np
 import pandas as pd
 import tensorflow.compat.v1 as tf
 
-import inference
-from train import data_io
+from . import inference
+from .train import data_io
 
 
 def decode_wav(wav):
@@ -54,7 +54,7 @@ def separate(ckpt, mtgph, input_path, output_path):
   print(separated_waveforms)
   print(separated_waveforms.shape)
   if not os.path.exists(output_path):
-    os.mkdir(output_path)
+    os.makedirs(output_path)
   for i in range(separated_waveforms.shape[0]):
     write_wav(output_path + '/sub_target{}.wav'.format(i), sr, separated_waveforms[i,:])
 

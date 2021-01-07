@@ -10,7 +10,7 @@ import librosa
 import torch
 
 from utils import load_model, apply_model
-import architectures
+import architectures.ConvTasNetUniversal.separate as TDCNNpp_separate
 
 # path to the TinySOL database
 TINYSOL_PATH = "../TinySOL"
@@ -26,8 +26,8 @@ num_subtargets = 2
 
 full_orchestra = ['Bn', 'ClBb', 'Fl', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc', 'Vn']
 
-TEMP_OUTPUT_PATH = ""
-TDCNNpp_model_path = ""
+TEMP_OUTPUT_PATH = "./TEMP"
+TDCNNpp_model_path = "../../sound-separation/pre-trained/dcase2020_fuss/baseline_model"
 TDCNNpp_nb_sub_targets = 4
 
 def clearTemp():
@@ -56,7 +56,7 @@ def separate(audio_path, model_name, num_subtargets, *args):
     if not os.path.exists(output_path):
         if model_name == "TDCNN++":
             # ConvTasNet for Universal Sound Separation
-            architectures.ConvTasNetUniversal.separate(TDCNNpp_model_path + "/baseline_model",
+            TDCNNpp_separate.separate(TDCNNpp_model_path + "/baseline_model",
                                                        TDCNNpp_model_path + "/baseline_inference.meta",
                                                        audio_path,
                                                        output_path)
@@ -73,7 +73,7 @@ def separate(audio_path, model_name, num_subtargets, *args):
             a = None
             for s in l:
                 t,sr = librosa.load(output_path + "/sub_target{}.wav".format(s), sr=None)
-                if a == None:
+                if a is None:
                     a = t
                 else:
                     a += t
