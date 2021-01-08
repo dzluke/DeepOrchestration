@@ -5,6 +5,8 @@ import tqdm
 import numpy as np
 import soundfile as sf
 import norbert
+import warnings
+import resampy
 from pathlib import Path
 import io
 from contextlib import redirect_stderr
@@ -85,6 +87,7 @@ def separate(input_path,
              output_path,
              model_name='umxhq',
              targets=('vocals', 'drums', 'bass', 'other'),
+             samplerate=44100,
              device='cpu',
              softmask=False,
              residual_model=False,
@@ -97,7 +100,26 @@ def separate(input_path,
     # ENTREE : input path
     # SORTIE : OUTPUT PATH NOM DE DOSSIER ECRIT LES SUBTARGETS EN .WAV DANS CE PATH
 
-    audio, sample_rate = sf.read(input_path)
+    # handling an input audio path
+    audio, rate = sf.read(
+        input_path,
+        always_2d=True,
+        )
+
+    if audio.shape[1] > 2:
+        warnings.warn(
+            'Channel count > 2! '
+            'Only the first two channels will be processed!')
+        audio = audio[:, :2]
+
+    if rate != samplerate:
+        # resample to model samplerate if needed
+        audio = resampy.resample(audio, rate, samplerate, axis=0)
+
+    if audio.shape[1] == 1:
+        # if we have mono, let's duplicate it
+        # as the input of OpenUnmix is always stereo
+        audio = np.repeat(audio, 2, axis=1)
     # convert numpy audio to torch
     audio_torch = torch.tensor(audio.T[None, ...]).float().to(device)
 
@@ -146,5 +168,5 @@ def separate(input_path,
 
         # write wav file in output_path
         subtarget_path = output_path.joinpath(name + '.wav')
-        sf.write(subtarget_path, estimates[name], sample_rate)
+        sf.write(subtarget_path, estimates[name], samplerate)
     return estimates
