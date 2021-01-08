@@ -13,3 +13,5 @@ acc.csv
 /exp_pre
 /other
 .DS_Store
+*.th
+*.gz
