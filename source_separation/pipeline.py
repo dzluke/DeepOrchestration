@@ -8,10 +8,10 @@ import numpy as np
 import soundfile as sf
 import librosa
 
-import torch
-
 from utils import load_model, apply_model
 import architectures.ConvTasNetUniversal.separate as TDCNNpp_separate
+import architectures.Open-unmix.separate as OpenUnmix_separate
+import architectures.Demucs.separate as Demucs_separate
 
 # path to the TinySOL database
 TINYSOL_PATH = "../TinySOL"
@@ -59,6 +59,14 @@ def separate(audio_path, model_name, num_subtargets, *args):
                                                        TDCNNpp_model_path + "/baseline_inference.meta",
                                                        audio_path,
                                                        output_path)
+        elif model_name == "TDCNN":
+            Demucs_separate.separate(audio_path, output_path, 'tasnet')
+        elif model_name == "Demucs":
+            Demucs_separate.separate(audio_path, output_path, 'demucs')
+        elif model_name == "OpenUnmix":
+            OpenUnmix_separate(audio_path, output_path)
+        else:
+            raise Exception("Model name must be one of those four : TDCNN, TDCNN++, OpenUnmix, Demucs")
     
     # Read sub targets and output them in numpy array format
     sub_targets = []
