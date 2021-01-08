@@ -13,18 +13,17 @@ import architectures.ConvTasNetUniversal.separate as TDCNNpp_separate
 import architectures.Open_unmix.separate as OpenUnmix_separate
 import architectures.Demucs.separate as Demucs_separate
 
-# path to the TinySOL database
-TINYSOL_PATH = "../TinySOL"
-# path to the analysis file of TinySOL, ex: TinySOL.spectrum.db
-DB_PATH = "../TinySOL.spectrum.db"
+
+TINYSOL_PATH = "../TinySOL"  # path to the TinySOL database
+DB_PATH = "../TinySOL.spectrum.db"  # path to the analysis file of TinySOL, ex: TinySOL.spectrum.db
 CONFIG_PATH = "orch_config.txt"
-SAMPLING_RATE = 44100
-targets = librosa.util.find_files("../csmc_mume_2020/targets")
-num_subtargets = 2
-full_orchestra = ['Bn', 'ClBb', 'Fl', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc', 'Vn']
+TARGETS_PATH = "./fuss_db"  # path to the fuss database of targets
 TEMP_OUTPUT_PATH = "./TEMP"
 TDCNNpp_model_path = "./trained_TDCNNpp"
 TDCNNpp_nb_sub_targets = 4
+SAMPLING_RATE = 44100
+NUM_SUBTARGETS = 2
+full_orchestra = ['Bn', 'ClBb', 'Fl', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc', 'Vn']
 
 
 def clearTemp():
@@ -43,7 +42,7 @@ def separate(audio_path, model_name, num_subtargets, *args):
     :param model_name: name of the model ('demucs' or...)
     :param num_subtargets: the number of subtargerts to estimate from the mix
     :param *args: any relevant additional argument (for example combinations
-                    of sub targets to match num_subtargets)
+                    of sub targets to match NUM_SUBTARGETS)
 
     Returns array containing sub_targets as numpy arrays in float32, and the sample rate of the output
     """
@@ -73,7 +72,7 @@ def separate(audio_path, model_name, num_subtargets, *args):
 
     if model_name in ["TDCNN++", "TDCNN", "OpenUnmix", "Demucs"]:
         if num_subtargets != len(args[0]):
-            raise Exception("For {}, it is required to specify the way to combine the sub targets to generate num_subtargets sub targets. Must be of the form [[0, 3], [1, 2]]".format(model_name))
+            raise Exception("For {}, it is required to specify the way to combine the sub targets to generate NUM_SUBTARGETS sub targets. Must be of the form [[0, 3], [1, 2]]".format(model_name))
         for l in args[0]:
             # Combine sub_targets generated according to the list in *args
             a = None
@@ -130,7 +129,7 @@ def generate_separation_functions(model_name, num_sub_targets):
 # a list of functions where each function takes two parameters
 # the first parameter is audio
 # the second parameter is the number of subtargets to separate the target into
-separation_functions = generate_separation_functions("TDCNN++", num_subtargets)
+separation_functions = generate_separation_functions("TDCNN++", NUM_SUBTARGETS)
 num_separation_functions = len(separation_functions)
 
 thresholds = [0, 0.3, 0.9]  # onset thresholds for dynamic orchestration
@@ -273,14 +272,15 @@ if __name__ == "__main__":
     # separated_target_distances[i] is a list of avg distances for each separation function for target i
     separated_target_distances = []
 
+    targets = librosa.util.find_files(TARGETS_PATH, recurse=False)
     copyfile('orch_config_template.txt', CONFIG_PATH)
 
     set_config_parameter(CONFIG_PATH, 'sound_paths', TINYSOL_PATH)
     set_config_parameter(CONFIG_PATH, 'db_files', DB_PATH)
 
     for target_path in targets:
-        print("Target:", target_path)
-        target, SAMPLING_RATE = librosa.load(target_path, sr=None)
+        print("Target:", target_path.split('/')[-1])
+        target, _ = librosa.load(target_path, sr=None)
         # orchestrate full (non-separated) target with Orchidea
         # print("Orchestrating full target")
         full_target_distance = 0
@@ -298,15 +298,15 @@ if __name__ == "__main__":
         # all_subtargets[i] is a list of subtargets as output by the ith separation function
         all_subtargets = []
         for separator in separation_functions:
-            subtargets, sr = separator(target_path, num_subtargets)
+            subtargets, sr = separator(target_path, NUM_SUBTARGETS)
             all_subtargets.append(subtargets)
 
         # orchestrate subtargets with different segmentation thresholds
         # print("Orchestrating subtargets with different thresholds")
-        orchestras = assign_orchestras(num_subtargets)
+        orchestras = assign_orchestras(NUM_SUBTARGETS)
         # orchestrated_subtargets[i][j][k] is
         # the jth subtarget, separated via algorithm i, orchestrated with threshold k
-        orchestrated_subtargets = [[[] for _ in range(num_subtargets)] for _ in range(num_separation_functions)]
+        orchestrated_subtargets = [[[] for _ in range(NUM_SUBTARGETS)] for _ in range(num_separation_functions)]
         for i in range(len(all_subtargets)):
             # for each separation algorithm
             subtargets = all_subtargets[i]
