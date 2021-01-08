@@ -19,8 +19,7 @@ TINYSOL_PATH = "../TinySOL"
 DB_PATH = "../TinySOL.spectrum.db"
 CONFIG_PATH = "orch_config.txt"
 SAMPLING_RATE = 44100
-targets = ["../csmc_mume_2020/targets/WinchesterBell.wav",
-           "../csmc_mume_2020/targets/car-horn.wav"]
+targets = librosa.util.find_files("../csmc_mume_2020/targets")
 num_subtargets = 2
 full_orchestra = ['Bn', 'ClBb', 'Fl', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc', 'Vn']
 TEMP_OUTPUT_PATH = "./TEMP"
@@ -267,10 +266,10 @@ if __name__ == "__main__":
     set_config_parameter(CONFIG_PATH, 'db_files', DB_PATH)
 
     for target_path in targets:
+        print("Target:", target_path)
         target, SAMPLING_RATE = librosa.load(target_path, sr=None)
-
         # orchestrate full (non-separated) target with Orchidea
-        print("Orchestrating full target")
+        # print("Orchestrating full target")
         full_target_distance = 0
         set_config_parameter(CONFIG_PATH, 'orchestra', full_orchestra)
         for onset_threshold in thresholds:
@@ -279,9 +278,10 @@ if __name__ == "__main__":
             full_target_distance += spectral_distance(target, solution)
         full_target_distance /= len(thresholds)  # average of distances
         full_target_distances.append(full_target_distance)
+        print("Full target distance:", full_target_distance)
 
         # separate target into subtargets using different separator functions
-        print("Separating target into subtargets")
+        # print("Separating target into subtargets")
         # all_subtargets[i] is a list of subtargets as output by the ith separation function
         all_subtargets = []
         for separator in separation_functions:
@@ -289,7 +289,7 @@ if __name__ == "__main__":
             all_subtargets.append(subtargets)
 
         # orchestrate subtargets with different segmentation thresholds
-        print("Orchestrating subtargets with different thresholds")
+        # print("Orchestrating subtargets with different thresholds")
         orchestras = assign_orchestras(num_subtargets)
         # orchestrated_subtargets[i][j][k] is
         # the jth subtarget, separated via algorithm i, orchestrated with threshold k
@@ -309,7 +309,7 @@ if __name__ == "__main__":
                     orchestrated_subtargets[i][j].append(solution)
 
         # create all possible combinations of orchestrated subtargets and calculate distance
-        print("Combining subtargets and calculating distance")
+        # print("Combining subtargets and calculating distance")
         # distances[i] is the avg distance for separation algorithm i
         distances = []
         for subtargets in orchestrated_subtargets:
@@ -321,9 +321,16 @@ if __name__ == "__main__":
             distance /= len(combinations)
             distances.append(distance)
         separated_target_distances.append(distances)
+        print("Separated target distance:", sum(distances) / len(distances))
+    # compute average across different separation methods
+    for i in range(len(separated_target_distances)):
+        target_distances = separated_target_distances[i]
+        separated_target_distances[i] = sum(target_distances) / len(target_distances)
 
     print("Full Target Avg Distances:", full_target_distances)
     print("Separated Target Avg Distances:", separated_target_distances)
+    print("Average distance of full targets:", sum(full_target_distances) / len(full_target_distances))
+    print("Average distance of separated targets:", sum(separated_target_distances) / len(separated_target_distances))
 
     # remove files created during pipeline
     for file in ['target.wav', 'segments.txt']:
