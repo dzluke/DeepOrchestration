@@ -11,8 +11,8 @@ from contextlib import redirect_stderr
 import json
 import scipy.signal
 
-import utils
-import open_unmix as model
+from .utils import bandwidth_to_max_bin
+from .open_unmix import OpenUnmix
 
 
 def load_model(target, model_name='umxhq', device='cpu'):
@@ -49,13 +49,13 @@ def load_model(target, model_name='umxhq', device='cpu'):
             map_location=device
         )
 
-        max_bin = utils.bandwidth_to_max_bin(
+        max_bin = bandwidth_to_max_bin(
             state['sample_rate'],
             results['args']['nfft'],
             results['args']['bandwidth']
         )
 
-        unmix = model.OpenUnmix(
+        unmix = OpenUnmix(
             n_fft=results['args']['nfft'],
             n_hop=results['args']['nhop'],
             nb_channels=results['args']['nb_channels'],
@@ -133,6 +133,8 @@ def separate(input_path,
     Y = norbert.wiener(V, X.astype(np.complex128), niter,
                        use_softmask=softmask)
 
+    output_path = Path(output_path)
+    output_path.mkdir(parents=True, exist_ok=True)
     estimates = {}
     for j, name in enumerate(source_names):
         audio_hat = istft(
@@ -143,6 +145,6 @@ def separate(input_path,
         estimates[name] = audio_hat.T
 
         # write wav file in output_path
-        subtarget_path = Path(output_path).joinpath(name + '.wav')
+        subtarget_path = output_path.joinpath(name + '.wav')
         sf.write(subtarget_path, estimates[name], sample_rate)
     return estimates

@@ -1,16 +1,16 @@
 import os
 import subprocess
 import itertools
-from pathlib import Path
+# from pathlib import Path
 import random
 from shutil import copyfile
 import numpy as np
 import soundfile as sf
 import librosa
 
-from utils import load_model, apply_model
+# from utils import load_model, apply_model
 import architectures.ConvTasNetUniversal.separate as TDCNNpp_separate
-import architectures.Open-unmix.separate as OpenUnmix_separate
+import architectures.Open_unmix.separate as OpenUnmix_separate
 import architectures.Demucs.separate as Demucs_separate
 
 # path to the TinySOL database
@@ -32,7 +32,7 @@ def clearTemp():
     """
     Clear the temp directory containing the outputs of the different models
     """
-    
+
     if os.path.exists(TEMP_OUTPUT_PATH):
         os.rmdir(TEMP_OUTPUT_PATH)
 
@@ -45,13 +45,13 @@ def separate(audio_path, model_name, num_subtargets, *args):
     :param num_subtargets: the number of subtargerts to estimate from the mix
     :param *args: any relevant additional argument (for example combinations
                     of sub targets to match num_subtargets)
-    
+
     Returns array containing sub_targets as numpy arrays in float32, and the sample rate of the output
     """
-    
+
     file_name = audio_path.split("/")[-1].split(".")[0]
     output_path = TEMP_OUTPUT_PATH + "/" + model_name + "/" + file_name
-    
+
     if not os.path.exists(output_path):
         if model_name == "TDCNN++":
             # ConvTasNet for Universal Sound Separation
@@ -64,14 +64,14 @@ def separate(audio_path, model_name, num_subtargets, *args):
         elif model_name == "Demucs":
             Demucs_separate.separate(audio_path, output_path, 'demucs')
         elif model_name == "OpenUnmix":
-            OpenUnmix_separate(audio_path, output_path)
+            OpenUnmix_separate.separate(audio_path, output_path)
         else:
             raise Exception("Model name must be one of those four : TDCNN, TDCNN++, OpenUnmix, Demucs")
-    
+
     # Read sub targets and output them in numpy array format
     sub_targets = []
     sr = None
-    
+
     if model_name == "TDCNN++":
         if num_subtargets != len(args[0]):
             raise Exception("For TDCNN++, it is required to specify the way to combine the sub targets to generate num_subtargets sub targets. Must be of the form [[0, 3], [1, 2]]")
@@ -88,7 +88,7 @@ def separate(audio_path, model_name, num_subtargets, *args):
 
     if sr == None:
         raise Exception("No sample rate for output detected")
-        
+
     return sub_targets, sr
 
     # model_path = Path('models').joinpath(str(num_subtargets) + '_sources')
@@ -113,7 +113,7 @@ def gen_perm_group(l, n):
             if t != None:
                 r.extend([[[l[0]] + list(c)] + x for x in t])
     return r
-    
+
 
 def generate_separation_functions(model_name, num_sub_targets):
     l = []

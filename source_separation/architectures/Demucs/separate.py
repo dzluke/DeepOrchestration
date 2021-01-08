@@ -17,8 +17,8 @@ from scipy.io import wavfile
 # from .audio import AudioFile
 # from .utils import apply_model, load_model
 
-from audio import AudioFile
-from utils import apply_model, load_model
+from .audio import AudioFile
+from .utils import apply_model, load_model
 
 BASE_URL = "https://dl.fbaipublicfiles.com/demucs/v2.0/"
 PRETRAINED_MODELS = {
@@ -80,12 +80,12 @@ def separate(input_path,
     output_path.mkdir(parents=True, exist_ok=True)
     source_names = ["drums", "bass", "other", "vocals"]
     print(f"Separated tracks will be stored in {output_path.resolve()}")
-
-    if not input_path.exists():
-        print(
-            f"File {input_path} does not exist. If the path contains spaces, "
-            "please try again after surrounding the entire path with quotes \"\".",
-            file=sys.stderr)
+    input_path = Path(input_path)
+    # if not input_path.exists():
+    #     print(
+    #         f"File {input_path} does not exist. If the path contains spaces, "
+    #         "please try again after surrounding the entire path with quotes \"\".",
+    #         file=sys.stderr)
 
     print(f"Separating track {input_path}")
     wav = AudioFile(input_path).read(streams=0, samplerate=44100, channels=2).to(device)
