@@ -115,16 +115,16 @@ def generate_separation_functions(model_name, num_sub_targets):
     if model_name == "TDCNN++":
         init_list = ["sub_target{}".format(x) for x in range(TDCNNpp_nb_sub_targets)]
     elif model_name == "TDCNN":
-        init_list = ["sub_target{}".format(x) for x in range(TDCNNpp_nb_sub_targets)]
+        init_list = ["drums", "bass", "other", "vocals"]
     elif model_name == "Demucs":
-        init_list = ["sub_target{}".format(x) for x in range(TDCNNpp_nb_sub_targets)]
+        init_list = ["drums", "bass", "other", "vocals"]
     elif model_name == "OpenUnmix":
-        init_list = ["vocals", "bass", "other", ]
+        init_list = ["drums", "bass", "other", "vocals"]
     else:
         raise Exception("Model name must be one of those four : TDCNN, TDCNN++, OpenUnmix, Demucs")
-        
-    for perm in gen_perm_group(init_list), num_sub_targets):
-        l.append(lambda a, n: separate(a, "TDCNN++", n, perm))
+
+    for perm in gen_perm_group(init_list, num_sub_targets):
+        l.append(lambda a, n: separate(a, model_name, n, perm))
     return l
 
 

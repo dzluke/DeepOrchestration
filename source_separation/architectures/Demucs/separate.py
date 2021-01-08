@@ -76,7 +76,7 @@ def separate(input_path,
     if quantized:
         name += "_quantized"
     output_path = Path(output_path)
-    output_path = output_path / name
+    # output_path = output_path / name
     output_path.mkdir(parents=True, exist_ok=True)
     source_names = ["drums", "bass", "other", "vocals"]
     print(f"Separated tracks will be stored in {output_path.resolve()}")
@@ -96,7 +96,7 @@ def separate(input_path,
     sources = apply_model(model, wav, shifts=shifts, split=split, progress=False)
     sources = sources * ref.std() + ref.mean()
 
-    track_folder = output_path / input_path.name.split(".")[0]
+    track_folder = output_path #/ input_path.name.split(".")[0]
     track_folder.mkdir(exist_ok=True)
     for source, name in zip(sources, source_names):
         if mp3 or not float32:
