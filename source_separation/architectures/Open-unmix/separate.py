@@ -143,6 +143,6 @@ def separate(input_path,
         estimates[name] = audio_hat.T
 
         # write wav file in output_path
-        subtarget_path = Path(output_path).joinpath(name)
+        subtarget_path = Path(output_path).joinpath(name + '.wav')
         sf.write(subtarget_path, estimates[name], sample_rate)
     return estimates
