@@ -72,31 +72,26 @@ def separate(audio_path, model_name, num_subtargets, *args):
     sub_targets = []
     sr = None
 
-    if model_name == "TDCNN++":
+    if model_name in ["TDCNN++", "TDCNN", "OpenUnmix", "Demucs"]:
         if num_subtargets != len(args[0]):
-            raise Exception("For TDCNN++, it is required to specify the way to combine the sub targets to generate num_subtargets sub targets. Must be of the form [[0, 3], [1, 2]]")
+            raise Exception("For {}, it is required to specify the way to combine the sub targets to generate num_subtargets sub targets. Must be of the form [[0, 3], [1, 2]]".format(model_name))
         for l in args[0]:
             # Combine sub_targets generated according to the list in *args
             a = None
             for s in l:
-                t,sr = librosa.load(output_path + "/sub_target{}.wav".format(s), sr=None)
+                t,sr = librosa.load(output_path + "/{}.wav".format(s), sr=None)
                 if a is None:
                     a = t
                 else:
                     a += t
             sub_targets.append(a)
+    else:
+        raise Exception("Unknown model name")
 
     if sr == None:
         raise Exception("No sample rate for output detected")
 
     return sub_targets, sr
-
-    # model_path = Path('models').joinpath(str(num_subtargets) + '_sources')
-    # model = load_model(model_path)
-    #
-    # return apply_model(model, audio, shifts=None, split=False, progress=False)
-
-
 
 def gen_perm_group(l, n):
     if n > 0 and len(l) == 0:
@@ -118,8 +113,18 @@ def gen_perm_group(l, n):
 def generate_separation_functions(model_name, num_sub_targets):
     l = []
     if model_name == "TDCNN++":
-        for perm in gen_perm_group(list(range(TDCNNpp_nb_sub_targets)), num_sub_targets):
-            l.append(lambda a, n: separate(a, "TDCNN++", n, perm))
+        init_list = ["sub_target{}".format(x) for x in range(TDCNNpp_nb_sub_targets)]
+    elif model_name == "TDCNN":
+        init_list = ["sub_target{}".format(x) for x in range(TDCNNpp_nb_sub_targets)]
+    elif model_name == "Demucs":
+        init_list = ["sub_target{}".format(x) for x in range(TDCNNpp_nb_sub_targets)]
+    elif model_name == "OpenUnmix":
+        init_list = ["vocals", "bass", "other", ]
+    else:
+        raise Exception("Model name must be one of those four : TDCNN, TDCNN++, OpenUnmix, Demucs")
+        
+    for perm in gen_perm_group(init_list), num_sub_targets):
+        l.append(lambda a, n: separate(a, "TDCNN++", n, perm))
     return l
 
 
