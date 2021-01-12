@@ -51,8 +51,8 @@ def separate(ckpt, mtgph, input_path, output_path):
 
   waveforms = model.sess.run(dataset)
   separated_waveforms = model.separate(waveforms['receiver_audio'])
-  print(separated_waveforms)
-  print(separated_waveforms.shape)
+  # print(separated_waveforms)
+  # print(separated_waveforms.shape)
   if not os.path.exists(output_path):
     os.makedirs(output_path)
   for i in range(separated_waveforms.shape[0]):

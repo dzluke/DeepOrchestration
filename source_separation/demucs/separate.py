@@ -79,7 +79,7 @@ def separate(input_path,
     # output_path = output_path / name
     output_path.mkdir(parents=True, exist_ok=True)
     source_names = ["drums", "bass", "other", "vocals"]
-    print(f"Separated tracks will be stored in {output_path.resolve()}")
+    # print(f"Separated tracks will be stored in {output_path.resolve()}")
     input_path = Path(input_path)
     # if not input_path.exists():
     #     print(
@@ -87,7 +87,7 @@ def separate(input_path,
     #         "please try again after surrounding the entire path with quotes \"\".",
     #         file=sys.stderr)
 
-    print(f"Separating track {input_path}")
+    # print(f"Separating track {input_path}")
     wav = AudioFile(input_path).read(streams=0, samplerate=44100, channels=2).to(device)
     # Round to nearest short integer for compatibility with how MusDB load audio with stempeg.
     wav = (wav * 2**15).round() / 2**15
@@ -269,7 +269,7 @@ def main():
     out = args.out / args.name
     out.mkdir(parents=True, exist_ok=True)
     source_names = ["drums", "bass", "other", "vocals"]
-    print(f"Separated tracks will be stored in {out.resolve()}")
+    # print(f"Separated tracks will be stored in {out.resolve()}")
     for track in args.tracks:
         if not track.exists():
             print(
@@ -277,7 +277,7 @@ def main():
                 "please try again after surrounding the entire path with quotes \"\".",
                 file=sys.stderr)
             continue
-        print(f"Separating track {track}")
+        # print(f"Separating track {track}")
         wav = AudioFile(track).read(streams=0, samplerate=44100, channels=2).to(args.device)
         # Round to nearest short integer for compatibility with how MusDB load audio with stempeg.
         wav = (wav * 2**15).round() / 2**15

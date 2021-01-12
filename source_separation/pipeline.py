@@ -9,15 +9,15 @@ import soundfile as sf
 import librosa
 
 # from utils import load_model, apply_model
-import architectures.ConvTasNetUniversal.separate as TDCNNpp_separate
-import architectures.Open_unmix.separate as OpenUnmix_separate
-import architectures.Demucs.separate as Demucs_separate
+import ConvTasNetUniversal.separate as TDCNNpp_separate
+import open_unmix.separate as open_unmix
+import demucs.separate as demucs
 
 
 TINYSOL_PATH = "../TinySOL"  # path to the TinySOL database
 DB_PATH = "../TinySOL.spectrum.db"  # path to the analysis file of TinySOL, ex: TinySOL.spectrum.db
 CONFIG_PATH = "orch_config.txt"
-TARGETS_PATH = "./fuss_db"  # path to the fuss database of targets
+TARGETS_PATH = "./database"  # path to the fuss database of targets
 TEMP_OUTPUT_PATH = "./TEMP"
 TDCNNpp_model_path = "./trained_TDCNNpp"
 TDCNNpp_nb_sub_targets = 4
@@ -30,7 +30,6 @@ def clearTemp():
     """
     Clear the temp directory containing the outputs of the different models
     """
-
     if os.path.exists(TEMP_OUTPUT_PATH):
         os.rmdir(TEMP_OUTPUT_PATH)
 
@@ -58,11 +57,11 @@ def separate(audio_path, model_name, num_subtargets, *args):
                                                        audio_path,
                                                        output_path)
         elif model_name == "TDCNN":
-            Demucs_separate.separate(audio_path, output_path, 'tasnet')
+            demucs.separate(audio_path, output_path, 'tasnet')
         elif model_name == "Demucs":
-            Demucs_separate.separate(audio_path, output_path, 'demucs')
+            demucs.separate(audio_path, output_path, 'demucs')
         elif model_name == "OpenUnmix":
-            OpenUnmix_separate.separate(audio_path, output_path)
+            open_unmix.separate(audio_path, output_path)
         else:
             raise Exception("Model name must be one of those four : TDCNN, TDCNN++, OpenUnmix, Demucs")
 
@@ -108,7 +107,7 @@ def gen_perm_group(l, n):
     return r
 
 
-def generate_separation_functions(model_name, num_sub_targets):
+def generate_separation_function(model_name, num_sub_targets):
     l = []
     if model_name == "TDCNN++":
         init_list = ["sub_target{}".format(x) for x in range(TDCNNpp_nb_sub_targets)]
@@ -126,10 +125,17 @@ def generate_separation_functions(model_name, num_sub_targets):
     return l
 
 
+def generate_all_separation_functions():
+    functions = []
+    for model in ["TDCNN++", "TDCNN", "Demucs", "OpenUnmix"]:
+        functions.extend(generate_separation_function(model, NUM_SUBTARGETS))
+    return functions
+
+
 # a list of functions where each function takes two parameters
 # the first parameter is audio
 # the second parameter is the number of subtargets to separate the target into
-separation_functions = generate_separation_functions("TDCNN++", NUM_SUBTARGETS)
+separation_functions = generate_all_separation_functions()
 num_separation_functions = len(separation_functions)
 
 thresholds = [0, 0.3, 0.9]  # onset thresholds for dynamic orchestration
@@ -278,7 +284,7 @@ if __name__ == "__main__":
     set_config_parameter(CONFIG_PATH, 'sound_paths', TINYSOL_PATH)
     set_config_parameter(CONFIG_PATH, 'db_files', DB_PATH)
 
-    for target_path in targets:
+    for target_path in targets[:1]:
         print("Target:", target_path.split('/')[-1])
         target, _ = librosa.load(target_path, sr=None)
         # orchestrate full (non-separated) target with Orchidea
@@ -346,5 +352,6 @@ if __name__ == "__main__":
     print("Average distance of separated targets:", sum(separated_target_distances) / len(separated_target_distances))
 
     # remove files created during pipeline
+    clearTemp()
     for file in ['target.wav', 'segments.txt']:
         os.remove(file)
