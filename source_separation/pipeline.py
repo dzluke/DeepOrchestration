@@ -1,37 +1,58 @@
 import os
 import subprocess
 import itertools
-# from pathlib import Path
 import random
 from shutil import copyfile
 import numpy as np
 import soundfile as sf
 import librosa
+import json
 
-# from utils import load_model, apply_model
 import ConvTasNetUniversal.separate as TDCNNpp_separate
 import open_unmix.separate as open_unmix
 import demucs.separate as demucs
 
 
+############################################################################
+# To run this file, fill in the following path variables then run the file #
+############################################################################
+
 TINYSOL_PATH = "../TinySOL"  # path to the TinySOL database
 DB_PATH = "../TinySOL.spectrum.db"  # path to the analysis file of TinySOL, ex: TinySOL.spectrum.db
-CONFIG_PATH = "orch_config.txt"
-TARGETS_PATH = "./database"  # path to the fuss database of targets
+TARGETS_PATH = "../csmc_mume_2020/targets"  # path to the database of targets
+TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNNpp model
+
+########################################################
+# You shouldn't need to change the following variables #
+########################################################
+
+CONFIG_PATH = "orch_config.txt"  # path to the Orchidea configuration file (you shouldn't have to change this!)
 TEMP_OUTPUT_PATH = "./TEMP"
-TDCNNpp_model_path = "./trained_TDCNNpp"
+RESULTS_PATH = "./results.json"
 TDCNNpp_nb_sub_targets = 4
 SAMPLING_RATE = 44100
 NUM_SUBTARGETS = 2
 full_orchestra = ['Bn', 'ClBb', 'Fl', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc', 'Vn']
 
 
-def clearTemp():
+def clear_temp():
     """
     Clear the temp directory containing the outputs of the different models
     """
     if os.path.exists(TEMP_OUTPUT_PATH):
-        os.rmdir(TEMP_OUTPUT_PATH)
+        clear_directory(TEMP_OUTPUT_PATH)
+
+
+def clear_directory(path):
+    for file in os.listdir(path):
+        full_path = os.path.join(path, file)
+        if os.path.isdir(full_path):
+            clear_directory(full_path)
+            os.rmdir(full_path)
+        else:
+            os.remove(full_path)
+    if os.path.isdir(path):
+        os.rmdir(path)
 
 
 def separate(audio_path, model_name, num_subtargets, *args):
@@ -270,7 +291,12 @@ def combine(samples):
     return combination
 
 
+def mean(lst):
+    return sum(lst) / len(lst)
+
+
 if __name__ == "__main__":
+    num_completed = 0
     # distances for non-separated targets
     # full_target_distances[i] is the average across thresholds for distance of full target i
     full_target_distances = []
@@ -278,17 +304,38 @@ if __name__ == "__main__":
     # separated_target_distances[i] is a list of avg distances for each separation function for target i
     separated_target_distances = []
 
+    # a dictionary that represents the current state of the pipeline, including how many targets have
+    # been completed, and the distances.
+    # this is stored/loaded as a json so the process can be stopped and restarted
+    results = {'num_completed': num_completed,
+               'full_target_distances': full_target_distances,
+               'separated_target_distances': separated_target_distances}
+
+    # load saved results from json, or create json if none exists
+    try:
+        results_file = open(RESULTS_PATH, 'r')
+        results = json.load(results_file)
+        if len(results) != 0:  # if it's not an empty json
+            num_completed = results['num_completed']
+            full_target_distances = results['full_target_distances']
+            separated_target_distances = results['separated_target_distances']
+    except FileNotFoundError:
+        results_file = open(RESULTS_PATH, 'w')
+
+    results_file.close()
+
     targets = librosa.util.find_files(TARGETS_PATH, recurse=False)
     copyfile('orch_config_template.txt', CONFIG_PATH)
 
     set_config_parameter(CONFIG_PATH, 'sound_paths', TINYSOL_PATH)
     set_config_parameter(CONFIG_PATH, 'db_files', DB_PATH)
 
-    for target_path in targets[:1]:
+    while num_completed < len(targets):
+        target_path = targets[num_completed]
         print("Target:", target_path.split('/')[-1])
         target, _ = librosa.load(target_path, sr=None)
         # orchestrate full (non-separated) target with Orchidea
-        # print("Orchestrating full target")
+        print("Orchestrating full target")
         full_target_distance = 0
         set_config_parameter(CONFIG_PATH, 'orchestra', full_orchestra)
         for onset_threshold in thresholds:
@@ -300,7 +347,7 @@ if __name__ == "__main__":
         print("Full target distance:", full_target_distance)
 
         # separate target into subtargets using different separator functions
-        # print("Separating target into subtargets")
+        print("Separating target into subtargets")
         # all_subtargets[i] is a list of subtargets as output by the ith separation function
         all_subtargets = []
         for separator in separation_functions:
@@ -308,7 +355,7 @@ if __name__ == "__main__":
             all_subtargets.append(subtargets)
 
         # orchestrate subtargets with different segmentation thresholds
-        # print("Orchestrating subtargets with different thresholds")
+        print("Orchestrating subtargets with different thresholds")
         orchestras = assign_orchestras(NUM_SUBTARGETS)
         # orchestrated_subtargets[i][j][k] is
         # the jth subtarget, separated via algorithm i, orchestrated with threshold k
@@ -341,17 +388,25 @@ if __name__ == "__main__":
             distances.append(distance)
         separated_target_distances.append(distances)
         print("Separated target distance:", sum(distances) / len(distances))
+
+        num_completed += 1
+        # save results to json
+        results['num_completed'] = num_completed
+        results['full_target_distances'] = full_target_distances
+        results['separated_target_distances'] = separated_target_distances
+        with open(RESULTS_PATH, 'w') as f:
+            json.dump(results, f)
+
     # compute average across different separation methods
     for i in range(len(separated_target_distances)):
-        target_distances = separated_target_distances[i]
-        separated_target_distances[i] = sum(target_distances) / len(target_distances)
+        separated_target_distances[i] = mean(separated_target_distances[i])
+        # at this point, separated_target_distances[i] is the avg distance across all methods for target i
 
     print("Full Target Avg Distances:", full_target_distances)
     print("Separated Target Avg Distances:", separated_target_distances)
-    print("Average distance of full targets:", sum(full_target_distances) / len(full_target_distances))
-    print("Average distance of separated targets:", sum(separated_target_distances) / len(separated_target_distances))
+    print("Average distance of full targets:", mean(full_target_distances))
+    print("Average distance of separated targets:", mean(separated_target_distances))
 
     # remove files created during pipeline
-    clearTemp()
     for file in ['target.wav', 'segments.txt']:
         os.remove(file)
