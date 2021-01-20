@@ -18,8 +18,8 @@ import demucs.separate as demucs
 ############################################################################
 
 TINYSOL_PATH = "../TinySOL"  # path to the TinySOL database
-DB_PATH = "../TinySOL.spectrum.db"  # path to the analysis file of TinySOL, ex: TinySOL.spectrum.db
-TARGETS_PATH = "../csmc_mume_2020/targets"  # path to the database of targets
+ANALYSIS_DB_PATH = "../TinySOL.spectrum.db"  # path to the analysis file of TinySOL, ex: TinySOL.spectrum.db
+TARGETS_PATH = "./database"  # path to the database of targets
 TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNNpp model
 
 ########################################################
@@ -31,8 +31,11 @@ TEMP_OUTPUT_PATH = "./TEMP"
 RESULTS_PATH = "./results.json"
 TDCNNpp_nb_sub_targets = 4
 SAMPLING_RATE = 44100
-NUM_SUBTARGETS = 2
-full_orchestra = ['Bn', 'ClBb', 'Fl', 'Hn', 'Ob', 'Tbn', 'TpC', 'Va', 'Vc', 'Vn']
+NUM_SUBTARGETS = 4
+full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
+                  'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
+separation_models = ["TDCNN++", "TDCNN", "Demucs", "OpenUnmix"]
+thresholds = [0.1, 0.2, 0.5]  # onset thresholds for dynamic orchestration
 
 
 def clear_temp():
@@ -90,7 +93,7 @@ def separate(audio_path, model_name, num_subtargets, *args):
     sub_targets = []
     sr = None
 
-    if model_name in ["TDCNN++", "TDCNN", "OpenUnmix", "Demucs"]:
+    if model_name in separation_models:
         if num_subtargets != len(args[0]):
             raise Exception("For {}, it is required to specify the way to combine the sub targets to generate NUM_SUBTARGETS sub targets. Must be of the form [[0, 3], [1, 2]]".format(model_name))
         for l in args[0]:
@@ -147,19 +150,17 @@ def generate_separation_function(model_name, num_sub_targets):
 
 
 def generate_all_separation_functions():
-    functions = []
-    for model in ["TDCNN++", "TDCNN", "Demucs", "OpenUnmix"]:
-        functions.extend(generate_separation_function(model, NUM_SUBTARGETS))
+    functions = {}
+    for model in separation_models:
+        functions[model] = generate_separation_function(model, NUM_SUBTARGETS)[0]
     return functions
 
 
-# a list of functions where each function takes two parameters
+# a dict of functions where each function takes two parameters
 # the first parameter is audio
 # the second parameter is the number of subtargets to separate the target into
 separation_functions = generate_all_separation_functions()
 num_separation_functions = len(separation_functions)
-
-thresholds = [0, 0.3, 0.9]  # onset thresholds for dynamic orchestration
 
 
 def set_config_parameter(config_file_path, parameter, value):
@@ -295,21 +296,42 @@ def mean(lst):
     return sum(lst) / len(lst)
 
 
+def get_fuss_subset():
+    """
+
+    :return: A list of paths to a subset of the FUSS database where each target
+    has exactly NUM_SUBTARGETS sources
+    """
+    subset = []  # each element is a path to a FUSS database sample
+    for file in os.listdir(TARGETS_PATH):
+        directory = os.path.join(TARGETS_PATH, file)
+        if os.path.isdir(directory):
+            dir_len = len([_ for _ in os.listdir(directory)])
+            if dir_len == NUM_SUBTARGETS:
+                file_name = file.split("_")[0] + ".wav"
+                full_path = os.path.join(TARGETS_PATH, file_name)
+                subset.append(full_path)
+    subset.sort()  # to keep consistency across different computers
+    return subset
+
+
 if __name__ == "__main__":
     num_completed = 0
     # distances for non-separated targets
-    # full_target_distances[i] is the average across thresholds for distance of full target i
-    full_target_distances = []
+    # sum_full_target_distances is the running sum of the distance of orchestrating full targets without separation
+    sum_full_target_distances = 0
     # distances for separated targets
-    # separated_target_distances[i] is a list of avg distances for each separation function for target i
-    separated_target_distances = []
+    # sum_separated_target_distances maps a separation model to a running sum of distances for that model
+    sum_separated_target_distances = {}
+    for model in separation_models:
+        sum_separated_target_distances[model] = 0
 
     # a dictionary that represents the current state of the pipeline, including how many targets have
     # been completed, and the distances.
     # this is stored/loaded as a json so the process can be stopped and restarted
     results = {'num_completed': num_completed,
-               'full_target_distances': full_target_distances,
-               'separated_target_distances': separated_target_distances}
+               'sum_full_target_distances': sum_full_target_distances,
+               'sum_separated_target_distances': sum_separated_target_distances}
 
     # load saved results from json, or create json if none exists
     try:
@@ -317,23 +339,27 @@ if __name__ == "__main__":
         results = json.load(results_file)
         if len(results) != 0:  # if it's not an empty json
             num_completed = results['num_completed']
-            full_target_distances = results['full_target_distances']
-            separated_target_distances = results['separated_target_distances']
+            sum_full_target_distances = results['sum_full_target_distances']
+            sum_separated_target_distances = results['sum_separated_target_distances']
+            print("Backing up results.json to results_backup.json")
+            copyfile(RESULTS_PATH, 'results_backup.json')
     except FileNotFoundError:
         results_file = open(RESULTS_PATH, 'w')
-
     results_file.close()
-
-    targets = librosa.util.find_files(TARGETS_PATH, recurse=False)
+ 
+    # targets = librosa.util.find_files(TARGETS_PATH, recurse=False)
+    targets = get_fuss_subset()
+    print("Database contains {} targets".format(len(targets)))
     copyfile('orch_config_template.txt', CONFIG_PATH)
 
     set_config_parameter(CONFIG_PATH, 'sound_paths', TINYSOL_PATH)
-    set_config_parameter(CONFIG_PATH, 'db_files', DB_PATH)
+    set_config_parameter(CONFIG_PATH, 'db_files', ANALYSIS_DB_PATH)
 
     while num_completed < len(targets):
         target_path = targets[num_completed]
         print("Target:", target_path.split('/')[-1])
         target, _ = librosa.load(target_path, sr=None)
+
         # orchestrate full (non-separated) target with Orchidea
         print("Orchestrating full target")
         full_target_distance = 0
@@ -343,26 +369,29 @@ if __name__ == "__main__":
             solution = orchestrate(target, CONFIG_PATH)
             full_target_distance += spectral_distance(target, solution)
         full_target_distance /= len(thresholds)  # average of distances
-        full_target_distances.append(full_target_distance)
-        print("Full target distance:", full_target_distance)
+        sum_full_target_distances += full_target_distance
+        # print("Full target distance:", full_target_distance)
+        # print("Sum of full target distances:", sum_full_target_distances)
 
         # separate target into subtargets using different separator functions
         print("Separating target into subtargets")
-        # all_subtargets[i] is a list of subtargets as output by the ith separation function
-        all_subtargets = []
-        for separator in separation_functions:
+        # all_subtargets maps a model name to a list of subtargets
+        all_subtargets = {}
+        for model, separator in separation_functions.items():
             subtargets, sr = separator(target_path, NUM_SUBTARGETS)
-            all_subtargets.append(subtargets)
+            all_subtargets[model] = subtargets
 
         # orchestrate subtargets with different segmentation thresholds
         print("Orchestrating subtargets with different thresholds")
         orchestras = assign_orchestras(NUM_SUBTARGETS)
-        # orchestrated_subtargets[i][j][k] is
-        # the jth subtarget, separated via algorithm i, orchestrated with threshold k
-        orchestrated_subtargets = [[[] for _ in range(NUM_SUBTARGETS)] for _ in range(num_separation_functions)]
-        for i in range(len(all_subtargets)):
+        # orchestrated_subtargets[model][j][k] is
+        # the jth subtarget, separated via 'model', orchestrated with threshold k
+        orchestrated_subtargets = {}
+        for model in separation_functions.keys():
+            orchestrated_subtargets[model] = [[] for _ in range(NUM_SUBTARGETS)]
+
+        for model, subtargets in all_subtargets.items():
             # for each separation algorithm
-            subtargets = all_subtargets[i]
             for j in range(len(subtargets)):
                 # for each subtarget
                 subtarget = subtargets[j]
@@ -372,41 +401,28 @@ if __name__ == "__main__":
                     # orchestrate with threshold
                     set_config_parameter(CONFIG_PATH, 'onsets_threshold', threshold)
                     solution = orchestrate(subtarget, CONFIG_PATH)
-                    orchestrated_subtargets[i][j].append(solution)
+                    orchestrated_subtargets[model][j].append(solution)
 
         # create all possible combinations of orchestrated subtargets and calculate distance
         # print("Combining subtargets and calculating distance")
-        # distances[i] is the avg distance for separation algorithm i
-        distances = []
-        for subtargets in orchestrated_subtargets:
+        for model, subtargets in orchestrated_subtargets.items():
             # for each separation algorithm
             combinations = create_combinations(subtargets)
             distance = 0
             for solution in combinations:
                 distance += spectral_distance(target, solution)
             distance /= len(combinations)
-            distances.append(distance)
-        separated_target_distances.append(distances)
-        print("Separated target distance:", sum(distances) / len(distances))
+            sum_separated_target_distances[model] += distance
 
         num_completed += 1
         # save results to json
         results['num_completed'] = num_completed
-        results['full_target_distances'] = full_target_distances
-        results['separated_target_distances'] = separated_target_distances
+        results['sum_full_target_distances'] = sum_full_target_distances
+        results['sum_separated_target_distances'] = sum_separated_target_distances
         with open(RESULTS_PATH, 'w') as f:
             json.dump(results, f)
 
-    # compute average across different separation methods
-    for i in range(len(separated_target_distances)):
-        separated_target_distances[i] = mean(separated_target_distances[i])
-        # at this point, separated_target_distances[i] is the avg distance across all methods for target i
-
-    print("Full Target Avg Distances:", full_target_distances)
-    print("Separated Target Avg Distances:", separated_target_distances)
-    print("Average distance of full targets:", mean(full_target_distances))
-    print("Average distance of separated targets:", mean(separated_target_distances))
-
     # remove files created during pipeline
     for file in ['target.wav', 'segments.txt']:
-        os.remove(file)
+        if os.path.exists(file):
+            os.remove(file)
