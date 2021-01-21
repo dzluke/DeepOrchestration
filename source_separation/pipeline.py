@@ -22,6 +22,7 @@ ANALYSIS_DB_PATH = "../TinySOL.spectrum.db"  # path to the analysis file of Tiny
 TARGETS_PATH = "./database"  # path to the database of targets
 TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNNpp model
 
+
 ########################################################
 # You shouldn't need to change the following variables #
 ########################################################
@@ -325,13 +326,16 @@ if __name__ == "__main__":
     sum_separated_target_distances = {}
     for model in separation_models:
         sum_separated_target_distances[model] = 0
+    # sum of distance for ground truth orchestrations
+    sum_ground_truth_distances = 0
 
     # a dictionary that represents the current state of the pipeline, including how many targets have
     # been completed, and the distances.
     # this is stored/loaded as a json so the process can be stopped and restarted
     results = {'num_completed': num_completed,
                'sum_full_target_distances': sum_full_target_distances,
-               'sum_separated_target_distances': sum_separated_target_distances}
+               'sum_separated_target_distances': sum_separated_target_distances,
+               'sum_ground_truth_distances': sum_ground_truth_distances}
 
     # load saved results from json, or create json if none exists
     try:
@@ -341,6 +345,7 @@ if __name__ == "__main__":
             num_completed = results['num_completed']
             sum_full_target_distances = results['sum_full_target_distances']
             sum_separated_target_distances = results['sum_separated_target_distances']
+            sum_ground_truth_distances = results['sum_ground_truth_distances']
             print("Backing up results.json to results_backup.json")
             copyfile(RESULTS_PATH, 'results_backup.json')
     except FileNotFoundError:
@@ -414,11 +419,41 @@ if __name__ == "__main__":
             distance /= len(combinations)
             sum_separated_target_distances[model] += distance
 
+        # calculate ground truth
+        print("Orchestrating ground truth")
+        parent, name = os.path.split(target_path)
+        name = name[:-4]  # remove .wav
+        sources_folder = os.path.join(parent, name + '_sources')
+        sources = []
+        for file in os.listdir(sources_folder):
+            file = os.path.join(sources_folder, file)
+            audio, _ = librosa.load(file, sr=None)
+            sources.append(audio)
+        assert len(sources) == NUM_SUBTARGETS
+        solutions = [[] for _ in range(len(sources))]
+        for i in range(len(sources)):
+            source = sources[i]
+            orchestra = orchestras[i]
+            set_config_parameter(CONFIG_PATH, 'orchestra', orchestra)
+            for threshold in thresholds:
+                # orchestrate with threshold
+                set_config_parameter(CONFIG_PATH, 'onsets_threshold', threshold)
+                solution = orchestrate(source, CONFIG_PATH)
+                solutions[i].append(solution)
+
+        combinations = create_combinations(solutions)
+        distance = 0
+        for solution in combinations:
+            distance += spectral_distance(target, solution)
+        distance /= len(combinations)
+        sum_ground_truth_distances += distance
+
         num_completed += 1
         # save results to json
         results['num_completed'] = num_completed
         results['sum_full_target_distances'] = sum_full_target_distances
         results['sum_separated_target_distances'] = sum_separated_target_distances
+        results['sum_ground_truth_distances'] = sum_ground_truth_distances
         with open(RESULTS_PATH, 'w') as f:
             json.dump(results, f)
 
