@@ -22,6 +22,9 @@ ANALYSIS_DB_PATH = "../TinySOL.spectrum.db"  # path to the analysis file of Tiny
 TARGETS_PATH = "./database"  # path to the database of targets
 TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNNpp model
 
+# If you want to save orchestrations, set the following variables
+SAVED_ORCHESTRATIONS_PATH = "./saved_orchestrations"
+num_orchestrations_to_save = 5
 
 ########################################################
 # You shouldn't need to change the following variables #
@@ -36,7 +39,7 @@ NUM_SUBTARGETS = 4
 full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
                   'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
 separation_models = ["TDCNN++", "TDCNN", "Demucs", "OpenUnmix"]
-thresholds = [0.1, 0.2, 0.5]  # onset thresholds for dynamic orchestration
+thresholds = [0.1, 0.2, 0.31]  # onset thresholds for dynamic orchestration
 
 
 def clear_temp():
@@ -297,9 +300,9 @@ def mean(lst):
     return sum(lst) / len(lst)
 
 
-def get_fuss_subset():
+def get_fuss_subset(num_sources):
     """
-
+    :param num_sources: Only targets made with 'num_sources' sources will be returned
     :return: A list of paths to a subset of the FUSS database where each target
     has exactly NUM_SUBTARGETS sources
     """
@@ -308,7 +311,7 @@ def get_fuss_subset():
         directory = os.path.join(TARGETS_PATH, file)
         if os.path.isdir(directory):
             dir_len = len([_ for _ in os.listdir(directory)])
-            if dir_len == NUM_SUBTARGETS:
+            if dir_len == num_sources:
                 file_name = file.split("_")[0] + ".wav"
                 full_path = os.path.join(TARGETS_PATH, file_name)
                 subset.append(full_path)
@@ -318,24 +321,26 @@ def get_fuss_subset():
 
 if __name__ == "__main__":
     num_completed = 0
-    # distances for non-separated targets
-    # sum_full_target_distances is the running sum of the distance of orchestrating full targets without separation
-    sum_full_target_distances = 0
+    # full_target_distances is a nested list of distances of orchestrating full targets without separation
+    # full_target_distances[i][k] is the distance between target i and the orchestration of target i with threshold k
+    full_target_distances = []
     # distances for separated targets
-    # sum_separated_target_distances maps a separation model to a running sum of distances for that model
-    sum_separated_target_distances = {}
+    # separated_target_distances['model'][i] is a list of length 81 of the distances for all possible combinations (3^4)
+    # of target i after being separated by 'model', orchestrated, then combined
+    separated_target_distances = {}
     for model in separation_models:
-        sum_separated_target_distances[model] = 0
-    # sum of distance for ground truth orchestrations
-    sum_ground_truth_distances = 0
+        separated_target_distances[model] = []
+    # ground_truth_distances[i] is a list of length 81, it is the distances for all possible combinations of
+    # orchestrations of the ground truth source subtargets
+    ground_truth_distances = []
 
     # a dictionary that represents the current state of the pipeline, including how many targets have
     # been completed, and the distances.
     # this is stored/loaded as a json so the process can be stopped and restarted
     results = {'num_completed': num_completed,
-               'sum_full_target_distances': sum_full_target_distances,
-               'sum_separated_target_distances': sum_separated_target_distances,
-               'sum_ground_truth_distances': sum_ground_truth_distances}
+               'full_target_distances': full_target_distances,
+               'separated_target_distances': separated_target_distances,
+               'ground_truth_distances': ground_truth_distances}
 
     # load saved results from json, or create json if none exists
     try:
@@ -343,9 +348,9 @@ if __name__ == "__main__":
         results = json.load(results_file)
         if len(results) != 0:  # if it's not an empty json
             num_completed = results['num_completed']
-            sum_full_target_distances = results['sum_full_target_distances']
-            sum_separated_target_distances = results['sum_separated_target_distances']
-            sum_ground_truth_distances = results['sum_ground_truth_distances']
+            full_target_distances = results['full_target_distances']
+            separated_target_distances = results['separated_target_distances']
+            ground_truth_distances = results['ground_truth_distances']
             print("Backing up results.json to results_backup.json")
             copyfile(RESULTS_PATH, 'results_backup.json')
     except FileNotFoundError:
@@ -353,30 +358,36 @@ if __name__ == "__main__":
     results_file.close()
  
     # targets = librosa.util.find_files(TARGETS_PATH, recurse=False)
-    targets = get_fuss_subset()
+    targets = get_fuss_subset(NUM_SUBTARGETS)
     print("Database contains {} targets".format(len(targets)))
     copyfile('orch_config_template.txt', CONFIG_PATH)
 
     set_config_parameter(CONFIG_PATH, 'sound_paths', TINYSOL_PATH)
     set_config_parameter(CONFIG_PATH, 'db_files', ANALYSIS_DB_PATH)
 
+    if num_orchestrations_to_save > 0:
+        if not os.path.exists(SAVED_ORCHESTRATIONS_PATH):
+            os.mkdir(SAVED_ORCHESTRATIONS_PATH)
+
     while num_completed < len(targets):
         target_path = targets[num_completed]
-        print("Target:", target_path.split('/')[-1])
-        target, _ = librosa.load(target_path, sr=None)
+         target_name = target_path.split('/')[-1]
+        print("Target:", target_name)
+        target, sr = librosa.load(target_path, sr=None)
 
         # orchestrate full (non-separated) target with Orchidea
         print("Orchestrating full target")
         full_target_distance = 0
         set_config_parameter(CONFIG_PATH, 'orchestra', full_orchestra)
+        full_target_solutions = []
+        distances = []
         for onset_threshold in thresholds:
             set_config_parameter(CONFIG_PATH, 'onsets_threshold', onset_threshold)
             solution = orchestrate(target, CONFIG_PATH)
-            full_target_distance += spectral_distance(target, solution)
-        full_target_distance /= len(thresholds)  # average of distances
-        sum_full_target_distances += full_target_distance
-        # print("Full target distance:", full_target_distance)
-        # print("Sum of full target distances:", sum_full_target_distances)
+            full_target_solutions.append(solution)
+            distance = spectral_distance(target, solution)
+            distances.append(distance)
+        full_target_distances.append(distances)
 
         # separate target into subtargets using different separator functions
         print("Separating target into subtargets")
@@ -410,19 +421,20 @@ if __name__ == "__main__":
 
         # create all possible combinations of orchestrated subtargets and calculate distance
         # print("Combining subtargets and calculating distance")
+        combinations = {}
         for model, subtargets in orchestrated_subtargets.items():
             # for each separation algorithm
-            combinations = create_combinations(subtargets)
-            distance = 0
-            for solution in combinations:
-                distance += spectral_distance(target, solution)
-            distance /= len(combinations)
-            sum_separated_target_distances[model] += distance
+            combinations[model] = create_combinations(subtargets)
+            distances = []
+            for solution in combinations[model]:
+                distance = spectral_distance(target, solution)
+                distances.append(distance)
+            separated_target_distances[model].append(distances)
 
         # calculate ground truth
         print("Orchestrating ground truth")
         parent, name = os.path.split(target_path)
-        name = name[:-4]  # remove .wav
+        name = name[:-4]  # remove '.wav' from the name
         sources_folder = os.path.join(parent, name + '_sources')
         sources = []
         for file in os.listdir(sources_folder):
@@ -441,19 +453,44 @@ if __name__ == "__main__":
                 solution = orchestrate(source, CONFIG_PATH)
                 solutions[i].append(solution)
 
-        combinations = create_combinations(solutions)
-        distance = 0
-        for solution in combinations:
-            distance += spectral_distance(target, solution)
-        distance /= len(combinations)
-        sum_ground_truth_distances += distance
+        ground_truth_combinations = create_combinations(solutions)
+        distances = []
+        for solution in ground_truth_combinations:
+            distance = spectral_distance(target, solution)
+            distances.append(distance)
+        ground_truth_distances.append(distances)
+
+        if num_orchestrations_to_save > 0:
+            orch_folder_path = target_name[:-4] + "_orchestrations"
+            orch_folder_path = os.path.join(SAVED_ORCHESTRATIONS_PATH, orch_folder_path)
+            if not os.path.exists(orch_folder_path):
+                os.mkdir(orch_folder_path)
+            # save target
+            copyfile(target_path, os.path.join(orch_folder_path, target_name))
+            # save best full target orchestration
+            distances = full_target_distances[-1]
+            index = distances.index(min(distances))
+            best_solution = full_target_solutions[index]
+            sf.write(os.path.join(orch_folder_path, "full_orchestration.wav"), best_solution, SAMPLING_RATE)
+            # save best separated orchestration
+            for model, combinations in combinations.items():
+                distances = separated_target_distances[model][-1]
+                index = distances.index(min(distances))
+                best_solution = combinations[index]
+                sf.write(os.path.join(orch_folder_path, model + "_orchestration.wav"), best_solution, SAMPLING_RATE)
+            # save best ground truth orchestration
+            distances = ground_truth_distances[-1]
+            index = distances.index(min(distances))
+            best_solution = ground_truth_combinations[index]
+            sf.write(os.path.join(orch_folder_path, "ground_truth_orchestration.wav"), best_solution, SAMPLING_RATE)
+            num_orchestrations_to_save -= 1
 
         num_completed += 1
         # save results to json
         results['num_completed'] = num_completed
-        results['sum_full_target_distances'] = sum_full_target_distances
-        results['sum_separated_target_distances'] = sum_separated_target_distances
-        results['sum_ground_truth_distances'] = sum_ground_truth_distances
+        results['full_target_distances'] = full_target_distances
+        results['separated_target_distances'] = separated_target_distances
+        results['ground_truth_distances'] = ground_truth_distances
         with open(RESULTS_PATH, 'w') as f:
             json.dump(results, f)
 
