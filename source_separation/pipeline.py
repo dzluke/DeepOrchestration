@@ -24,7 +24,7 @@ TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNNpp model
 
 # If you want to save orchestrations, set the following variables
 SAVED_ORCHESTRATIONS_PATH = "./saved_orchestrations"
-num_orchestrations_to_save = 5
+num_orchestrations_to_save = 0
 
 ########################################################
 # You shouldn't need to change the following variables #
@@ -39,7 +39,7 @@ NUM_SUBTARGETS = 4
 full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
                   'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
 separation_models = ["TDCNN++", "TDCNN", "Demucs", "OpenUnmix"]
-thresholds = [0.1, 0.2, 0.31]  # onset thresholds for dynamic orchestration
+thresholds = [0.1, 0.2, 0.3]  # onset thresholds for dynamic orchestration
 
 
 def clear_temp():
@@ -371,7 +371,7 @@ if __name__ == "__main__":
 
     while num_completed < len(targets):
         target_path = targets[num_completed]
-         target_name = target_path.split('/')[-1]
+        target_name = target_path.split('/')[-1]
         print("Target:", target_name)
         target, sr = librosa.load(target_path, sr=None)
 
