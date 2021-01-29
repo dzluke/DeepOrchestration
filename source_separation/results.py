@@ -14,11 +14,6 @@ if __name__ == "__main__":
     min_full_target_distances = list(map(min, full_target_distances))
     print("Average of minimum full target distances:", mean(min_full_target_distances))
 
-    for i in range(len(thresholds)):
-        threshold_distance = [x[i] for x in full_target_distances]
-        avg_threshold_distance = mean(threshold_distance)
-        print("Average full target distance for threshold {}: {}".format(thresholds[i], avg_threshold_distance))
-
     print("Average of minimum separated distances")
     for model, distances in separated_target_distances.items():
         min_distances = list(map(min, distances))
@@ -27,3 +22,21 @@ if __name__ == "__main__":
 
     min_ground_truth_distances = list(map(min, ground_truth_distances))
     print("Average of minimum ground truth distances:", mean(min_ground_truth_distances))
+
+    print("-----------------------------------")
+
+    for i in range(len(thresholds)):
+        threshold_distance = [x[i] for x in full_target_distances]
+        avg_threshold_distance = mean(threshold_distance)
+        print("Average full target distance for threshold {}: {}".format(thresholds[i], avg_threshold_distance))
+
+    threshold_indices = [0, 40, 80]
+    print("Average distances across thresholds per method")
+    for model, distances in separated_target_distances.items():
+        print("\t" + model)
+        for i in range(len(thresholds)):
+            index = threshold_indices[i]
+            threshold_distance = [x[index] for x in distances]
+            avg_threshold_distance = mean(threshold_distance)
+            print("\t\tAverage distance for threshold {}: {}".format(thresholds[i], avg_threshold_distance))
+

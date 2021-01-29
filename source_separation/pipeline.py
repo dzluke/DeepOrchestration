@@ -47,15 +47,14 @@ def clear_temp():
     Clear the temp directory containing the outputs of the different models
     """
     if os.path.exists(TEMP_OUTPUT_PATH):
-        clear_directory(TEMP_OUTPUT_PATH)
+        remove_directory(TEMP_OUTPUT_PATH)
 
 
-def clear_directory(path):
+def remove_directory(path):
     for file in os.listdir(path):
         full_path = os.path.join(path, file)
         if os.path.isdir(full_path):
-            clear_directory(full_path)
-            os.rmdir(full_path)
+            remove_directory(full_path)
         else:
             os.remove(full_path)
     if os.path.isdir(path):
@@ -493,6 +492,12 @@ if __name__ == "__main__":
         results['ground_truth_distances'] = ground_truth_distances
         with open(RESULTS_PATH, 'w') as f:
             json.dump(results, f)
+
+        # remove temp files created during separation
+        for model_name in separation_models:
+            path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name[:-4])
+            if os.path.exists(path):
+                remove_directory(path)
 
     # remove files created during pipeline
     for file in ['target.wav', 'segments.txt']:
