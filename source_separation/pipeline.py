@@ -317,6 +317,19 @@ def get_fuss_subset(num_sources):
     subset.sort()  # to keep consistency across different computers
     return subset
 
+def save_best_orchestration(solutions, distances, file_path):
+    """
+    Save the solution in 'solutions' with shortest distance in 'distances'. Writes a wav to 'file_path'
+    :param solutions: list of solutions as numpy arrays
+    :param distances: list of distances, where distances[i] is the distance from the target
+    to solutions[i]
+    :param filename: full path to write the file to
+    :return: None
+    """
+    index = distances.index(min(distances))
+    best_solution = solutions[index]
+    sf.write(file_path, best_solution, SAMPLING_RATE)
+
 
 if __name__ == "__main__":
     num_completed = 0
@@ -468,20 +481,16 @@ if __name__ == "__main__":
             copyfile(target_path, os.path.join(orch_folder_path, target_name))
             # save best full target orchestration
             distances = full_target_distances[-1]
-            index = distances.index(min(distances))
-            best_solution = full_target_solutions[index]
-            sf.write(os.path.join(orch_folder_path, "full_orchestration.wav"), best_solution, SAMPLING_RATE)
+            save_best_orchestration(full_target_solutions, distances, name)
             # save best separated orchestration
             for model, combinations in combinations.items():
                 distances = separated_target_distances[model][-1]
-                index = distances.index(min(distances))
-                best_solution = combinations[index]
-                sf.write(os.path.join(orch_folder_path, model + "_orchestration.wav"), best_solution, SAMPLING_RATE)
+                name = os.path.join(orch_folder_path, model + "_orchestration.wav")
+                save_best_orchestration(combinations, distances, name)
             # save best ground truth orchestration
             distances = ground_truth_distances[-1]
-            index = distances.index(min(distances))
-            best_solution = ground_truth_combinations[index]
-            sf.write(os.path.join(orch_folder_path, "ground_truth_orchestration.wav"), best_solution, SAMPLING_RATE)
+            name = os.path.join(orch_folder_path, "ground_truth_orchestration.wav")
+            save_best_orchestration(ground_truth_combinations, distances, name)
             num_orchestrations_to_save -= 1
 
         num_completed += 1
