@@ -11,6 +11,16 @@ if __name__ == "__main__":
     separated_target_distances = results['separated_target_distances']
     ground_truth_distances = results['ground_truth_distances']
 
+    avg_full_target_distance = [mean(x) for x in full_target_distances]
+    print("Average full target distance:", mean(avg_full_target_distance))
+    print("Average separated distance:")
+    for model, distances in separated_target_distances.items():
+        print("\t{} : {}".format(model, mean([mean(x) for x in distances])))
+    avg_ground_truth_distance = [mean(x) for x in ground_truth_distances]
+    print("Average ground truth distance:", mean(avg_ground_truth_distance))
+
+    print("---------------------------")
+
     min_full_target_distances = list(map(min, full_target_distances))
     print("Average of minimum full target distances:", mean(min_full_target_distances))
 

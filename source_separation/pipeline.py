@@ -61,6 +61,15 @@ def remove_directory(path):
         os.rmdir(path)
 
 
+def clear_directory(path):
+    for file in os.listdir(path):
+        full_path = os.path.join(path, file)
+        if os.path.isdir(full_path):
+            clear_directory(full_path)
+        else:
+            os.remove(full_path)
+
+
 def separate(audio_path, model_name, num_subtargets, *args):
     """
     Separate the audio into the given
@@ -317,18 +326,62 @@ def get_fuss_subset(num_sources):
     subset.sort()  # to keep consistency across different computers
     return subset
 
+
+def get_fuss_sources(target_path):
+    """
+    :param target_path: Path to target
+    :return: List of the sources as audio files that created the target
+    """
+    parent, name = os.path.split(target_path)
+    name = name[:-4]  # remove '.wav' from the name
+    sources_folder = os.path.join(parent, name + '_sources')
+    sources = []
+    for file in os.listdir(sources_folder):
+        file = os.path.join(sources_folder, file)
+        audio, _ = librosa.load(file, sr=None)
+        sources.append(audio)
+    return sources
+
+
 def save_best_orchestration(solutions, distances, file_path):
     """
     Save the solution in 'solutions' with shortest distance in 'distances'. Writes a wav to 'file_path'
     :param solutions: list of solutions as numpy arrays
     :param distances: list of distances, where distances[i] is the distance from the target
     to solutions[i]
-    :param filename: full path to write the file to
+    :param file_path: full path to write the file to
     :return: None
     """
     index = distances.index(min(distances))
     best_solution = solutions[index]
     sf.write(file_path, best_solution, SAMPLING_RATE)
+
+
+def create_targets(paths):
+    """
+    All samples in paths[i] are combined into a single target and written as .wav's to TARGETS_PATH
+    :param paths: A nested list of paths to samples, ex:[['Beethoven_chord1.wav', 'drops.wav], ['gong.wav', 'bell.wav']]
+    :return:
+    """
+    targets = []
+    names = []
+    for sample_paths in paths:
+        samples = []
+        name = []
+        for path in sample_paths:
+            sample, sr = librosa.load(path, sr=None)
+            samples.append(sample)
+            base = os.path.basename(path)
+            name.append(os.path.splitext(base)[0])
+        combination = combine(samples)
+        targets.append(combination)
+        names.append(name)
+    names = ['+'.join(name) for name in names]
+    # write to folder
+    for i in range(len(targets)):
+        path = os.path.join(TARGETS_PATH, names[i]) + '.wav'
+        if not os.path.exists(path):
+            sf.write(path, targets[i], samplerate=SAMPLING_RATE)
 
 
 if __name__ == "__main__":
@@ -368,9 +421,20 @@ if __name__ == "__main__":
     except FileNotFoundError:
         results_file = open(RESULTS_PATH, 'w')
     results_file.close()
- 
-    # targets = librosa.util.find_files(TARGETS_PATH, recurse=False)
-    targets = get_fuss_subset(NUM_SUBTARGETS)
+
+    target_names = [
+        ['boat_docking.wav', 'drops.wav'],
+        ['vocal_chord.wav', 'Beethoven_Coriolan.wav'],
+        ['Brahms_4.wav', 'Jarrett_Vienna_cut.wav'],
+        ['wind-harp.wav', 'gong_c#3.wav'],
+        ['WinchesterBell.wav', 'car-horn.wav'],
+        ['YanBn-mul-PG-ST12.wav', 'coque.wav'],
+    ]
+    target_paths = []
+    for names in target_names:
+        target_paths.append([os.path.join('../targets', name) for name in names])
+    create_targets(target_paths)
+    targets = librosa.util.find_files(TARGETS_PATH, recurse=False)
     print("Database contains {} targets".format(len(targets)))
     copyfile('orch_config_template.txt', CONFIG_PATH)
 
@@ -383,9 +447,9 @@ if __name__ == "__main__":
 
     while num_completed < len(targets):
         target_path = targets[num_completed]
-        target_name = target_path.split('/')[-1]
+        target, _ = librosa.load(target_path, sr=None)
+        target_name = os.path.basename(target_path)
         print("Target:", target_name)
-        target, sr = librosa.load(target_path, sr=None)
 
         # orchestrate full (non-separated) target with Orchidea
         print("Orchestrating full target")
@@ -445,15 +509,23 @@ if __name__ == "__main__":
 
         # calculate ground truth
         print("Orchestrating ground truth")
-        parent, name = os.path.split(target_path)
-        name = name[:-4]  # remove '.wav' from the name
-        sources_folder = os.path.join(parent, name + '_sources')
+        names = target_name.split('+')
+        for i in range(len(names)):
+            if not names[i].endswith('.wav'):
+                names[i] += '.wav'
+        index = target_names.index(names)
+        source_files = target_paths[index]
         sources = []
-        for file in os.listdir(sources_folder):
-            file = os.path.join(sources_folder, file)
+        for file in source_files:
             audio, _ = librosa.load(file, sr=None)
             sources.append(audio)
-        assert len(sources) == NUM_SUBTARGETS
+        if len(sources) != NUM_SUBTARGETS:
+            if len(sources) == 2:
+                orchestras[0] += orchestras[2]
+                orchestras[1] += orchestras[3]
+                orchestras = orchestras[:2]
+            else:
+                raise Exception("Code is not ready to handle {} sources".format(len(sources)))
         solutions = [[] for _ in range(len(sources))]
         for i in range(len(sources)):
             source = sources[i]
@@ -473,7 +545,7 @@ if __name__ == "__main__":
         ground_truth_distances.append(distances)
 
         if num_orchestrations_to_save > 0:
-            orch_folder_path = target_name[:-4] + "_orchestrations"
+            orch_folder_path = target_name[:-4]
             orch_folder_path = os.path.join(SAVED_ORCHESTRATIONS_PATH, orch_folder_path)
             if not os.path.exists(orch_folder_path):
                 os.mkdir(orch_folder_path)
@@ -481,6 +553,7 @@ if __name__ == "__main__":
             copyfile(target_path, os.path.join(orch_folder_path, target_name))
             # save best full target orchestration
             distances = full_target_distances[-1]
+            name = os.path.join(orch_folder_path, "full_orchestration.wav")
             save_best_orchestration(full_target_solutions, distances, name)
             # save best separated orchestration
             for model, combinations in combinations.items():
