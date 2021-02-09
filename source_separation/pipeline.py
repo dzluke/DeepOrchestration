@@ -39,7 +39,7 @@ NUM_SUBTARGETS = 4
 full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
                   'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
 separation_models = ["TDCNN++", "TDCNN", "Demucs", "OpenUnmix"]
-thresholds = [0.1, 0.2, 0.3]  # onset thresholds for dynamic orchestration
+thresholds = [1]  # onset thresholds for dynamic orchestration
 
 
 def clear_temp():
