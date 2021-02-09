@@ -288,19 +288,34 @@ def create_combinations(samples):
     return list(combinations)
 
 
-def combine(samples):
+def combine(samples, dealign=False):
     """
     combine all samples in 'samples' to play simultaneously
     :param samples: list of audio signals where each element is a numpy array
+    :param dealign: if True, samples will not begin at the same time, instead they will begin at random times
     :return: single audio signal as numpy array, shape (len,) where len is the length of the longest sample in 'samples'
     """
     max_length = max(samples, key=lambda x: x.size)
     max_length = max_length.size
-    samples = [librosa.util.fix_length(y, max_length) for y in samples]
+    num_samples = len(samples)
+    if dealign:
+        random.shuffle(samples)
+        # samples can begin playing between frames 1 and max_length / 2
+        start_frames = random.sample(range(1, max_length / 2), num_samples - 1)
+        start_frames.insert(0, 0)  # the first sample should play immediately
+        for i in range(num_samples):
+            max_length = max(start_frames[i] + samples[i].size, max_length)
+        padding = []
+        for i in range(num_samples):
+            pad = (start_frames[i], max_length - (start_frames[i] + samples[i].size))
+            padding.append(pad)
+        samples = [np.pad(samples[i], padding[i]) for i in range(num_samples)]
+    else:
+        samples = [librosa.util.fix_length(y, max_length) for y in samples]
     combination = np.zeros(max_length)
     for sample in samples:
         combination += sample
-    combination /= len(samples)  # normalize by number of samples
+    combination /= num_samples  # normalize by number of samples
     return combination
 
 
