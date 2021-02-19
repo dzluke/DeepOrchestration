@@ -11,6 +11,7 @@ import json
 import ConvTasNetUniversal.separate as TDCNNpp_separate
 import open_unmix.separate as open_unmix
 import demucs.separate as demucs
+import NMF
 
 
 ############################################################################
@@ -39,7 +40,8 @@ SAMPLING_RATE = 44100
 NUM_SUBTARGETS = 4
 full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
                   'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
-separation_models = ["TDCNN++", "TDCNN", "Demucs", "OpenUnmix"]
+
+separation_models = ["TDCNN++", "TDCNN", "Demucs", "OpenUnmix", "NMF"]
 thresholds = [2]  # onset thresholds for dynamic orchestration
 
 
@@ -99,6 +101,8 @@ def separate(audio_path, model_name, num_subtargets, *args):
             demucs.separate(audio_path, output_path, 'demucs')
         elif model_name == "OpenUnmix":
             open_unmix.separate(audio_path, output_path)
+        elif model_name == "NMF":
+            NMF.separate(audio_path, output_path)
         else:
             raise Exception("Model name must be one of those four : TDCNN, TDCNN++, OpenUnmix, Demucs")
 
@@ -154,8 +158,10 @@ def generate_separation_function(model_name, num_sub_targets):
         init_list = ["drums", "bass", "other", "vocals"]
     elif model_name == "OpenUnmix":
         init_list = ["drums", "bass", "other", "vocals"]
+    elif model_name == "NMF":
+        init_list = ["feat1", "feat2", "feat3", "feat4"]
     else:
-        raise Exception("Model name must be one of those four : TDCNN, TDCNN++, OpenUnmix, Demucs")
+        raise Exception("Model name must be one of those five : TDCNN, TDCNN++, OpenUnmix, Demucs, NMF")
 
     for perm in gen_perm_group(init_list, num_sub_targets):
         l.append(lambda a, n: separate(a, model_name, n, perm))
