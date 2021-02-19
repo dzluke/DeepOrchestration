@@ -17,9 +17,10 @@ import demucs.separate as demucs
 # To run this file, fill in the following path variables then run the file #
 ############################################################################
 
-TINYSOL_PATH = "../TinySOL"  # path to the TinySOL database
-ANALYSIS_DB_PATH = "../TinySOL.spectrum.db"  # path to the analysis file of TinySOL, ex: TinySOL.spectrum.db
-TARGETS_PATH = "./database"  # path to the database of targets
+SOL_PATH = "../OrchideaSOL2020"  # path to the SOL database
+ANALYSIS_DB_PATH = "../OrchideaSOL2020.spectrum.db"  # path to the analysis file of SOL, ex: TinySOL.spectrum.db
+TARGETS_PATH = "./targets"  # path to targets to be orchestrated
+SAMPLE_DATABASE_PATH = "../NIGENS_subset"  # path to samples that will be combined to create targets
 TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNNpp model
 
 # If you want to save orchestrations, set the following variables
@@ -39,7 +40,7 @@ NUM_SUBTARGETS = 4
 full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
                   'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
 separation_models = ["TDCNN++", "TDCNN", "Demucs", "OpenUnmix"]
-thresholds = [1]  # onset thresholds for dynamic orchestration
+thresholds = [2]  # onset thresholds for dynamic orchestration
 
 
 def clear_temp():
@@ -112,7 +113,7 @@ def separate(audio_path, model_name, num_subtargets, *args):
             # Combine sub_targets generated according to the list in *args
             a = None
             for s in l:
-                t,sr = librosa.load(output_path + "/{}.wav".format(s), sr=None)
+                t,sr = librosa.load(output_path + "/{}.wav".format(s), sr=SAMPLING_RATE)
                 if a is None:
                     a = t
                 else:
@@ -202,7 +203,7 @@ def orchestrate(target, config_file_path):
     sf.write('target.wav', target, samplerate=SAMPLING_RATE)
     cmd = ["./orchestrate", "target.wav", config_file_path]
     subprocess.run(cmd, stdout=subprocess.DEVNULL)  # this suppresses output
-    solution, _ = librosa.load('connection.wav', sr=None)
+    solution, _ = librosa.load('connection.wav', sr=SAMPLING_RATE)
     return solution
 
 
@@ -297,11 +298,11 @@ def combine(samples, dealign=False):
     """
     max_length = max(samples, key=lambda x: x.size)
     max_length = max_length.size
+    samples = sorted(samples, key=lambda x: x.size, reverse=True)
     num_samples = len(samples)
     if dealign:
-        random.shuffle(samples)
         # samples can begin playing between frames 1 and max_length / 2
-        start_frames = random.sample(range(1, max_length / 2), num_samples - 1)
+        start_frames = random.sample(range(1, max_length // 2), num_samples - 1)
         start_frames.insert(0, 0)  # the first sample should play immediately
         for i in range(num_samples):
             max_length = max(start_frames[i] + samples[i].size, max_length)
@@ -353,7 +354,7 @@ def get_fuss_sources(target_path):
     sources = []
     for file in os.listdir(sources_folder):
         file = os.path.join(sources_folder, file)
-        audio, _ = librosa.load(file, sr=None)
+        audio, _ = librosa.load(file, sr=SAMPLING_RATE)
         sources.append(audio)
     return sources
 
@@ -378,25 +379,36 @@ def create_targets(paths):
     :param paths: A nested list of paths to samples, ex:[['Beethoven_chord1.wav', 'drops.wav], ['gong.wav', 'bell.wav']]
     :return:
     """
+    if len(librosa.util.find_files(TARGETS_PATH)) > 0:
+        response = None
+        while response != 'y' and response != 'n':
+            response = input("Target folder is not empty. Would you like to overwrite with new targets? [y/n]")
+        if response == 'y':
+            clear_directory(TARGETS_PATH)
+        else:
+            return
+
     targets = []
     names = []
     for sample_paths in paths:
         samples = []
         name = []
         for path in sample_paths:
-            sample, sr = librosa.load(path, sr=None)
+            sample, _ = librosa.load(path, sr=SAMPLING_RATE)
             samples.append(sample)
             base = os.path.basename(path)
             name.append(os.path.splitext(base)[0])
-        combination = combine(samples)
+        combination = combine(samples, dealign=True)
         targets.append(combination)
         names.append(name)
-    names = ['+'.join(name) for name in names]
+    names = ['*'.join(sorted(name)) for name in names]
     # write to folder
     for i in range(len(targets)):
-        path = os.path.join(TARGETS_PATH, names[i]) + '.wav'
+        target = targets[i]
+        name = names[i]
+        path = os.path.join(TARGETS_PATH, name) + '.wav'
         if not os.path.exists(path):
-            sf.write(path, targets[i], samplerate=SAMPLING_RATE)
+            sf.write(path, target, samplerate=SAMPLING_RATE)
 
 
 if __name__ == "__main__":
@@ -437,23 +449,21 @@ if __name__ == "__main__":
         results_file = open(RESULTS_PATH, 'w')
     results_file.close()
 
-    target_names = [
-        ['boat_docking.wav', 'drops.wav'],
-        ['vocal_chord.wav', 'Beethoven_Coriolan.wav'],
-        ['Brahms_4.wav', 'Jarrett_Vienna_cut.wav'],
-        ['wind-harp.wav', 'gong_c#3.wav'],
-        ['WinchesterBell.wav', 'car-horn.wav'],
-        ['YanBn-mul-PG-ST12.wav', 'coque.wav'],
-    ]
-    target_paths = []
-    for names in target_names:
-        target_paths.append([os.path.join('../targets', name) for name in names])
-    create_targets(target_paths)
+    samples = librosa.util.find_files(SAMPLE_DATABASE_PATH)
+    random.shuffle(samples)
+    sample_paths = []
+    i = 0
+    while i < len(samples):
+        if i % NUM_SUBTARGETS == 0:
+            sample_paths.append([])
+        sample_paths[-1].append(samples[i])
+        i += 1
+    create_targets(sample_paths)
     targets = librosa.util.find_files(TARGETS_PATH, recurse=False)
     print("Database contains {} targets".format(len(targets)))
     copyfile('orch_config_template.txt', CONFIG_PATH)
 
-    set_config_parameter(CONFIG_PATH, 'sound_paths', TINYSOL_PATH)
+    set_config_parameter(CONFIG_PATH, 'sound_paths', SOL_PATH)
     set_config_parameter(CONFIG_PATH, 'db_files', ANALYSIS_DB_PATH)
 
     if num_orchestrations_to_save > 0:
@@ -462,7 +472,7 @@ if __name__ == "__main__":
 
     while num_completed < len(targets):
         target_path = targets[num_completed]
-        target, _ = librosa.load(target_path, sr=None)
+        target, _ = librosa.load(target_path, sr=SAMPLING_RATE)
         target_name = os.path.basename(target_path)
         print("Target:", target_name)
 
@@ -524,18 +534,22 @@ if __name__ == "__main__":
 
         # calculate ground truth
         print("Orchestrating ground truth")
-        names = target_name.split('+')
+        names = target_name.split('*')
         for i in range(len(names)):
             if not names[i].endswith('.wav'):
                 names[i] += '.wav'
-        index = target_names.index(names)
-        source_files = target_paths[index]
+        source_files = []
+        for path in samples:
+            name = os.path.basename(path)
+            if name in names:
+                source_files.append(path)
         sources = []
         for file in source_files:
-            audio, _ = librosa.load(file, sr=None)
+            audio, _ = librosa.load(file, sr=SAMPLING_RATE)
             sources.append(audio)
         if len(sources) != NUM_SUBTARGETS:
             if len(sources) == 2:
+                # this biases the results
                 orchestras[0] += orchestras[2]
                 orchestras[1] += orchestras[3]
                 orchestras = orchestras[:2]
@@ -588,7 +602,7 @@ if __name__ == "__main__":
         results['separated_target_distances'] = separated_target_distances
         results['ground_truth_distances'] = ground_truth_distances
         with open(RESULTS_PATH, 'w') as f:
-            json.dump(results, f)
+            json.dump(results, f, indent='\t')
 
         # remove temp files created during separation
         for model_name in separation_models:
