@@ -21,7 +21,7 @@ import NMF
 SOL_PATH = "../OrchideaSOL2020"  # path to the SOL database
 ANALYSIS_DB_PATH = "../OrchideaSOL2020.spectrum.db"  # path to the analysis file of SOL, ex: TinySOL.spectrum.db
 TARGETS_PATH = "./targets"  # path to targets to be orchestrated
-SAMPLE_DATABASE_PATH = "../NIGENS_subset"  # path to samples that will be combined to create targets
+SAMPLE_DATABASE_PATH = "./subtargets"  # path to samples that will be combined to create targets
 TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNNpp model
 
 # If you want to save orchestrations, set the following variables
@@ -295,36 +295,35 @@ def create_combinations(samples):
     return list(combinations)
 
 
-def combine(samples, dealign=False):
+def combine(samples):
     """
     combine all samples in 'samples' to play simultaneously
     :param samples: list of audio signals where each element is a numpy array
-    :param dealign: if True, samples will not begin at the same time, instead they will begin at random times
     :return: single audio signal as numpy array, shape (len,) where len is the length of the longest sample in 'samples'
     """
     max_length = max(samples, key=lambda x: x.size)
     max_length = max_length.size
     samples = sorted(samples, key=lambda x: x.size, reverse=True)
     num_samples = len(samples)
-    if dealign:
-        # samples can begin playing between frames 1 and max_length / 2
-        start_frames = random.sample(range(1, max_length // 2), num_samples - 1)
-        start_frames.insert(0, 0)  # the first sample should play immediately
-        for i in range(num_samples):
-            max_length = max(start_frames[i] + samples[i].size, max_length)
-        padding = []
-        for i in range(num_samples):
-            pad = (start_frames[i], max_length - (start_frames[i] + samples[i].size))
-            padding.append(pad)
-        samples = [np.pad(samples[i], padding[i]) for i in range(num_samples)]
-    else:
-        samples = [librosa.util.fix_length(y, max_length) for y in samples]
+    samples = [librosa.util.fix_length(y, max_length) for y in samples]
     combination = np.zeros(max_length)
     for sample in samples:
         combination += sample
     combination /= num_samples  # normalize by number of samples
     return combination
 
+
+def combine_with_offset(metadata):
+    """
+    Combine samples with offsets/padding given in metadata
+    :param metadata: a list of dictionaries with the following key/values:
+                            audio: audio as np array
+                            name: name as string
+                            padding: padding as list of 2 integers
+    :return: single audio signal as numpy array representing the combination of samples
+    """
+    samples = [np.pad(sample['audio'], sample['padding']) for sample in metadata]
+    return combine(samples)
 
 def mean(lst):
     return sum(lst) / len(lst)
@@ -379,45 +378,9 @@ def save_best_orchestration(solutions, distances, file_path):
     sf.write(file_path, best_solution, SAMPLING_RATE)
 
 
-def create_targets(paths):
-    """
-    All samples in paths[i] are combined into a single target and written as .wav's to TARGETS_PATH
-    :param paths: A nested list of paths to samples, ex:[['Beethoven_chord1.wav', 'drops.wav], ['gong.wav', 'bell.wav']]
-    :return:
-    """
-    if len(librosa.util.find_files(TARGETS_PATH)) > 0:
-        response = None
-        while response != 'y' and response != 'n':
-            response = input("Target folder is not empty. Would you like to overwrite with new targets? [y/n]")
-        if response == 'y':
-            clear_directory(TARGETS_PATH)
-        else:
-            return
-
-    targets = []
-    names = []
-    for sample_paths in paths:
-        samples = []
-        name = []
-        for path in sample_paths:
-            sample, _ = librosa.load(path, sr=SAMPLING_RATE)
-            samples.append(sample)
-            base = os.path.basename(path)
-            name.append(os.path.splitext(base)[0])
-        combination = combine(samples, dealign=True)
-        targets.append(combination)
-        names.append(name)
-    names = ['*'.join(sorted(name)) for name in names]
-    # write to folder
-    for i in range(len(targets)):
-        target = targets[i]
-        name = names[i]
-        path = os.path.join(TARGETS_PATH, name) + '.wav'
-        if not os.path.exists(path):
-            sf.write(path, target, samplerate=SAMPLING_RATE)
-
-
 if __name__ == "__main__":
+    distance_metric = spectral_distance  # the distance metric to be used to evaluate solutions
+
     num_completed = 0
     # full_target_distances is a nested list of distances of orchestrating full targets without separation
     # full_target_distances[i][k] is the distance between target i and the orchestration of target i with threshold k
@@ -456,16 +419,7 @@ if __name__ == "__main__":
     results_file.close()
 
     samples = librosa.util.find_files(SAMPLE_DATABASE_PATH)
-    random.shuffle(samples)
-    sample_paths = []
-    i = 0
-    while i < len(samples):
-        if i % NUM_SUBTARGETS == 0:
-            sample_paths.append([])
-        sample_paths[-1].append(samples[i])
-        i += 1
-    create_targets(sample_paths)
-    targets = librosa.util.find_files(TARGETS_PATH, recurse=False)
+    targets = librosa.util.find_files(TARGETS_PATH)
     print("Database contains {} targets".format(len(targets)))
     copyfile('orch_config_template.txt', CONFIG_PATH)
 
@@ -492,7 +446,7 @@ if __name__ == "__main__":
             set_config_parameter(CONFIG_PATH, 'onsets_threshold', onset_threshold)
             solution = orchestrate(target, CONFIG_PATH)
             full_target_solutions.append(solution)
-            distance = spectral_distance(target, solution)
+            distance = distance_metric(target, solution)
             distances.append(distance)
         full_target_distances.append(distances)
 
@@ -534,7 +488,7 @@ if __name__ == "__main__":
             combinations[model] = create_combinations(subtargets)
             distances = []
             for solution in combinations[model]:
-                distance = spectral_distance(target, solution)
+                distance = distance_metric(target, solution)
                 distances.append(distance)
             separated_target_distances[model].append(distances)
 
@@ -575,7 +529,7 @@ if __name__ == "__main__":
         ground_truth_combinations = create_combinations(solutions)
         distances = []
         for solution in ground_truth_combinations:
-            distance = spectral_distance(target, solution)
+            distance = distance_metric(target, solution)
             distances.append(distance)
         ground_truth_distances.append(distances)
 
@@ -611,10 +565,10 @@ if __name__ == "__main__":
             json.dump(results, f, indent='\t')
 
         # remove temp files created during separation
-        for model_name in separation_models:
-            path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name[:-4])
-            if os.path.exists(path):
-                remove_directory(path)
+        # for model_name in separation_models:
+        #     path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name[:-4])
+        #     if os.path.exists(path):
+        #         remove_directory(path)
 
     # remove files created during pipeline
     for file in ['target.wav', 'segments.txt']:

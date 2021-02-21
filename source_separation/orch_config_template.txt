@@ -1,6 +1,3 @@
-db_files 			./TinySOL.spectrum.db
-sound_paths			./TinySOL
-
 pop_size			300
 max_epochs			300
 
@@ -24,7 +21,7 @@ partials_filtering	.1
 
 extra_pitches		N
 
-onsets_threshold 	1
+onsets_threshold 	2
 onsets_timegate		.1
 
 export_solutions	0
