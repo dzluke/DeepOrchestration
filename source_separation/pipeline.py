@@ -26,7 +26,7 @@ TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNNpp model
 
 # If you want to save orchestrations, set the following variables
 SAVED_ORCHESTRATIONS_PATH = "./saved_orchestrations"
-num_orchestrations_to_save = 0
+num_orchestrations_to_save = 5
 
 ########################################################
 # You shouldn't need to change the following variables #
@@ -35,6 +35,7 @@ num_orchestrations_to_save = 0
 CONFIG_PATH = "orch_config.txt"  # path to the Orchidea configuration file (you shouldn't have to change this!)
 TEMP_OUTPUT_PATH = "./TEMP"
 RESULTS_PATH = "./results.json"
+TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'metadata.json')
 TDCNNpp_nb_sub_targets = 4
 SAMPLING_RATE = 44100
 NUM_SUBTARGETS = 4
@@ -418,7 +419,6 @@ if __name__ == "__main__":
         results_file = open(RESULTS_PATH, 'w')
     results_file.close()
 
-    samples = librosa.util.find_files(SAMPLE_DATABASE_PATH)
     targets = librosa.util.find_files(TARGETS_PATH)
     print("Database contains {} targets".format(len(targets)))
     copyfile('orch_config_template.txt', CONFIG_PATH)
@@ -434,6 +434,7 @@ if __name__ == "__main__":
         target_path = targets[num_completed]
         target, _ = librosa.load(target_path, sr=SAMPLING_RATE)
         target_name = os.path.basename(target_path)
+        target_name = os.path.splitext(target_name)[0]
         print("Target:", target_name)
 
         # orchestrate full (non-separated) target with Orchidea
@@ -494,18 +495,14 @@ if __name__ == "__main__":
 
         # calculate ground truth
         print("Orchestrating ground truth")
-        names = target_name.split('*')
-        for i in range(len(names)):
-            if not names[i].endswith('.wav'):
-                names[i] += '.wav'
-        source_files = []
-        for path in samples:
-            name = os.path.basename(path)
-            if name in names:
-                source_files.append(path)
+        # read metadata
+        with open(TARGET_METADATA_PATH, 'r') as metadata_file:
+            metadata = json.load(metadata_file)
+        metadata = metadata[target_name]
         sources = []
-        for file in source_files:
-            audio, _ = librosa.load(file, sr=SAMPLING_RATE)
+        for data in metadata:
+            audio, _ = librosa.load(data['path'], sr=SAMPLING_RATE)
+            audio = np.pad(audio, data['padding'])
             sources.append(audio)
         if len(sources) != NUM_SUBTARGETS:
             if len(sources) == 2:
@@ -534,12 +531,11 @@ if __name__ == "__main__":
         ground_truth_distances.append(distances)
 
         if num_orchestrations_to_save > 0:
-            orch_folder_path = target_name[:-4]
-            orch_folder_path = os.path.join(SAVED_ORCHESTRATIONS_PATH, orch_folder_path)
+            orch_folder_path = os.path.join(SAVED_ORCHESTRATIONS_PATH, target_name)
             if not os.path.exists(orch_folder_path):
                 os.mkdir(orch_folder_path)
             # save target
-            copyfile(target_path, os.path.join(orch_folder_path, target_name))
+            copyfile(target_path, os.path.join(orch_folder_path, target_name + '.wav'))
             # save best full target orchestration
             distances = full_target_distances[-1]
             name = os.path.join(orch_folder_path, "full_orchestration.wav")
@@ -566,7 +562,7 @@ if __name__ == "__main__":
 
         # remove temp files created during separation
         # for model_name in separation_models:
-        #     path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name[:-4])
+        #     path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name)
         #     if os.path.exists(path):
         #         remove_directory(path)
 

@@ -6,7 +6,7 @@ import os
 import librosa
 import soundfile as sf
 
-from pipeline import NUM_SUBTARGETS, SAMPLE_DATABASE_PATH, TARGETS_PATH, RESULTS_PATH, SAMPLING_RATE, clear_directory, combine_with_offset
+from pipeline import NUM_SUBTARGETS, SAMPLE_DATABASE_PATH, TARGETS_PATH, TARGET_METADATA_PATH, SAMPLING_RATE, clear_directory, combine_with_offset
 
 
 def create_targets(paths):
@@ -20,24 +20,18 @@ def create_targets(paths):
     metadata = {}
     for sample_paths in paths:
         samples = []
-        name = []
         longest_sample = None
         longest_length = 0
         for path in sample_paths:
             sample, _ = librosa.load(path, sr=SAMPLING_RATE)
             base = os.path.basename(path)
             name = os.path.splitext(base)[0]
-            sample_metadata = {'name': name, 'audio': sample}
+            sample_metadata = {'name': name, 'path': path, 'audio': sample}
             samples.append(sample_metadata)
             if sample.size > longest_length:
                 longest_sample = sample_metadata
                 longest_length = sample.size
-            # name.append(os.path.splitext(base)[0])
-
         # calculate padding needed
-
-        num_samples = len(samples)
-        # calculate offset
         for sample_metadata in samples:
             if sample_metadata == longest_sample:
                 sample_metadata['padding'] = [0]
@@ -66,8 +60,7 @@ def create_targets(paths):
         if not os.path.exists(path):
             sf.write(path, target, samplerate=SAMPLING_RATE)
     # write metadata
-    metadata_path = os.path.join(TARGETS_PATH, 'metadata.json')
-    with open(metadata_path, 'w') as metadata_file:
+    with open(TARGET_METADATA_PATH, 'w') as metadata_file:
         json.dump(metadata, metadata_file, indent=2)
 
 
