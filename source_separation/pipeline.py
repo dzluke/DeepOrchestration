@@ -257,8 +257,10 @@ def spectral_distance(target, solution):
     target_fft = np.abs(np.fft.rfft(target, N))
     solution_fft = np.abs(np.fft.rfft(solution, N))
 
-    target_fft /= (np.max(target_fft) * N)
-    solution_fft /= (np.max(solution_fft) * N)
+    target_max = np.max(target_fft) if np.max(target_fft) > 0 else 1
+    solution_max = np.max(solution_fft) if np.max(solution_fft) > 0 else 1
+    target_fft /= (target_max * N)
+    solution_fft /= (solution_max * N)
 
     lambda_1 = 0.5
     lambda_2 = 10
@@ -274,6 +276,38 @@ def spectral_distance(target, solution):
             sum_2 += abs(k_target - k_solution)
     distance = lambda_1 * sum_1 + lambda_2 * sum_2
     return distance * 1000
+
+
+def frame_spectral_distance(target, solution):
+    """
+
+    :param target:
+    :param solution:
+    :return:
+    """
+    # target and solution should be the same length
+    length = max(target.size, solution.size)
+    target = librosa.util.fix_length(target, length)
+    solution = librosa.util.fix_length(solution, length)
+
+    num_frames = 100
+    frame_length = length // num_frames
+    target_frames = librosa.util.frame(target, frame_length, frame_length, axis=0)
+    last_frame = target[num_frames * frame_length:]
+    last_frame = librosa.util.fix_length(last_frame, frame_length)
+    target_frames = np.append(target_frames, [last_frame], axis=0)
+
+    solution_frames = librosa.util.frame(solution, frame_length, frame_length, axis=0)
+    last_frame = solution[num_frames * frame_length:]
+    last_frame = librosa.util.fix_length(last_frame, frame_length)
+    solution_frames = np.append(solution_frames, [last_frame], axis=0)
+
+    distances = []
+    assert target_frames.size == solution_frames.size
+    for i in range(target_frames.shape[0]):
+        distance = spectral_distance(target_frames[i], solution_frames[i])
+        distances.append(distance)
+    return mean(distances)
 
 
 def next_power_of_2(x):
@@ -325,6 +359,7 @@ def combine_with_offset(metadata):
     """
     samples = [np.pad(sample['audio'], sample['padding']) for sample in metadata]
     return combine(samples)
+
 
 def mean(lst):
     return sum(lst) / len(lst)
@@ -380,7 +415,7 @@ def save_best_orchestration(solutions, distances, file_path):
 
 
 if __name__ == "__main__":
-    distance_metric = spectral_distance  # the distance metric to be used to evaluate solutions
+    distance_metric = frame_spectral_distance  # the distance metric to be used to evaluate solutions
 
     num_completed = 0
     # full_target_distances is a nested list of distances of orchestrating full targets without separation
@@ -541,14 +576,20 @@ if __name__ == "__main__":
             name = os.path.join(orch_folder_path, "full_orchestration.wav")
             save_best_orchestration(full_target_solutions, distances, name)
             # save best separated orchestration
-            for model, combinations in combinations.items():
+            for model, combos in combinations.items():
                 distances = separated_target_distances[model][-1]
                 name = os.path.join(orch_folder_path, model + "_orchestration.wav")
-                save_best_orchestration(combinations, distances, name)
+                save_best_orchestration(combos, distances, name)
             # save best ground truth orchestration
             distances = ground_truth_distances[-1]
             name = os.path.join(orch_folder_path, "ground_truth_orchestration.wav")
             save_best_orchestration(ground_truth_combinations, distances, name)
+            # save distances in .txt file
+            with open(os.path.join(orch_folder_path, 'distances.txt'), 'w') as f:
+                f.write("full target distance:", full_target_distances[-1])
+                f.write("ground truth distance:", ground_truth_distances[-1])
+                for model, combos in combinations.items():
+                    f.write(model, "distance:", separated_target_distances[model][-1])
             num_orchestrations_to_save -= 1
 
         num_completed += 1
