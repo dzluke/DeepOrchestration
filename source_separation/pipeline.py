@@ -26,7 +26,7 @@ TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNNpp model
 
 # If you want to save orchestrations, set the following variables
 SAVED_ORCHESTRATIONS_PATH = "./saved_orchestrations"
-num_orchestrations_to_save = 5
+num_orchestrations_to_save = 0
 
 ########################################################
 # You shouldn't need to change the following variables #
@@ -280,34 +280,39 @@ def spectral_distance(target, solution):
 
 def frame_spectral_distance(target, solution):
     """
-
-    :param target:
-    :param solution:
-    :return:
+    Calculates a weighted sum of the spectral difference between frames of target and solution
+    :param target: audio as numpy array
+    :param solution: audio as numpy array
+    :return: distance as float
     """
     # target and solution should be the same length
     length = max(target.size, solution.size)
     target = librosa.util.fix_length(target, length)
     solution = librosa.util.fix_length(solution, length)
 
-    num_frames = 100
-    frame_length = length // num_frames
+    frame_length = 4000  # 4000 samples ~ 10 ms
     target_frames = librosa.util.frame(target, frame_length, frame_length, axis=0)
-    last_frame = target[num_frames * frame_length:]
-    last_frame = librosa.util.fix_length(last_frame, frame_length)
-    target_frames = np.append(target_frames, [last_frame], axis=0)
+    # last_frame = target[num_frames * frame_length:]
+    # last_frame = librosa.util.fix_length(last_frame, frame_length)
+    # target_frames = np.append(target_frames, [last_frame], axis=0)
 
     solution_frames = librosa.util.frame(solution, frame_length, frame_length, axis=0)
-    last_frame = solution[num_frames * frame_length:]
-    last_frame = librosa.util.fix_length(last_frame, frame_length)
-    solution_frames = np.append(solution_frames, [last_frame], axis=0)
+    # last_frame = solution[num_frames * frame_length:]
+    # last_frame = librosa.util.fix_length(last_frame, frame_length)
+    # solution_frames = np.append(solution_frames, [last_frame], axis=0)
 
     distances = []
+    target_energy = []
     assert target_frames.size == solution_frames.size
     for i in range(target_frames.shape[0]):
         distance = spectral_distance(target_frames[i], solution_frames[i])
         distances.append(distance)
-    return mean(distances)
+        energy = np.sum(np.sqrt(np.square(target_frames[i])))
+        target_energy.append(energy)
+    distances = np.array(distances)
+    energy = np.array(target_energy)
+    weighted_sum = np.sum(distances * energy) / np.sum(energy)
+    return weighted_sum.item()
 
 
 def next_power_of_2(x):
@@ -586,10 +591,21 @@ if __name__ == "__main__":
             save_best_orchestration(ground_truth_combinations, distances, name)
             # save distances in .txt file
             with open(os.path.join(orch_folder_path, 'distances.txt'), 'w') as f:
-                f.write("full target distance:", full_target_distances[-1])
-                f.write("ground truth distance:", ground_truth_distances[-1])
+                f.write("full target distance: {}\n".format(full_target_distances[-1]))
+                f.write("ground truth distance: {}\n".format(ground_truth_distances[-1]))
                 for model, combos in combinations.items():
-                    f.write(model, "distance:", separated_target_distances[model][-1])
+                    f.write("{} distance: {}\n".format(model, separated_target_distances[model][-1]))
+            # move source separation results
+            separations_folder = os.path.join(orch_folder_path, 'separations')
+            if not os.path.exists(separations_folder):
+                os.mkdir(separations_folder)
+            for model_name in separation_models:
+                folder = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name)
+                if not os.path.exists(os.path.join(separations_folder, model_name)):
+                    os.mkdir(os.path.join(separations_folder, model_name))
+                for source in os.listdir(folder):
+                    source_path = os.path.join(folder, source)
+                    copyfile(source_path, os.path.join(separations_folder, model_name, source))
             num_orchestrations_to_save -= 1
 
         num_completed += 1
