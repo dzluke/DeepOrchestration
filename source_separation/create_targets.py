@@ -5,9 +5,11 @@ import json
 import os
 import librosa
 import soundfile as sf
+from itertools import product
 
 from pipeline import NUM_SUBTARGETS, SAMPLE_DATABASE_PATH, TARGETS_PATH, TARGET_METADATA_PATH, SAMPLING_RATE, clear_directory, combine_with_offset
 
+NUM_TARGETS = 100  # number of targets to create
 
 def create_targets(paths):
     """
@@ -67,15 +69,12 @@ def create_targets(paths):
 if __name__ == "__main__":
     clear_directory(TARGETS_PATH)
     samples = librosa.util.find_files(SAMPLE_DATABASE_PATH)
-    random.shuffle(samples)
-    sample_paths = []
-    i = 0
-    while i < len(samples):
-        if i % NUM_SUBTARGETS == 0:
-            sample_paths.append([])
-        sample_paths[-1].append(samples[i])
-        i += 1
-    sample_paths = [l for l in sample_paths if len(l) == NUM_SUBTARGETS]
+    sample_paths = set()
+    while len(sample_paths) < NUM_TARGETS:
+        paths = random.sample(samples, NUM_SUBTARGETS)
+        paths = sorted(paths)
+        paths = tuple(paths)  # you can't add lists to a set
+        sample_paths.add(paths)
     print("Creating {} targets".format(len(sample_paths)))
     create_targets(sample_paths)
     print("Done.")
