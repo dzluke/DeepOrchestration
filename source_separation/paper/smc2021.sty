@@ -1,0 +1,329 @@
+% Latex Paper Template for SMC 2021
+% slightly adapted version of the templates for SMC 2020, 2019, 2018, 2017, 2016, 2015, 2011, SMC 2010 and ISMIR 2009, NIME 2019, DAFX 2020
+%
+% Version 2020.08.11
+% Contributors: 
+% 2021 - Davide Andrea Mauro (maurod@marshall.edu)
+% Adapted for Sound And Music computing conferences
+% The bibliography style is now the most recent IEEEtran.bst
+
+% Required packages
+\RequirePackage{times}
+\RequirePackage{ifpdf}
+\RequirePackage{cite}
+\RequirePackage{url}
+\RequirePackage{color}
+\RequirePackage{hyperref}
+\RequirePackage{cmap} % cmap package provides character map tables, makes extended characters searchable in pdfs
+\RequirePackage{ragged2e}
+
+% Math related packages
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{amsfonts}
+
+% Line Numbering for Review
+\RequirePackage{lineno}
+
+% Page Style definition for header and footer
+\RequirePackage{fancyhdr}
+
+% Required Packages for Authors, Emails and Affiliations
+\RequirePackage{stringstrings}
+
+% Language Packages:
+\RequirePackage[utf8]{inputenc}
+
+\def\completesetup{% Adds the automatic
+	% Saves a lot of output space in PDF... after conversion with the distiller
+	% Delete if you cannot get PS fonts working on your system.
+	% pdf-tex settings: detect automatically if run by latex or pdflatex
+	\newif\ifpdf
+	\ifx\pdfoutput\relax
+	\else
+	\ifcase\pdfoutput
+	\pdffalse
+	\else
+	\pdftrue
+	\fi
+	
+	\ifpdf % compiling with pdflatex
+	\usepackage[pdftex]{epsfig,graphicx}
+	\else % compiling with latex
+	\hypersetup{dvips}
+	\usepackage[dvips]{epsfig,graphicx}
+	\fi
+	% Declare the path(s) where your graphic files are and their extensions so 
+	% you won't have to specify these with every instance of \includegraphics
+	\graphicspath{{./figures/}}
+	\DeclareGraphicsExtensions{.pdf,.jpeg,.png,.eps}
+	
+	% Setup the hyperref package - make the links black without a surrounding frame
+	\hypersetup{
+		unicode,% To support unicode characters
+		colorlinks,%
+		citecolor=black,%
+		filecolor=black,%
+		linkcolor=black,%
+		urlcolor=black, %
+		bookmarksnumbered,%
+		pdfstartview=XYZ,%
+		% Change of order to have support for Unicode in pdf metadata
+		pdftitle={\papertitle},
+		pdfauthor={\author},%
+	}
+	
+}
+\def\Hline{\noalign{\hrule height 0.4mm}}
+%\newcommand{\bm}[1]{\mbox{\boldmath{$#1$}}}
+\newcommand{\figbox}[1]{\fbox{\parbox{\columnwidth}{\centering{ #1 }}}}
+\newcommand{\range}[2]{{#1,\cdots,#2\;}}
+\newcommand{\secref}[1]{\mbox{Section~\ref{#1}}}
+\newcommand{\tabref}[1]{\mbox{Table~\ref{#1}}}
+\newcommand{\figref}[1]{\mbox{Figure~\ref{#1}}}
+\newcommand{\eqnref}[1]{\mbox{Eq.~(\ref{#1})}}
+
+\renewcommand{\sfdefault}{phv}
+\renewcommand{\rmdefault}{ptm}
+\renewcommand{\ttdefault}{pcr}
+
+\setlength{\paperheight}{297mm}
+\setlength{\paperwidth}{210mm}
+\setlength{\textheight}{252mm}
+\setlength{\textwidth}{172mm}
+\setlength{\columnsep}{8mm}
+%\setlength{\headheight}{0mm}
+\setlength{\headheight}{12pt} % Required by fancy pagestyle
+\setlength{\voffset}{-12mm}
+\setlength{\hoffset}{0mm}
+\setlength{\marginparwidth}{0mm}
+\setlength{\parindent}{2mm} %1pc
+\setlength{\topmargin}{-5mm}
+\setlength{\oddsidemargin}{-6mm}
+\setlength{\evensidemargin}{-6mm}
+
+\setlength\normallineskip{1\p@}
+\setlength\parskip{0\p@ \@plus \p@}
+%\def\baselinestretch{0.98}
+
+\def\normalsize{\@setsize\normalsize{12pt}\xpt\@xpt}
+\def\small{\@setsize\small{10pt}\ixpt\@ixpt}
+\def\footnotesize{\@setsize\footnotesize{8pt}\viiipt\@viiipt}
+\def\scriptsize{\@setsize\scriptsize{8pt}\viipt\@viipt}
+\def\tiny{\@setsize\tiny{7pt}\vipt\@vipt}
+\def\large{\@setsize\large{14pt}\xiipt\@xiipt}
+\def\Large{\@setsize\Large{16pt}\xivpt\@xivpt}
+\def\LARGE{\@setsize\LARGE{20pt}\xviipt\@xviipt}
+\def\huge{\@setsize\huge{23pt}\xxpt\@xxpt}
+\def\Huge{\@setsize\Huge{28pt}\xxvpt\@xxvpt}
+
+\twocolumn
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{-5mm}
+\lhead{}
+\chead{}
+%\chead{\textit{\small{Proceedings of the 18$^{\text{\itshape th}}$ Sound and Music Computing Conference (SMC2021), Virtual Conference, June 29--July 01, 2021}}}
+\rhead{}
+\lfoot{}
+\rfoot{}
+\cfoot{}
+%\cfoot{{\vskip 6mm}{\small \textrm{ SMC - \thepage}}}
+
+\def\maketitle{\par
+	\begingroup
+	\def\thefootnote{}
+	\def\@makefnmark{
+		\hbox
+		{$^{\@thefnmark}$\hss}
+	}
+	\twocolumn[\@maketitle]
+	\permission
+	\@thanks
+	\endgroup
+	\setcounter{footnote}{0}
+	\let\maketitle\relax
+	\let\@maketitle\relax
+	\gdef\thefootnote{
+		\arabic{footnote}
+	}
+	\gdef\@@savethanks{}
+	\gdef\@thanks{}
+	\gdef\@author{}
+	\gdef\@title{}
+	\let\thanks\relax
+}
+
+\def\@maketitle{
+	\newpage
+	\null
+	\begin{center} {
+			\Large \textbf{\@title} \par
+		}
+			\end{center} % add
+		\vskip 1.0em {
+			\normalsize \lineskip .5em
+			\sloppy
+			\begin{flushleft}
+		%	\begin{tabular}[t]{l}
+				\@author% \\
+		%	\end{tabular}
+			\end{flushleft}
+			\par
+		}
+%	\end{center}
+	\par
+	\vskip 2.0em
+}
+
+\newcommand{\permission}{
+	\begin{figure}[b]
+		{\scriptsize{\textit{Copyright: \copyright \hspace*{1 pt} 2021 the Authors. This is an open-access article distributed under the terms of the \href{http://creativecommons.org/licenses/by/4.0/}{\textcolor {magenta} {\underline {Creative Commons Attribution 4.0 International License}}}, which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited.}}}
+		%{\copyright~Copyright notice here}
+\end{figure}}
+
+% For improved formatting
+\sloppy
+
+% Authors redefinition
+\RequirePackage{authblk} % This require cannot be moved
+\def\firstname#1{\textbf{\ignorespaces#1\ignorespaces}}
+\def\middlename#1{\textbf{\ \substring{#1\ignorespaces}{1}{1}.}}
+\def\lastname#1{\textbf{\ \textsc{\ignorespaces#1\ignorespaces}}}
+\def\generation#1{\textit{\ \ignorespaces#1\ignorespaces}}
+\def\originalname#1{\ (\ignorespaces#1\ignorespaces)}
+%\def\orcid#1{} Typeseetting of ORCiD?
+\def\orcid#1{\ignorespaces{\tiny\texttt{(\href{url:https://orcid.org/#1}{#1})}}}
+% Email redefinition
+\def\email#1{\ignorespaces{\small\texttt{(\href{mailto:#1}{#1})}}}
+
+% Affiliations
+\def\institution#1{\textbf{\ignorespaces#1\ignorespaces},\ }
+\def\labunit#1{\textit{\ignorespaces#1\ignorespaces},\ }
+\def\department#1{\textit{\ignorespaces#1\ignorespaces},\ }
+\def\streetaddress#1{{\small\ignorespaces#1\ignorespaces,\ }}
+\def\city#1{{\small\ignorespaces#1\ignorespaces,\ }}
+\def\state#1{{\small\ignorespaces#1\ignorespaces\ }}
+\def\postcode#1{{\small\ignorespaces#1\ignorespaces\ }}
+\def\country#1{{\small\ignorespaces#1\ignorespaces}}
+\def\affiliationtype#1{}
+
+% Title conversion to small capitals
+\def\title#1{\gdef\@title{\textsc{\ignorespaces#1\ignorespaces}}}
+
+\def\abstract{
+	\begin{center}{
+			\textbf {ABSTRACT}
+		}
+	\end{center}
+}
+\def\endabstract{\par}
+
+\newif\if@smcsection
+
+\renewcommand\section{
+	\@smcsectiontrue
+	\@startsection
+	{section}
+	{1}
+	{\z@}
+	{-3.5ex \@plus -1ex \@minus -.2ex}
+	{6pt \@plus.2ex}
+	{\large\centering}
+}
+
+\renewcommand\subsection{
+	\@smcsectionfalse
+	\@startsection
+	{subsection}
+	{2}
+	{\z@}
+	{-2.5ex \@plus -1ex \@minus -.2ex}
+	{6pt \@plus.2ex}
+	{\normalsize\raggedright}
+}
+
+\renewcommand\subsubsection{
+	\@smcsectionfalse
+	\@startsection
+	{subsubsection}
+	{3}
+	{\z@}
+	{-1.5ex \@plus -1ex \@minus -.2ex}
+	{6pt \@plus.2ex}
+	{\normalsize\raggedright}
+}
+
+\def\@sect#1#2#3#4#5#6[#7]#8{
+	\refstepcounter{#1}
+	\if@smcsection
+	\edef\@svsec{\csname the#1\endcsname.\hskip 0.6em}
+	\else
+	\edef\@svsec{\csname the#1\endcsname\hskip 0.6em}
+	\fi
+	\begingroup
+	\ifnum #2=1
+	\centering{\textbf{\interlinepenalty \@M \@svsec\MakeUppercase{#8}}\par}
+	\else
+	\ifnum #2=2
+	\raggedright
+	\noindent{\textbf{\interlinepenalty \@M \@svsec #8}\par}
+	\else
+	\raggedright
+	\noindent{\textit{\interlinepenalty \@M \@svsec #8}\par}
+	\fi
+	\fi
+	\endgroup
+	\csname #1mark\endcsname{#7}\addcontentsline
+	{toc}{#1}{\protect\numberline
+		\if@smcsection
+		{\csname the#1\endcsname.}
+		\else
+		{\csname the#1\endcsname}
+		\fi
+		#7}
+	\@tempskipa #5\relax
+	\@xsect{\@tempskipa}
+}
+
+% Acknowledgments Section
+\newenvironment{acknowledgments}%
+{%
+	\vskip 2.5ex {\normalsize\textbf{\raggedright Acknowledgments}}
+	\vspace*{6pt} \\
+	\noindent
+}%
+{%
+	\par
+}
+
+
+% Bibliography
+\bibliographystyle{IEEEtran}
+
+\def\thebibliography#1{
+	\section{References}\list
+	{[\arabic{enumi}]}{
+		\settowidth\labelwidth{[#1]}\leftmargin 1em
+		\advance\leftmargin\labelsep
+		\usecounter{enumi}
+	}
+	\def\newblock{\hskip .01em plus .01em minus .01em}
+	\sloppy\clubpenalty4000\widowpenalty4000
+	\sfcode`\.=1000\relax
+}
+
+\let\endthebibliography=\endlist
+
+\long\def\@makecaption#1#2{
+	\vskip 10pt
+	\setbox\@tempboxa\hbox{#1. #2}
+	\ifdim
+	\wd\@tempboxa >\hsize #1. #2\par
+	\else
+	\hbox
+	to\hsize{\hfil\box\@tempboxa\hfil}
+	\fi
+}
+
+\flushbottom
