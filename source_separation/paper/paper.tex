@@ -77,6 +77,28 @@
 		\item table with results
 	\end{itemize}
 	
+	\begin{table}[t]
+		\begin{center}
+			\begin{tabular}{|c|c|}
+				\hline
+				& Average distance \\
+				\hline
+				Full target & 25.73 \\
+				\hline
+				TDCNN++ & 25.44 \\
+				\hline
+				Demucs & 27.62 \\
+				\hline
+				NMF & 22.32 \\
+				\hline
+				Ground truth & 24.27 \\
+				\hline
+			\end{tabular}
+		\end{center}
+		\caption{Average distance between target and orchestration for various methods. "Full target" means no separation.}
+		\label{tab:distances}
+	\end{table}
+	
 	\section{Conclusions}\label{sec:conclusions}
 	We think that adding source separation improves orchestration. Unsupervised methods work better because of the data that supervised methods are trained on \cite{Someone:00}
 	
