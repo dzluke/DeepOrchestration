@@ -62,11 +62,58 @@
 		\item what is CAO 
 		\item why we need source separation 
 		\item which type of sounds are useful for us (targets)
-	\end{itemize}		
+		\item What is Orchidea?
+	\end{itemize}
+	
+	\textit{The following is directly copy/pasted from our last paper, it will need to be changed in order to avoid self-plagiarism}
+	
+	The development of computational tools to assist and inspire the musical composition process constitutes an important research area known as \emph{Computer-Assisted Composition (CAC)} \cite{FerVic2013, Ari2005}. Within CAC, target-based computer-assisted orchestration is a compelling case of how machine learning can be used for {enhancing} and {assisting} music creativity \cite{Maresz2003}. 
+
+	Target-based computer-assisted orchestration takes a target sound as an input and attempts to find instrumental samples that best match the target given a specific similarity metric and a set of constraints. A solution to this problem is a set of orchestral scores that represent the mixtures of audio samples in the database, ranked by similarity with the target sound. 
+
+	The approach studied in \cite{Carpentier2010} consists in finding a good orchestration for any given sound by searching combinations of sounds from a database with a multi-objective optimization heuristics and a constraint solver that are jointly optimized. Both the target sound and the sounds in the database are embedded in a feature space defined by a fixed feature function and each generated combination of sounds is evaluated by using a specific metric. This method has been substantially improved in \cite{Cella18, Cella2020} and is implemented in the \emph{Orchidea} toolbox for assisted orchestration (\url{www.orch-idea.org}), currently considered the state-of-the-art system for assisted orchestration.
+
+	In this paper, we try a different approach to this problem by experimenting with deep neural architectures. The main idea is to train a model to classify combinations of real instruments and then use it for orchestration. A typical solution for assisted orchestration is a set of triples \emph{instrument-pitch-dynamics} such as \{\texttt{Flute C6 pp, Bassoon C4 mf, Bassoon G4 ff}\}. By training a neural network with real combinations of instrumental notes, it will acquire the ability to identify the presence of each instrument and its associated pitch by building the appropriate latent representation. Thus, when an unknown target sound is given as input, the network will identify which are the best instruments to match the target sound, and it will be able to  deconstruct a complex mixture of timbres into individual instrument notes. This method is motivated by the good results obtained in previous research on musical instruments identification \cite{Benetos07, Kitahara05} and the more recent use of deep neural networks for musical classification \cite{lostanlen16, Bian19}. 
+
+	In this paper we perform preliminary experiments with two deep architectures: a convolutional neural network (CNN) with a long short-term memory (LSTM) unit and \emph{ResNet}, a well known residual architecture that already yielded good results for image classification \cite{He15}. We chose to use a CNN because of its success in audio classification \cite{Hershey17} and we decided to include an LSTM unit in it because of its ability to learn long term dependencies in data \cite{Hochreiter97}, which is important given the temporal nature of audio. The codebase for this paper can be found at: \url{}.
+		
 	
 	\section{Methodology}\label{sec:methodology}
-	We compare a number of source separation methods and our metrics depend on the orchestration
-	Distance metric and formula here
+	\begin{itemize}
+		\item compare a number of source separation methods
+		\item we use the final orchestration to compare the separation methods
+		\item include distance metric and formula here
+	\end{itemize}
+	
+	Targets are separated into four sub-targets. Each sub-target is independently orchestrated with a randomly assigned "sub-orchestra." These orchestrations are then combined to play simultaneously, creating a final orchestrated solution. Then the distance between the target and solution is calculated, giving us a metric to compare the various separation methods.
+	
+	
+		\subsection{Separation Methods}
+	
+			\subsubsection{Non-negative Matrix Factorization}
+			@Max 
+			
+			\subsubsection{Demucs}
+			@Leo/Alejandro
+			
+			\subsubsection{OpenUnmix}
+			@Leo/Alejandro
+			
+			\subsubsection{TDCNN (use full name instead of abbreviation)}
+			@Leo/Alejandro
+			
+			\subsubsection{TDCNN++}
+			@Leo/Alejandro
+	
+		\subsection{Evaluation}
+		We compare the effectiveness of different separation methods by comparing how well they work for orchestration. The output of a method is orchestrated, and these orchestrations are compared. A quantitative evaluation is performed through the use of a distance metric that measures the spectral distance between target and solution. 
+		
+		The distance metric cuts the target and solution into successive frames that are 4,000 samples in length, then calculates the spectral distance as defined in Eqn. \ref{eqn:distance} between corresponding frames. This metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\tilde{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways.
+		
+		\begin{equation}\label{eqn:distance}
+d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k| \\
+\end{equation}
+where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$; and $\delta_{k2} = 1 \text{  if  } x_k < \tilde{x}_k, 0 \text{  otherwise}$.
 	
 	\section{Experiments}\label{sec:experiments}
 	\begin{itemize}
@@ -76,6 +123,15 @@
 		\item 4 neural models: TDCNN++, TDCNN, Demucs, OpenUnmix
 		\item table with results
 	\end{itemize}
+	
+		\subsection{Data}
+		We created our own targets as combinations of four sub-targets. The sub-targets come from the NIGENS and BBC databases \cite{} and freesound \cite{}. We selected ? sub-targets from these databases, choosing sub-targets that fit the following criteria: 
+		
+		\begin{enumerate}
+			\item Static sounds in which the harmonic average across time is a fitting representation of the sound
+			\item Sounds in which there is at least some pitched content and not only noise
+		\end{enumerate}			
+		During the creation of the targets, the sub-targets were randomly offset in time from the beginning of the target, so that the various sub-targets begin playing at different times.
 	
 	\begin{table}[t]
 		\begin{center}
