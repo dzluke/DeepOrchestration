@@ -15,3 +15,11 @@ acc.csv
 .DS_Store
 *.th
 *.gz
+
+paper.aux
+paper.bbl
+paper.blg
+paper.log
+paper.out
+paper.pdf
+paper.synctex.gz
