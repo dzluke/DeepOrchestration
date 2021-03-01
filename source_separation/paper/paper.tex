@@ -82,12 +82,31 @@
 	\begin{itemize}
 		\item compare a number of source separation methods
 		\item we use the final orchestration to compare the separation methods
-		\item include distance metric and formula here
+	\end{itemize}
+	
+	We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this orchestration to the orchestration of the target if no separation was performed \textbf{Diagram needed}. For example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
+	
+	
+	\section{Experiments}\label{sec:experiments}
+	\begin{itemize}
+		\item Full orchestration
+		\item Ground truth
+		\item NMF
+		\item 4 neural models: TDCNN++, TDCNN, Demucs, OpenUnmix
+		\item table with results
 	\end{itemize}
 	
 	Targets are separated into four sub-targets. Each sub-target is independently orchestrated with a randomly assigned "sub-orchestra." These orchestrations are then combined to play simultaneously, creating a final orchestrated solution. Then the distance between the target and solution is calculated, giving us a metric to compare the various separation methods.
 	
-	
+		\subsection{Data}
+		We created our own targets as combinations of four sub-targets. The sub-targets come from the NIGENS and BBC databases \cite{} and freesound \cite{}. We selected ? sub-targets from these databases, choosing sub-targets that fit the following criteria: 
+		
+		\begin{enumerate}
+			\item Static sounds in which the harmonic average across time is a fitting representation of the sound
+			\item Sounds in which there is at least some pitched content and not only noise
+		\end{enumerate}			
+		During the creation of the targets, the sub-targets were randomly offset in time from the beginning of the target, so that the various sub-targets begin playing at different times.
+		
 		\subsection{Separation Methods}
 	
 			\subsubsection{Non-negative Matrix Factorization}
@@ -115,23 +134,6 @@ d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \su
 \end{equation}
 where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$; and $\delta_{k2} = 1 \text{  if  } x_k < \tilde{x}_k, 0 \text{  otherwise}$.
 	
-	\section{Experiments}\label{sec:experiments}
-	\begin{itemize}
-		\item Full orchestration
-		\item Ground truth
-		\item NMF
-		\item 4 neural models: TDCNN++, TDCNN, Demucs, OpenUnmix
-		\item table with results
-	\end{itemize}
-	
-		\subsection{Data}
-		We created our own targets as combinations of four sub-targets. The sub-targets come from the NIGENS and BBC databases \cite{} and freesound \cite{}. We selected ? sub-targets from these databases, choosing sub-targets that fit the following criteria: 
-		
-		\begin{enumerate}
-			\item Static sounds in which the harmonic average across time is a fitting representation of the sound
-			\item Sounds in which there is at least some pitched content and not only noise
-		\end{enumerate}			
-		During the creation of the targets, the sub-targets were randomly offset in time from the beginning of the target, so that the various sub-targets begin playing at different times.
 	
 	\begin{table}[t]
 		\begin{center}
