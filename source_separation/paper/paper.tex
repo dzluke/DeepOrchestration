@@ -97,13 +97,13 @@
 	Targets are separated into four sub-targets. Each sub-target is independently orchestrated with a randomly assigned "sub-orchestra." These orchestrations are then combined to play simultaneously, creating a final orchestrated solution. Then the distance between the target and solution is calculated, giving us a metric to compare the various separation methods.
 	
 		\subsection{Data}
-		We created our own targets as combinations of four sub-targets. The sub-targets come from the NIGENS and BBC databases \cite{} and freesound \cite{}. We selected ? sub-targets from these databases, choosing sub-targets that fit the following criteria: 
+		We created our own targets as combinations of four sub-targets. The sub-targets come from the NIGENS and BBC databases \cite{} and freesound \cite{}. We selected 90 samples from these databases, choosing sounds that fit the following criteria: 
 		
 		\begin{enumerate}
 			\item Static sounds in which the harmonic average across time is a fitting representation of the sound
 			\item Sounds in which there is at least some pitched content and not only noise
 		\end{enumerate}			
-		During the creation of the targets, the sub-targets were randomly offset in time from the beginning of the target, so that the various sub-targets begin playing at different times.
+		Each target that we used for testing was a combination of 4 randomly chosen source sounds from the group of 90 sounds. During the creation of the targets, the sources were randomly offset in time from the beginning of the target, so that they began playing at different times.
 		
 		\subsection{Separation Methods}
 	
@@ -122,6 +122,21 @@
 			\subsubsection{TDCNN++}
 			@Leo/Alejandro
 	
+		\subsection{Testing}
+		In order to compare the effectiveness of the separation methods, a full target orchestration and a ground truth orchestration are done for each target. The full target orchestration is the orchestration of the target without any separation performed. The ground truth orchestration takes the four sources that make up the target and orchestrates each one separately, then combines them. This ground truth represents the orchestration that could take place if the separation method was perfect and separated a target exactly into its constituent sources. 
+		
+		The procedure we used for testing is as follows:
+		\begin{enumerate}
+			\item The target is created as a combination of four randomly chosen sources, which are offset to begin playing at different times
+			\item The full target, without any separation performed, is orchestrated using the entire orchestra
+			\item A given separation method is performed on the target, splitting the target into 4 sub-targets
+			\item Each sub-target is separately orchestrated using a randomly chosen sub-orchestra that is one quarter the size of the full orchestra, and then each orchestration is combined to play simultaneously
+			\item The ground truth orchestration is created by orchestrating the four sources, each with a different sub-orchestra, and then combined to play simultaneously
+			\item The distances between target and orchestration are calculated for the full target orchestration, the separated orchestration, and the ground truth orchestration 
+		\end{enumerate}	
+		
+		The orchestrations performed were static orchestrations, meaning a single onset of notes is created for each target, no matter if the target itself has multiple onsets.			
+		
 		\subsection{Evaluation}
 		We compare the effectiveness of different separation methods by comparing how well they work for orchestration. The output of a method is orchestrated, and these orchestrations are compared. A quantitative evaluation is performed through the use of a distance metric that measures the spectral distance between target and solution. 
 		
