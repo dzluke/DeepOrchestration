@@ -70,11 +70,19 @@
 	
 	The development of computational tools to assist and inspire the musical composition process constitutes an important research area known as \emph{Computer-Assisted Composition (CAC)} \cite{FerVic2013, Ari2005}. Within CAC, target-based computer-assisted orchestration is a compelling case of how machine learning can be used for {enhancing} and {assisting} music creativity \cite{Maresz2003}. 
 
-	Target-based computer-assisted orchestration takes a target sound as an input and attempts to find instrumental samples that best match the target given a specific similarity metric and a set of constraints. A solution to this problem is a set of orchestral scores that represent the mixtures of audio samples in the database, ranked by similarity with the target sound. 
+	
+	
+	takes a target sound as an input and attempts to find instrumental samples that best match the target given a specific similarity metric and a set of constraints. A solution to this problem is a set of orchestral scores that represent the mixtures of audio samples in the database, ranked by similarity with the target sound. 
 
 	The approach studied in \cite{Carpentier2010} consists in finding a good orchestration for any given sound by searching combinations of sounds from a database with a multi-objective optimization heuristics and a constraint solver that are jointly optimized. Both the target sound and the sounds in the database are embedded in a feature space defined by a fixed feature function and each generated combination of sounds is evaluated by using a specific metric. This method has been substantially improved in \cite{Cella18, Cella2020} and is implemented in the \emph{Orchidea} toolbox for assisted orchestration (\url{www.orch-idea.org}), currently considered the state-of-the-art system for assisted orchestration.
 
 	 The codebase for this paper can be found at: \url{}.
+	 
+	 ----------------------------------------------------------
+	 
+	 \textit{Everything below this line in the introduction is newly written for this paper}
+	 
+	 Target-based computer-assisted orchestration is the process of creating an orchestral score that best matches an arbitrary target sound given a similarity metric and constraints. It recreates the timbre and harmonics of the target sound using orchestral instruments. 
 		
 	
 	\section{Methodology}\label{sec:methodology}
@@ -98,7 +106,7 @@
 	Targets are separated into four sub-targets. Each sub-target is independently orchestrated with a randomly assigned "sub-orchestra." These orchestrations are then combined to play simultaneously, creating a final orchestrated solution. Then the distance between the target and solution is calculated, giving us a metric to compare the various separation methods.
 	
 		\subsection{Data}
-		We created our own targets as combinations of four sub-targets. The sub-targets come from the NIGENS and BBC databases \cite{} and freesound \cite{}. We selected 90 samples from these databases, choosing sounds that fit the following criteria: 
+		We created our own targets as combinations of four sub-targets. The sub-targets come from the NIGENS \cite{NIGENS} and BBC \cite{} databases, and freesound.org \cite{freesound}. We selected a total of 90 samples from these databases, choosing sounds that fit the following criteria: 
 		
 		\begin{enumerate}
 			\item Static sounds in which the harmonic average across time is a fitting representation of the sound
@@ -141,7 +149,7 @@
 		\subsection{Evaluation}
 		We compare the effectiveness of different separation methods by comparing how well they work for orchestration. The output of a method is orchestrated, and these orchestrations are compared. A quantitative evaluation is performed through the use of a distance metric that measures the spectral distance between target and solution. 
 		
-		The distance metric cuts the target and solution into successive frames that are 4,000 samples in length, then calculates the spectral distance as defined in Eqn. \ref{eqn:distance} between corresponding frames. This metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\tilde{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways.
+		The distance metric cuts the target and solution into successive frames that are 4,000 samples in length, then calculates the spectral distance as defined in Eqn. \ref{eqn:distance} between corresponding frames. The spectral distance metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization, and used in \cite{Cella2020b} \textbf{(is it weird/bad to cite our last paper?)}to compare accuracies of orchestrations. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\tilde{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways.
 		
 		\begin{equation}\label{eqn:distance}
 d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k| \\
@@ -167,7 +175,7 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 				\hline
 			\end{tabular}
 		\end{center}
-		\caption{Average distance between target and orchestration for various methods. "Full target" means no separation.}
+		\caption{Average across \textbf{X} targets showing the distance between target and orchestration for various methods. "Full target" means no separation was performed. }
 		\label{tab:distances}
 	\end{table}
 	
