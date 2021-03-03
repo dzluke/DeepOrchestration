@@ -66,13 +66,10 @@
 		\item What is Orchidea?
 	\end{itemize}
 	
-	\textit{The following is directly copy/pasted from our last paper, it will need to be changed in order to avoid self-plagiarism}
+	\textit{The following (from here until the line) is directly copy/pasted from our last paper, it will need to be changed in order to avoid self-plagiarism}
 	
 	The development of computational tools to assist and inspire the musical composition process constitutes an important research area known as \emph{Computer-Assisted Composition (CAC)} \cite{FerVic2013, Ari2005}. Within CAC, target-based computer-assisted orchestration is a compelling case of how machine learning can be used for {enhancing} and {assisting} music creativity \cite{Maresz2003}. 
 
-	
-	
-	takes a target sound as an input and attempts to find instrumental samples that best match the target given a specific similarity metric and a set of constraints. A solution to this problem is a set of orchestral scores that represent the mixtures of audio samples in the database, ranked by similarity with the target sound. 
 
 	The approach studied in \cite{Carpentier2010} consists in finding a good orchestration for any given sound by searching combinations of sounds from a database with a multi-objective optimization heuristics and a constraint solver that are jointly optimized. Both the target sound and the sounds in the database are embedded in a feature space defined by a fixed feature function and each generated combination of sounds is evaluated by using a specific metric. This method has been substantially improved in \cite{Cella18, Cella2020} and is implemented in the \emph{Orchidea} toolbox for assisted orchestration (\url{www.orch-idea.org}), currently considered the state-of-the-art system for assisted orchestration.
 
@@ -83,6 +80,10 @@
 	 \textit{Everything below this line in the introduction is newly written for this paper}
 	 
 	 Target-based computer-assisted orchestration is the process of creating an orchestral score that best matches an arbitrary target sound given a similarity metric and constraints. It recreates the timbre and harmonics of the target sound using orchestral instruments. 
+		
+		Source separation is an important addition to improve orchestration as it allows for the orchestration of more complex sounds in a way that makes sense in an orchestral context. Orchestral music often uses multiple layers, so by separating the layers of a target and individually orchestrating them, the resulting solution is improved. \textbf{(@Carmine, can you make sure this paragraph makes sense/is correct?)}
+		
+		For example, consider an example target that has a continuous drone sound throughout and a bird song playing above this drone. Without source separation, Orchidea would detect each note of the bird song as a new onset and cut the target in time at each new note. However, this segmentation in time would also effect the drone, forcing it to have a new onset each time the bird song changes notes. The resulting orchestration would having multiple onsets for the drone, when really only one onset is needed at the beginning of the drone. When source separation is applied to this target, the drone and bird song would be orchestrated separately. Therefore, the drone could be orchestrated by a single onset of note(s) that lasts for the duration of the drone. At the same time, the bird song could have as many new onsets as needed without affecting the drone. The orchestration would be greatly improved by removing the unnecessary onsets in the orchestration of the drone. This is the effect we hope to achieve through implementing source separation in computer-assisted orchestration.
 		
 	
 	\section{Methodology}\label{sec:methodology}
@@ -149,7 +150,7 @@
 		\subsection{Evaluation}
 		We compare the effectiveness of different separation methods by comparing how well they work for orchestration. The output of a method is orchestrated, and these orchestrations are compared. A quantitative evaluation is performed through the use of a distance metric that measures the spectral distance between target and solution. 
 		
-		The distance metric cuts the target and solution into successive frames that are 4,000 samples in length, then calculates the spectral distance as defined in Eqn. \ref{eqn:distance} between corresponding frames. The spectral distance metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization, and used in \cite{Cella2020b} \textbf{(is it weird/bad to cite our last paper?)}to compare accuracies of orchestrations. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\tilde{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways.
+		The distance metric cuts the target and solution into successive frames that are 4,000 samples in length, then calculates the spectral distance as defined in Eqn. \ref{eqn:distance} between corresponding frames. The spectral distance metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization, and used in \cite{Cella2020b} \textbf{(is it weird/bad to cite our last paper?)} to compare accuracies of orchestrations. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\tilde{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways.
 		
 		\begin{equation}\label{eqn:distance}
 d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k| \\
@@ -183,7 +184,7 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 	We think that adding source separation improves orchestration. Unsupervised methods work better because of the data that supervised methods are trained on
 	
 	\section{Future Work}\label{sec:futurework}
-	Implementing these methods in Orchidea. We could improve the supervised methods by training them ourselves with data that fits our problem better.
+	Implementing these methods in Orchidea. We could improve the supervised methods by training them ourselves with data that fits our problem better. Adding a joint optimization to determine which instruments should be used in which sources.
 	
 	\begin{acknowledgments}
 		At the end of the Conclusions, acknowledgements to people, projects, funding agencies, etc. can be included after the second-level heading  ``Acknowledgments'' (with no numbering).
