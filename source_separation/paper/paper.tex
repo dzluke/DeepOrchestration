@@ -121,7 +121,9 @@
 			@Max 
 			
 			\subsubsection{Demucs}
-			@Leo/Alejandro
+			@Leo/Alejandro			
+			
+			Demucs \cite{demucs}
 			
 			\subsubsection{OpenUnmix}
 			@Leo/Alejandro
@@ -181,7 +183,11 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 	\end{table}
 	
 	\section{Conclusions}\label{sec:conclusions}
-	We think that adding source separation improves orchestration. Unsupervised methods work better because of the data that supervised methods are trained on
+	In this paper, we addressed the problem of orchestrating dynamic targets using source separation as a preprocessing step. The results showed that performing source separation followed by a static orchestration of each individual sub targets improved the spectral distance between the original sample and its orchestrated version.\\
+	
+	Furthermore, it seems that unsupervised methods such as NMF outperform all supervised methods. However, it is important to notice that the different neural models (Demucs, ConvTasNet, ConvTasNetUniversal and OpenUnmix) were used based on pre-trained versions. Those versions were trained on musical data, except for TDCNN++ which used selected generic sound samples, which opens a large path for improvement. More specifically, we may infer from our results that models trained not only on musical data can generate a better separation for orchestration, as TDCNN++ outperforms other supervised models.\\
+	
+	Since unsupervised methods perform well, it is reasonable to think that supervised methods trained on a dataset well suited for source separation could yield better overall performances on dynamic orchestration.
 	
 	\section{Future Work}\label{sec:futurework}
 	Implementing these methods in Orchidea. We could improve the supervised methods by training them ourselves with data that fits our problem better. Adding a joint optimization to determine which instruments should be used in which sources.
