@@ -31,7 +31,7 @@
 %
 % \author[]{\mbox{\firstname{}\middlename{}\lastname{}\originalname{}\generation{}\email{}\orcid{}}}
 % mbox force an author not to be split over multiple lines
-\author[1]{\mbox{\firstname{Luke}\lastname{Dzwonczyk}}}
+\author[1]{\mbox{\firstname{Luke}\lastname{Dzwonczyk}\email{dz.luke@berkeley.edu}}}
 \author[1, 2]{\mbox{\firstname{L\'eo}\lastname{Chedin}}}
 \author[1]{\mbox{\firstname{Alejandro}\lastname{Saldarriaga-Fuertes}}}
 \author[1]{\mbox{\firstname{Max}\lastname{Sherr}}}
@@ -65,49 +65,35 @@
 	%
 	
 	\section{Introduction}\label{sec:introduction}
-	\begin{itemize}
-		\item what is CAO 
-		\item why we need source separation 
-		\item which type of sounds are useful for us (targets)
-		\item What is Orchidea?
-	\end{itemize}
 	
 	\textit{The following (from here until the line) is directly copy/pasted from our last paper, it will need to be changed in order to avoid self-plagiarism}
 	
 	The development of computational tools to assist and inspire the musical composition process constitutes an important research area known as \emph{Computer-Assisted Composition (CAC)} \cite{FerVic2013, Ari2005}. Within CAC, target-based computer-assisted orchestration is a compelling case of how machine learning can be used for {enhancing} and {assisting} music creativity \cite{Maresz2003}. 
-
-
-	The approach studied in \cite{Carpentier2010} consists in finding a good orchestration for any given sound by searching combinations of sounds from a database with a multi-objective optimization heuristics and a constraint solver that are jointly optimized. Both the target sound and the sounds in the database are embedded in a feature space defined by a fixed feature function and each generated combination of sounds is evaluated by using a specific metric. This method has been substantially improved in \cite{Cella18, Cella2020} and is implemented in the \emph{Orchidea} toolbox for assisted orchestration (\url{www.orch-idea.org}), currently considered the state-of-the-art system for assisted orchestration.
-
-	 The codebase for this paper can be found at: \url{}.
-	 
+ 
 	 ----------------------------------------------------------
 	 
 	 \textit{Everything below this line in the introduction is newly written for this paper}
 	 
-	 In the field of computer-assisted composition, musical orchestration is probably the most empirical one and it has been traditionally taught in an intuitive and non formalized way. Computer-assisted orchestration seeks to help composers by accelerating certain creative processes. In particular, target-based computer-assisted orchestration helps composers to explore new timbral possibilities by associating instrumental samples, which, combined, will sound perceptually similar to a target sound. \textbf{(Note: This paragraph was moved to the intro from the abstract. We can move it back to the abstract if that would be better)}
+	 In the field of computer-assisted composition, musical orchestration is probably the most empirical one and it has been traditionally taught in an intuitive and non formalized way. Computer-assisted orchestration seeks to help composers by accelerating certain creative processes. In particular, target-based computer-assisted orchestration helps composers explore new timbral possibilities by combining instrumental samples in such a way as to mimic the timbre of a given target sound. Formally, it is the process of creating an orchestral score that best matches an arbitrary target sound given a similarity metric and constraints~\cite{Maresz2003}.
 	 
-	 Target-based computer-assisted orchestration is the process of creating an orchestral score that best matches an arbitrary target sound given a similarity metric and constraints. It recreates the timbre and harmonics of the target sound using orchestral instruments. 
+	 Orchidea is a framework and set of tools that is currently considered the state-of-the-art for computer-assisted orchestration. Orchidea embeds the target in a feature space and uses a jointly-optimized multi-objective optimization heuristic and constraint solver to find a combination of samples that best match the target~\cite{Cella18, Cella2020}.
 		
-		Source separation is an important addition to improve orchestration as it allows for the orchestration of more complex sounds in a way that makes sense in an orchestral context. Orchestral music often uses multiple layers, so by separating the layers of a target and individually orchestrating them, the resulting solution is improved. \textbf{(@Carmine, can you make sure this paragraph makes sense/is correct?)}
+	Sound source separation is the process by which a single audio file is separated into multiple sound sources. A perfect separation is able to dissect a sound exactly into its constituent parts, in which each part is an independent sound event. Music source separation is specific application of sound source in which the input audio is expected to be music that is comprised of a subset of instruments or sounds. For example, one music source separation method could attempt to split a song into three parts: voice, bass, and drums. Another aimed at orchestral music may try to separate the input into families of instruments: woodwinds, brass, strings, and percussion. In contrast, universal sound separation does not operate under the assumption that the input is of a musical nature, and can be applied to arbitrary sounds. In this case, the number of sources expected is specified, and the method will attempt to divide the input into the given number of sources.		
 		
-		For example, consider an example target that has a continuous drone sound throughout and a bird song playing above this drone. Without source separation, Orchidea would detect each note of the bird song as a new onset and cut the target in time at each new note. However, this segmentation in time would also effect the drone, forcing it to have a new onset each time the bird song changes notes. The resulting orchestration would having multiple onsets for the drone, when really only one onset is needed at the beginning of the drone. When source separation is applied to this target, the drone and bird song would be orchestrated separately. Therefore, the drone could be orchestrated by a single onset of note(s) that lasts for the duration of the drone. At the same time, the bird song could have as many new onsets as needed without affecting the drone. The orchestration would be greatly improved by removing the unnecessary onsets in the orchestration of the drone. This is the effect we hope to achieve through implementing source separation in computer-assisted orchestration.
+	Source separation is an important addition to improve orchestration as it allows for the orchestration of more complex sounds in a way that makes sense in an orchestral context. Orchestral music often uses multiple layers, so by separating the layers of a target and individually orchestrating them, the resulting solution is improved. 
+		
+	For example, consider an example target that has a continuous drone sound throughout and a bird song playing above this drone. Without source separation, Orchidea would detect each note of the bird song as a new onset and cut the target in time at each new note. However, this segmentation in time would also effect the drone, forcing it to have a new onset each time the bird song changes notes. The resulting orchestration would having multiple onsets for the drone, when really only one onset is needed at the beginning of the drone. When source separation is applied to this target, the drone and bird song would be orchestrated separately. Therefore, the drone could be orchestrated by a single onset of note(s) that lasts for the duration of the drone. At the same time, the bird song could have as many new onsets as needed without affecting the drone. The orchestration would be greatly improved by removing the unnecessary onsets in the orchestration of the drone. This is the effect we hope to achieve through implementing source separation in computer-assisted orchestration.
+		
+	The codebase for this paper can be found at: \url{url needed}, and you can listen to our targets and orchestrations here: \url{url needed}.
 		
 	
 	\section{Methodology}\label{sec:methodology}
-	Sound source separation is the process by which a single audio file is separated into multiple sound sources. A perfect separation is able to dissect a sound exactly into its constituent parts, in which each part is an independent sound event. Music source separation is specific application of sound source in which the input audio is expected to be music that is comprised of a subset of instruments or sounds. For example, one music source separation method could attempt to split a song into three parts: voice, bass, and drums. Another aimed at orchestral music may try to separate the input into families of instruments: woodwinds, brass, strings, and percussion. In contrast, universal sound separation does not operate under the assumption that the input is of a musical nature, and can be applied to arbitrary sounds. In this case, the number of sources expected is defined, and the method will attempt to divide the input into the given number of sources.
+	
 		
 	We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this orchestration to the orchestration of the target if no separation was performed \textbf{Diagram needed}. For example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
 	
 	
 	\section{Experiments}\label{sec:experiments}
-	\begin{itemize}
-		\item Full orchestration
-		\item Ground truth
-		\item NMF
-		\item 4 neural models: TDCNN++, TDCNN, Demucs, OpenUnmix
-		\item table with results
-	\end{itemize}
 	
 	Targets are separated into four sub-targets. Each sub-target is independently orchestrated with a randomly assigned "sub-orchestra." These orchestrations are then combined to play simultaneously, creating a final orchestrated solution. Then the distance between the target and solution is calculated, giving us a metric to compare the various separation methods.
 	
@@ -133,12 +119,12 @@
 			Open-Unmix~\cite{open-unmix} is based on a bidirectional LSTM model from~\cite{Uhlich2017}. It is an open-source implementation of a musical source separation system. It takes as input the Short-Time Fourier Transform of the input signal. 
 			
 			\subsubsection{ConvTasNet}
-			ConvTasNet \cite{tdcnn} (TDCNN) is a model based on a temporal convolutional encoder-decoder. It uses the audio waveform as input and performs a series of 1-D convolutions at different resolutions with residual connections in order to generate a pool of masks that are then applied on the embedding of the initial waveform to output the separated targets. A final 1-D convolutional layer is used as a decoder to recover the waveforms of each sub target. This type of architecture replaces RNNs in modelling sequential data, as series of dilateds convolutions are a good way to capture temporal patterns.\\
+			ConvTasNet \cite{tdcnn} (TDCNN) is a model based on a temporal convolutional encoder-decoder. It uses the audio waveform as input and performs a series of 1-D convolutions at different resolutions with residual connections in order to generate a pool of masks that are then applied on the embedding of the initial waveform to output the separated targets. A final 1-D convolutional layer is used as a decoder to recover the waveforms of each sub target. This type of architecture replaces RNNs in modelling sequential data, as series of dilateds convolutions are a good way to capture temporal patterns.
 			
 			The purpose of the model was initially to separate multiple speakers from a single-channel audio, and was thus trained on speech datasets. Because of its good performance at speech separation, a pre-trained version of the model based on the settings of the paper was added to the benchmark.
 			
 			\subsubsection{Universal Sound Separation ConvTasNet}
-			This version of ConvTasNet, called TDCNN++, was improved by \cite{tdcnnpp} in order to be used for general sound separation, and not only for speech. The main architecture remains the same as in \cite{tdcnn}, and the changes only affected the masking network. More specifically, feature-wise normalization replaces global normalization, residual connections ranges are extended to improve the flow of information, and learnable scale parameters are introduced to weight the outputs of each residual layer. Those modifications help the model to better extract features without drastically increasing its size.\\
+			This version of ConvTasNet, called TDCNN++, was improved by \cite{tdcnnpp} in order to be used for general sound separation, and not only for speech. The main architecture remains the same as in \cite{tdcnn}, and the changes only affected the masking network. More specifically, feature-wise normalization replaces global normalization, residual connections ranges are extended to improve the flow of information, and learnable scale parameters are introduced to weight the outputs of each residual layer. Those modifications help the model to better extract features without drastically increasing its size.
 			
 			TDCNN++ presents the interesting property of having almost the same architecture as TDCNN but trained with generic sounds. Thus, it should naturally be better suited for our task, and the comparison between those two models in particular can give good insights about the impact of the data type used for training.
 	
@@ -193,9 +179,9 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 	\end{table}
 	
 	\section{Conclusions}\label{sec:conclusions}
-	In this paper, we addressed the problem of orchestrating dynamic targets using source separation as a preprocessing step. The results showed that performing source separation followed by a static orchestration of each individual sub targets improved the spectral distance between the original sample and its orchestrated version.\\
+	In this paper, we addressed the problem of orchestrating dynamic targets using source separation as a preprocessing step. The results showed that performing source separation followed by a static orchestration of each individual sub targets improved the spectral distance between the original sample and its orchestrated version.
 	
-	Furthermore, it seems that unsupervised methods such as NMF outperform all supervised methods. However, it is important to notice that the different neural models (Demucs, ConvTasNet, ConvTasNetUniversal and OpenUnmix) were used based on pre-trained versions. Those versions were trained on musical data, except for TDCNN++ which used selected generic sound samples, which opens a large path for improvement. More specifically, we may infer from our results that models trained not only on musical data can generate a better separation for orchestration, as TDCNN++ outperforms other supervised models.\\
+	Furthermore, it seems that unsupervised methods such as NMF outperform all supervised methods. However, it is important to notice that the different neural models (Demucs, ConvTasNet, ConvTasNetUniversal and OpenUnmix) were used based on pre-trained versions. Those versions were trained on musical data, except for TDCNN++ which used selected generic sound samples, which opens a large path for improvement. More specifically, we may infer from our results that models trained not only on musical data can generate a better separation for orchestration, as TDCNN++ outperforms other supervised models.
 	
 	Since unsupervised methods perform well, it is reasonable to think that supervised methods trained on a dataset well suited for source separation could yield better overall performances on dynamic orchestration.
 	
