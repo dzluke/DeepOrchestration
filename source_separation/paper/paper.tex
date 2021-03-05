@@ -114,14 +114,15 @@
 	
 	Targets are separated into four sub-targets. Each sub-target is independently orchestrated with a randomly assigned "sub-orchestra." These orchestrations are then combined to play simultaneously, creating a final orchestrated solution. Then the distance between the target and solution is calculated, giving us a metric to compare the various separation methods.
 	
-		\subsection{Data}
+		\subsection{Data}\label{subsec:data}
 		We created our own targets as combinations of four source sounds. The sources come from the NIGENS \cite{NIGENS} and BBC \cite{BBC} databases, and freesound.org \cite{freesound}. We selected a total of 90 samples from these databases, choosing sounds that fit the following criteria: 
 		
 		\begin{enumerate}
 			\item Static sounds in which the harmonic average across time is a fitting representation of the sound
 			\item Sounds in which there is at least some pitched content and not only noise
 		\end{enumerate}			
-		The sounds chosen include alarms, bells, engine noises, animals, soundscapes, synthesizer chords, and sound effects. Each target that we used for testing was a combination of 4 randomly chosen source sounds from the group of 90 sounds. During the creation of the targets, the sources were randomly offset in time from the beginning of the target, so that they began playing at different times.
+		The sounds chosen include alarms, bells, engine noises, soundscapes, synthesizer chords, and sound effects. Each target that we used for testing was a combination of four randomly chosen source sounds from the group of 90 sounds. 
+		When a target is created, the longest of the four sources is chosen to start playing at the beginning of the target. The other three sources are then randomly assigned different times to begin playing such that they will start between the beginning of the target and half-way through the longest source.
 		
 		\subsection{Separation Methods}
 	
@@ -157,7 +158,9 @@
 			\item The distances between target and orchestration are calculated for the full target orchestration, the separated orchestration, and the ground truth orchestration 
 		\end{enumerate}	
 		
-		The orchestrations performed were static orchestrations, meaning a single onset of notes is created for each target, no matter if the target itself has multiple onsets.			
+		The orchestrations performed were static orchestrations, meaning a single onset of notes is created for each target, no matter if the target itself has multiple onsets.		
+		
+		As described in Section \ref{subsec:data}, each target is comprised of four sources that are offset in time to begin playing at different times. \textbf{Figure needed} illustrates the effect this offset has on the full target, separated, and ground truth orchestrations. The full target orchestration places all onsets at the beginning of the orchestration, since it is unable to differentiate between different sources, it cannot place the different orchestrations at the appropriate offsets. However, the separated orchestrations are able to correctly place the onsets of the sub-target orchestrations so far as the method has correctly separated out the sources. In the ground truth orchestration, the sources are offset by the same amount as they are in the creation of the target, leading to the ground truth having each source orchestration beginning at the correct time.
 		
 		\subsection{Evaluation}
 		We compare the effectiveness of different separation methods by comparing how well they work for orchestration. The output of a method is orchestrated, and these orchestrations are compared. A quantitative evaluation is performed through the use of a distance metric that measures the spectral distance between target and solution. 
