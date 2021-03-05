@@ -123,14 +123,10 @@
 			@Max 
 			
 			\subsubsection{Demucs}
-			@Leo/Alejandro			
-			
-			Demucs \cite{demucs}
+			The Demucs~\cite{demucs} architecture is a deep learning model for musical source separation. It takes as input the stereo mixture, and outputs 4 stereo waveforms corresponding to the stems (vocals, bass, drums and others). Demucs is based on a convolutional encoder, a bidirectional LSTM and a convolutional decoder. The encoder and the decoder are linked with skip U-Net connections. Both the encoder and the decoder are made of 6  blocks, each made of a combination of a convolutional layer with kernel size 8 followed by ReLU activation and a convolution with kernel size 1 followed by gated linear units (GLU). The U-network structure allows the decoder to directly access the input signal and to transfer its phase, improving results.	
 			
 			\subsubsection{OpenUnmix}
-			@Leo/Alejandro
-			
-			OpenUnmix \cite{open-unmix}
+			Open-Unmix~\cite{open-unmix} is based on a bidirectional LSTM model from~\cite{Uhlich2017}. It is an open-source implementation of a musical source separation system. It takes as input the Short-Time Fourier Transform of the input signal. 
 			
 			\subsubsection{ConvTasNet}
 			ConvTasNet \cite{tdcnn} (TDCNN) is a model based on a temporal convolutional encoder-decoder. It uses the audio waveform as input and performs a series of 1-D convolutions at different resolutions with residual connections in order to generate a pool of masks that are then applied on the embedding of the initial waveform to output the separated targets. A final 1-D convolutional layer is used as a decoder to recover the waveforms of each sub target. This type of architecture replaces RNNs in modelling sequential data, as series of dilateds convolutions are a good way to capture temporal patterns.\\
