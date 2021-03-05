@@ -95,11 +95,8 @@
 		
 	
 	\section{Methodology}\label{sec:methodology}
-	\begin{itemize}
-		\item compare a number of source separation methods
-		\item we use the final orchestration to compare the separation methods
-	\end{itemize}
-	
+	Sound source separation is the process by which a single audio file is separated into multiple sound sources. A perfect separation is able to dissect a sound exactly into its constituent parts, in which each part is an independent sound event. Music source separation is specific application of sound source in which the input audio is expected to be music that is comprised of a subset of instruments or sounds. For example, one music source separation method could attempt to split a song into three parts: voice, bass, and drums. Another aimed at orchestral music may try to separate the input into families of instruments: woodwinds, brass, strings, and percussion. In contrast, universal sound separation does not operate under the assumption that the input is of a musical nature, and can be applied to arbitrary sounds. In this case, the number of sources expected is defined, and the method will attempt to divide the input into the given number of sources.
+		
 	We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this orchestration to the orchestration of the target if no separation was performed \textbf{Diagram needed}. For example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
 	
 	
