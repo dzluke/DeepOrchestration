@@ -149,7 +149,7 @@
 		\subsection{Evaluation}
 		We compare the effectiveness of different separation methods by comparing how well they work for orchestration. The output of a method is orchestrated, and these orchestrations are compared. A quantitative evaluation is performed through the use of a distance metric that measures the spectral distance between target and solution. 
 		
-		The distance metric cuts the target and solution into successive frames that are 4,000 samples in length, then calculates the spectral distance as defined in Eqn. \ref{eqn:distance} between corresponding frames. The spectral distance metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization, and used in \cite{Cella2020b} \textbf{(is it weird/bad to cite our last paper?)} to compare accuracies of orchestrations. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\tilde{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways.
+		The distance metric cuts the target and solution into successive frames that are 4,000 samples in length, then calculates the spectral distance as defined in Eqn. \ref{eqn:distance} between corresponding frames. The spectral distance metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization, and used in \cite{Cella2020b} to compare accuracies of orchestrations. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\tilde{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways. For our purposes, we used $\lambda_1 = 0.5$ and $\lambda_2 = 10$, which penalizes a solution that overshoots the harmonic energy of the target.
 		
 		\begin{equation}\label{eqn:distance}
 d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k| \\
@@ -163,21 +163,28 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 				\hline
 				& Average distance \\
 				\hline
-				Full target & 25.73 \\
+				Full target & 24.96 \\
 				\hline
-				TDCNN++ & 25.44 \\
+				NMF & 22.44 \\
 				\hline
-				Demucs & 27.62 \\
+				Demucs & 25.11 \\
 				\hline
-				NMF & 22.32 \\
+				OpenUnmix & 24.48\\
 				\hline
-				Ground truth & 24.27 \\
+				TDCNN & 26.44\\
+				\hline
+				TDCNN++ & 24.38 \\
+				\hline
+				Ground truth & 24.19 \\
 				\hline
 			\end{tabular}
 		\end{center}
-		\caption{Average across \textbf{X} targets showing the distance between target and orchestration for various methods. "Full target" means no separation was performed. }
+		\caption{Average across 300 targets showing the distance between target and orchestration for various methods. "Full target" means no separation was performed.}
 		\label{tab:distances}
 	\end{table}
+		
+		\subsection{Results}
+		The average distances for full target, separated, and ground truth orchestrations are displayed in Table \ref{tab:distances}. These results are the average distance between target and orchestration for 300 different targets. We found that NMF performed the best out of all separation methods, and even outperformed the ground truth orchestrations. TDCNN++, OpenUnmix, and NMF also performed better than the full target orchestrations, meaning that separating targets using these methods leads to a better orchestration than if no separation is applied.
 	
 	\section{Conclusions}\label{sec:conclusions}
 	In this paper, we addressed the problem of orchestrating dynamic targets using source separation as a preprocessing step. The results showed that performing source separation followed by a static orchestration of each individual sub targets improved the spectral distance between the original sample and its orchestrated version.
