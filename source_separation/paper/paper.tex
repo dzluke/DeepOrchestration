@@ -134,7 +134,7 @@
 			\item The distances between target and orchestration are calculated for the full target orchestration, the separated orchestration, and the ground truth orchestration 
 		\end{enumerate}	
 		
-		The orchestrations performed were static orchestrations, meaning a single onset of notes is created for each target, no matter if the target itself has multiple onsets.		
+		The orchestrations performed were static orchestrations, meaning a single onset of notes is created for each target, no matter if the target itself has multiple onsets. The OrchideaSOL database of orchestral samples was used with Orchidea to create the orchestrations~\cite{Cella2020c}. This database contains recordings of extended playing techniques, which better fits the often noisy or inharmonic nature of the targets we used. The full orchestra, of which non-overlapping subsets were selected to orchestrate the subtargets, contained the following instruments: 8 violins, 4 violas, 3 cellos, 1 bass, 2 oboes, 2 flutes, 2 clarinets in B$\flat$, 2 bassoons, 2 trumpets, 2 trombones, and 2 French horns.
 		
 		As described in Section \ref{subsec:data}, each target is comprised of four sources that are offset in time to begin playing at different times. \textbf{Figure needed} illustrates the effect this offset has on the full target, separated, and ground truth orchestrations. The full target orchestration places all onsets at the beginning of the orchestration, since it is unable to differentiate between different sources, it cannot place the different orchestrations at the appropriate offsets. However, the separated orchestrations are able to correctly place the onsets of the sub-target orchestrations so far as the method has correctly separated out the sources. In the ground truth orchestration, the sources are offset by the same amount as they are in the creation of the target, leading to the ground truth having each source orchestration beginning at the correct time.
 		
@@ -186,7 +186,12 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 	Since unsupervised methods perform well, it is reasonable to think that supervised methods trained on a dataset well suited for source separation could yield better overall performances on dynamic orchestration.
 	
 	\section{Future Work}\label{sec:futurework}
-	Implementing these methods in Orchidea. We could improve the supervised methods by training them ourselves with data that fits our problem better. Adding a joint optimization to determine which instruments should be used in which sources.
+
+	As we stated in Section \ref{sec:conclusions}, we believe that one of the reasons the supervised methods did not perform as well is because of the data they were trained on. Therefore, a natural next step is to train these models ourselves with sounds that are more applicable to computer-assisted orchestration.
+	
+	Another aspect we would like to work on is the assignment of the orchestras. Currently, the subset of the orchestra that is assigned to each sub-target is randomly selected. However, it is possible that this random assignment could reduce the quality of the final orchestration. If, for example, one of the sub-targets contains mostly low pitch content, but the orchestra assigned to it contains mostly violins, violas, flutes, and oboes, the resulting orchestration will suffer. To solve this problem, a step could be added that jointly-optimizes the the orchestras assigned to each sub-target, ultimately choosing an assignment that leads to the best orchestration of each sub-target.
+	
+	Finally, one or multiple of the separation methods we tested should be implemented in Orchidea in order to improve the orchestrations Orchidea is capable of creating. NMF performed the best across the targets we tested on, and therefore makes sense to be added to Orchidea. However, it could also make sense to add one of the musical source spearation methods, such as OpenUnmix, to allow users to choose different methods based on the targets they are orchestrating.
 	
 	\begin{acknowledgments}
 		At the end of the Conclusions, acknowledgements to people, projects, funding agencies, etc. can be included after the second-level heading  ``Acknowledgments'' (with no numbering).
