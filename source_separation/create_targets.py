@@ -9,7 +9,7 @@ from itertools import product
 
 from pipeline import NUM_SUBTARGETS, SAMPLE_DATABASE_PATH, TARGETS_PATH, TARGET_METADATA_PATH, SAMPLING_RATE, clear_directory, combine_with_offset
 
-NUM_TARGETS = 100  # number of targets to create
+NUM_TARGETS = 300  # number of targets to create
 
 def create_targets(paths):
     """

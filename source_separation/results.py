@@ -24,7 +24,7 @@ if __name__ == "__main__":
     separated_target_distances = results['separated_target_distances']
     ground_truth_distances = results['ground_truth_distances']
 
-    aggregate_data(lambda x: x[0], median, 'Median')
+    # aggregate_data(lambda x: x[0], median, 'Median')
     aggregate_data(lambda x: x[0], mean, 'Mean')
 
     x = 0  # num times separate is better than full
@@ -46,8 +46,6 @@ if __name__ == "__main__":
             y += 1
         if ground < full:
             z += 1
-
-        ground_increase += (full - ground)
 
     print("Separate is better than full:", x / num_completed * 100, "%")
     print("Ground is better than separate:", y / num_completed * 100, "%")

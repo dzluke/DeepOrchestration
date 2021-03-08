@@ -22,7 +22,7 @@ SOL_PATH = "../OrchideaSOL2020"  # path to the SOL database
 ANALYSIS_DB_PATH = "../OrchideaSOL2020.spectrum.db"  # path to the analysis file of SOL, ex: TinySOL.spectrum.db
 TARGETS_PATH = "./targets"  # path to targets to be orchestrated
 SAMPLE_DATABASE_PATH = "./subtargets"  # path to samples that will be combined to create targets
-TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNNpp model
+TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNN++ model
 
 # If you want to save orchestrations, set the following variables
 SAVED_ORCHESTRATIONS_PATH = "./saved_orchestrations"
@@ -43,7 +43,7 @@ full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr'
                   'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
 
 separation_models = ["TDCNN++", "TDCNN", "Demucs", "OpenUnmix", "NMF"]
-thresholds = [2]  # onset thresholds for dynamic orchestration
+thresholds = [0.1]  # onset thresholds for dynamic orchestration
 
 
 def clear_temp():
@@ -290,7 +290,7 @@ def frame_spectral_distance(target, solution):
     target = librosa.util.fix_length(target, length)
     solution = librosa.util.fix_length(solution, length)
 
-    frame_length = 4000  # 4000 samples ~ 10 ms
+    frame_length = 4000  # 4000 samples ~ 90 ms
     target_frames = librosa.util.frame(target, frame_length, frame_length, axis=0)
     # last_frame = target[num_frames * frame_length:]
     # last_frame = librosa.util.fix_length(last_frame, frame_length)
@@ -618,10 +618,10 @@ if __name__ == "__main__":
             json.dump(results, f, indent='\t')
 
         # remove temp files created during separation
-        # for model_name in separation_models:
-        #     path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name)
-        #     if os.path.exists(path):
-        #         remove_directory(path)
+        for model_name in separation_models:
+            path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name)
+            if os.path.exists(path):
+                remove_directory(path)
 
     # remove files created during pipeline
     for file in ['target.wav', 'segments.txt']:
