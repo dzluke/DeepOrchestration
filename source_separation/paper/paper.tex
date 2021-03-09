@@ -112,14 +112,14 @@
 			Open-Unmix~\cite{open-unmix} is based on a bidirectional LSTM model from~\cite{Uhlich2017}. It is an open-source implementation of a musical source separation system. It takes as input the Short-Time Fourier Transform of the input signal. 
 			
 			\subsubsection{ConvTasNet}
-			ConvTasNet \cite{tdcnn} (TDCNN) is a model based on a temporal convolutional encoder-decoder. It uses the audio waveform as input and performs a series of 1-D convolutions at different resolutions with residual connections in order to generate a pool of masks that are then applied on the embedding of the initial waveform to output the separated targets. A final 1-D convolutional layer is used as a decoder to recover the waveforms of each sub target. This type of architecture replaces RNNs in modelling sequential data, as series of dilateds convolutions are a good way to capture temporal patterns.
+			ConvTasNet \cite{tdcn} (TDCN) is a model based on a temporal convolutional encoder-decoder. It uses the audio waveform as input and performs a series of 1-D convolutions at different resolutions with residual connections in order to generate a pool of masks that are then applied on the embedding of the initial waveform to output the separated targets. A final 1-D convolutional layer is used as a decoder to recover the waveforms of each sub target. This type of architecture replaces RNNs in modelling sequential data, as series of dilateds convolutions are a good way to capture temporal patterns.
 			
 			The purpose of the model was initially to separate multiple speakers from a single-channel audio, and was thus trained on speech datasets. Because of its good performance at speech separation, a pre-trained version of the model based on the settings of the paper was added to the benchmark.
 			
 			\subsubsection{Universal Sound Separation ConvTasNet}
-			This version of ConvTasNet, called TDCNN++, was improved by \cite{tdcnnpp} in order to be used for general sound separation, and not only for speech. The main architecture remains the same as in \cite{tdcnn}, and the changes only affected the masking network. More specifically, feature-wise normalization replaces global normalization, residual connections ranges are extended to improve the flow of information, and learnable scale parameters are introduced to weight the outputs of each residual layer. Those modifications help the model to better extract features without drastically increasing its size.
+			This version of ConvTasNet, called TDCN++, was improved by \cite{tdcnpp} in order to be used for general sound separation, and not only for speech. The main architecture remains the same as in \cite{tdcn}, and the changes only affected the masking network. More specifically, feature-wise normalization replaces global normalization, residual connections ranges are extended to improve the flow of information, and learnable scale parameters are introduced to weight the outputs of each residual layer. Those modifications help the model to better extract features without drastically increasing its size.
 			
-			TDCNN++ presents the interesting property of having almost the same architecture as TDCNN but trained with generic sounds. Thus, it should naturally be better suited for our task, and the comparison between those two models in particular can give good insights about the impact of the data type used for training.
+			TDCN++ presents the interesting property of having almost the same architecture as TDCN but trained with generic sounds. Thus, it should naturally be better suited for our task, and the comparison between those two models in particular can give good insights about the impact of the data type used for training.
 	
 		\subsection{Testing}
 		In order to compare the effectiveness of the separation methods, a full target orchestration and a ground truth orchestration are done for each target. The full target orchestration is the orchestration of the target without any separation performed. The ground truth orchestration takes the four sources that make up the target and orchestrates each one separately, then combines them. This ground truth represents the orchestration that could take place if the separation method was perfect and separated a target exactly into its constituent sources. 
@@ -163,9 +163,9 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 				\hline
 				OpenUnmix & 24.48\\
 				\hline
-				TDCNN & 26.44\\
+				TDCN & 26.44\\
 				\hline
-				TDCNN++ & 24.38 \\
+				TDCN++ & 24.38 \\
 				\hline
 				Ground truth & 24.19 \\
 				\hline
@@ -176,12 +176,12 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 	\end{table}
 		
 		\subsection{Results}
-		The average distances for full target, separated, and ground truth orchestrations are displayed in Table \ref{tab:distances}. These results are the average distance between target and orchestration for 300 different targets. We found that NMF performed the best out of all separation methods, and even outperformed the ground truth orchestrations. TDCNN++, OpenUnmix, and NMF also performed better than the full target orchestrations, meaning that separating targets using these methods leads to a better orchestration than if no separation is applied.
+		The average distances for full target, separated, and ground truth orchestrations are displayed in Table \ref{tab:distances}. These results are the average distance between target and orchestration for 300 different targets. We found that NMF performed the best out of all separation methods, and even outperformed the ground truth orchestrations. TDCN++, OpenUnmix, and NMF also performed better than the full target orchestrations, meaning that separating targets using these methods leads to a better orchestration than if no separation is applied.
 	
 	\section{Conclusions}\label{sec:conclusions}
 	In this paper, we addressed the problem of orchestrating dynamic targets using source separation as a preprocessing step. The results showed that performing source separation followed by a static orchestration of each individual sub targets improved the spectral distance between the original sample and its orchestrated version.
 	
-	Furthermore, it seems that unsupervised methods such as NMF outperform all supervised methods. However, it is important to notice that the different neural models (Demucs, ConvTasNet, ConvTasNetUniversal and OpenUnmix) were used based on pre-trained versions. Those versions were trained on musical data, except for TDCNN++ which used selected generic sound samples, which opens a large path for improvement. More specifically, we may infer from our results that models trained not only on musical data can generate a better separation for orchestration, as TDCNN++ outperforms other supervised models.
+	Furthermore, it seems that unsupervised methods such as NMF outperform all supervised methods. However, it is important to notice that the different neural models (Demucs, ConvTasNet, ConvTasNetUniversal and OpenUnmix) were used based on pre-trained versions. Those versions were trained on musical data, except for TDCN++ which used selected generic sound samples, which opens a large path for improvement. More specifically, we may infer from our results that models trained not only on musical data can generate a better separation for orchestration, as TDCN++ outperforms other supervised models.
 	
 	Since unsupervised methods perform well, it is reasonable to think that supervised methods trained on a dataset well suited for source separation could yield better overall performances on dynamic orchestration.
 	
