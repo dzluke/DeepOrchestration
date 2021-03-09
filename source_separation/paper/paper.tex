@@ -83,7 +83,14 @@
 	\section{Methodology}\label{sec:methodology}
 	
 		
-	We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this orchestration to the orchestration of the target if no separation was performed \textbf{Diagram needed}. For example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
+	We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this orchestration to the orchestration of the target if no separation was performed (Fig. \ref{fig:full_diagram}). For example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
+	
+			\begin{figure}[t]
+		\centering
+			\includegraphics[width=\columnwidth]{figures/diagram.png}
+			\caption{Diagram showing the pipeline of the orchestration with (bottom) and without (top) separation. The pipeline using separation divides the target into subtargets that will be orchestrated separately using specific subsets of the orchestra, and then recombined to obtain the full orchestration.}\label{fig:full_diagram}
+		\end{figure}
+	
 	
 	
 	\section{Experiments}\label{sec:experiments}
