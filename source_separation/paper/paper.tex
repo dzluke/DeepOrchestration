@@ -82,15 +82,7 @@
 	
 	\section{Methodology}\label{sec:methodology}
 	
-		
-	We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this orchestration to the orchestration of the target if no separation was performed (Fig. \ref{fig:full_diagram}). For example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
-	
-			\begin{figure}[t]
-		\centering
-			\includegraphics[width=\columnwidth]{figures/diagram.png}
-			\caption{Diagram showing the pipeline of the orchestration with (bottom) and without (top) separation. The pipeline using separation divides the target into subtargets that will be orchestrated separately using specific subsets of the orchestra, and then recombined to obtain the full orchestration.}\label{fig:full_diagram}
-		\end{figure}
-	
+	We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this orchestration to the orchestration of the target if no separation was performed \textbf{Diagram needed}. For example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
 	
 	
 	\section{Experiments}\label{sec:experiments}
@@ -111,7 +103,8 @@
 	
 			\subsubsection{Non-negative Matrix Factorization}
 			@Max 
-			
+			We use scikit learn implementation. Related papers:
+			\cite{Cichocki_NMF} \cite{Fevotte_NMF}
 			
 			\subsubsection{OpenUnmix}
 			Open-Unmix~\cite{open-unmix} is an open source implementation of a deep music source separation model, based on \cite{Uhlich207}. It is actually composed of multiple models that are trained for each target (such as 'vocals', 'drums', ...). Each of these models is trained on the specific target using the same architecture, based on a three layer bidirectionnal LSTM network. Open-Unmix operates on the Short Time Fourier Transform of the input mixture, which is first standardized. It predicts the target by multiplying the output of the LSTM network with the magnitude spectogram of the input, essentially applying a mask. Open-Unmix also use Wiener filtering as a last processing step.
