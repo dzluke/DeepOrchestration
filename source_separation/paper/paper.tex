@@ -101,13 +101,11 @@
 		
 		\subsection{Separation Methods}
 	
-			\subsubsection{Non-negative Matrix Factorization}
-			@Max 
-			We use scikit learn implementation. Related papers:
-			\cite{Cichocki_NMF} \cite{Fevotte_NMF}
+			\subsubsection{Non-negative Matrix Factorization} 
+			Non-negative matrix factorization \cite{Cichocki_NMF} \cite{Fevotte_NMF} is an \`a priori method, which takes an input non-negative matrix, in this case a spectrogram $S$, in $\mathbb{R} ^{N\times M}$ and decomposes it into a basis matrix $A$ in $\mathbb{R}^{N\times J}$ and a component matrix $X$ in $\mathbb{R}^{J\times M}$ such that $S\approx A\times X$. We use the coordinate descent algorithm from the scikit-learn Python package based on \cite{Cichocki_NMF} with $J$ set to $4$, which selects for 4 features in the dataset. We then output 4 mono waveforms containing each isolated feature $F_i$, where $F_i=A_i\times X_i$ for $i = 1, 2, 3$, or $4$.
 			
 			\subsubsection{OpenUnmix}
-			Open-Unmix~\cite{open-unmix} is an open source implementation of a deep music source separation model, based on \cite{Uhlich207}. It is actually composed of multiple models that are trained for each target (such as 'vocals', 'drums', ...). Each of these models is trained on the specific target using the same architecture, based on a three layer bidirectionnal LSTM network. Open-Unmix operates on the Short Time Fourier Transform of the input mixture, which is first standardized. It predicts the target by multiplying the output of the LSTM network with the magnitude spectogram of the input, essentially applying a mask. Open-Unmix also use Wiener filtering as a last processing step.
+			Open-Unmix~\cite{open-unmix} is an open source implementation of a deep music source separation model, based on \cite{Uhlich2017}. It is actually composed of multiple models that are trained for each target (such as 'vocals', 'drums', ...). Each of these models is trained on the specific target using the same architecture, based on a three layer bidirectionnal LSTM network. Open-Unmix operates on the Short Time Fourier Transform of the input mixture, which is first standardized. It predicts the target by multiplying the output of the LSTM network with the magnitude spectogram of the input, essentially applying a mask. Open-Unmix also uses Wiener filtering as a last processing step.
 			
 			\subsubsection{Demucs}
 			The Demucs~\cite{demucs} architecture is a deep learning model for musical source separation. It takes as input the stereo mixture, and outputs 4 stereo waveforms corresponding to the stems (vocals, bass, drums and other). Demucs is based on a convolutional encoder, a bidirectional LSTM, and a convolutional decoder. The encoder and the decoder are linked with skip U-Net connections. Both the encoder and the decoder are made of 6 blocks, each made of a combination of a convolutional layer with kernel size 8, followed by ReLU activation. Finally there is another convolution with kernel size 1, followed by gated linear units (GLU). The U-network structure allows the decoder to directly access the input signal and to transfer its phase, improving results.	
