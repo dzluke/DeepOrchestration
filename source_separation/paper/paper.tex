@@ -77,12 +77,18 @@
 		
 	For example, consider an example target that has a continuous drone sound throughout and a bird song playing above this drone. Without source separation, Orchidea would detect each note of the bird song as a new onset and cut the target in time at each new note. However, this segmentation in time would also effect the drone, forcing it to have a new onset each time the bird song changes notes. The resulting orchestration would having multiple onsets for the drone, when really only one onset is needed at the beginning of the drone. When source separation is applied to this target, the drone and bird song would be orchestrated separately. Therefore, the drone could be orchestrated by a single onset of note(s) that lasts for the duration of the drone. At the same time, the bird song could have as many new onsets as needed without affecting the drone. The orchestration would be greatly improved by removing the unnecessary onsets in the orchestration of the drone. This is the effect we hope to achieve through implementing source separation in computer-assisted orchestration.
 		
-	The codebase for this paper can be found at: \url{url needed}, and you can listen to our targets and orchestrations here: \url{url needed}.
+	The codebase for this paper can be found at: \url{url needed}, and you can listen to a selection of targets and orchestrations here: \url{url needed}.
 		
 	
 	\section{Methodology}\label{sec:methodology}
 	
-	We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this orchestration to the orchestration of the target if no separation was performed \textbf{Diagram needed}. For example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
+	We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this orchestration to the orchestration of the target if no separation was performed (see Fig. \ref{fig:full_diagram}). For example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
+	
+	\begin{figure}[t]
+		\centering
+			\includegraphics[width=\columnwidth]{figures/diagram.png}
+			\caption{Diagram showing the pipeline of the orchestration with (bottom) and without (top) separation. The pipeline using separation divides the target into subtargets that will be orchestrated separately using specific subsets of the orchestra, and then recombined to obtain the full orchestration.}\label{fig:full_diagram}
+	\end{figure}
 	
 	
 	\section{Experiments}\label{sec:experiments}
