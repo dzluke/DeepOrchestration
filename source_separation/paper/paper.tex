@@ -75,7 +75,7 @@
 		
 	Source separation is an important addition to improve orchestration as it allows for the orchestration of more complex sounds in a way that makes sense in an orchestral context. Orchestral music often uses multiple layers, so by separating the layers of a target and individually orchestrating them, the resulting solution is improved. 
 		
-	For example, consider an example target that has a continuous drone sound throughout and a melody playing above this drone. Without source separation, Orchidea would detect each note of the melody as a new onset and cut the target in time at each new note. However, this segmentation in time would also effect the drone, cutting it in time and forcing it to have a new onset each time the melody changes notes. The resulting orchestration would have multiple onsets for the drone, when really only one onset is needed at the beginning of the drone. When source separation is applied to this target, the drone and melody would be orchestrated separately. Therefore, the drone could be orchestrated by a single onset that lasts for the duration of the drone. At the same time, the melody could have as many new onsets as needed without affecting the drone. The orchestration would be greatly improved by removing the unnecessary onsets in the orchestration of the drone. This is the effect we hope to achieve through implementing source separation in computer-assisted orchestration.
+	For example, consider an example target that has a continuous drone sound throughout and a melody playing above this drone. Without source separation, Orchidea would detect each note of the melody as a new onset and cut the target in time at each new note. However, this segmentation in time would also effect the drone, cutting it in time and forcing it to have a new onset each time the melody changes notes. The resulting orchestration would have multiple onsets for the drone, when really only one onset is needed at the beginning of the drone. When source separation is applied to this target, the drone and melody would be orchestrated separately. Therefore, the drone could be orchestrated by a single onset that lasts for the duration of the drone. At the same time, the melody could have as many new onsets as needed without affecting the drone. The orchestration would be greatly improved by removing the unnecessary onsets in the orchestration of the drone. This is the effect we achieve through implementing source separation in computer-assisted orchestration.
 		
 	The codebase for this paper can be found at: \mbox{\url{https://github.com/dzluke/smc2021}}, and you can listen to a selection of targets and orchestrations here: \mbox{\url{https://dzluke.github.io/smc2021/}}.
 		
@@ -130,6 +130,8 @@
 		\subsection{Testing}
 		In order to compare the effectiveness of the separation methods, a full target orchestration and a ground truth orchestration are done for each target. The full target orchestration is the orchestration of the target without any separation performed. The ground truth orchestration takes the four sources that make up the target and orchestrates each one separately, then combines them. This ground truth represents the orchestration that could take place if the separation method was perfect and separated a target exactly into its constituent sources. 
 		
+		Suggestion: A block-diagram of the algo would be nice to have
+
 		The procedure we used for testing is as follows:
 		\begin{enumerate}
 			\item The target is created as a combination of four randomly chosen sources, which are offset to begin playing at different times
@@ -184,7 +186,7 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 				\hline
 			\end{tabular}
 		\end{center}
-		\caption{Average across 300 targets showing the distance between target and orchestration for various methods. "Full target" means no separation was performed.}
+		\caption{Average across 300 targets showing the distance between target and orchestration for various methods. "Full target" means no separation was performed. Lower values are better.}
 		\label{tab:distances}
 	\end{table}
 		
