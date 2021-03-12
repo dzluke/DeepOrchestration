@@ -112,7 +112,7 @@
 	We consider source separation models trained to tackle two distinct separation problems. The first is music source separation (Open-Unmix, Demucs, ConvTasnet). For these architectures, we used models that were pre-trained on the MUSDB18 dataset~\cite{MUSDB18}. Thus, these models output 4 stereo tracks that correspond to broad instrumental categories defined in the SiSEC 2018 Mus evaluation campaign: \textit{vocals, drums, bass} and \textit{other}~\cite{Stoter_SiSEC}. Although the audio sources we consider in this work are often non-musical, we hope that these source separation methods can still improve the orchestration by separating other types of sound in a musically meaningful way.
 	The second type of model we tested are ones trained for universal sound separation (TDCN++, NMF), which \cite{tdcnpp} defines as \textit{separating mixtures of arbitrary sounds of different types}. 
 			
-			\subsubsection{Music source separation}
+			\subsubsection{Music Source Separation}
 			\textbf{Open-Unmix}\\
 			Open-Unmix~\cite{open-unmix} is an open source implementation of a deep music source separation model, based on \cite{Uhlich2017}. It is actually composed of multiple models that are trained for each instrumental target. Each of these models is trained on the specific target using the same architecture, based on a three layer bidirectional LSTM network. Open-Unmix operates on the Short Time Fourier Transform (STFT) of the input mixture, which is first standardized. It predicts the target by multiplying the output of the LSTM network with the magnitude spectrogram of the input, essentially applying a mask. Open-Unmix also uses Wiener filtering as a last processing step.
 			
@@ -123,7 +123,7 @@
 			We also used the Conv-Tasnet\cite{tdcn} implementation of \cite{demucs}, who adapted the architecture, originally designed for speech separation at 8 kHz, for the task of music source separation. Conv-Tasnet uses  a combination of learned time-domain analysis and synthesis transforms with a time-dilated convolutional network (TDCN).
 			Conv-Tasnet (TDCN) is a model based on a temporal convolutional encoder-decoder. It uses the audio waveform as input and performs a series of 1-D convolutions at different resolutions with residual connections in order to generate a pool of masks that are then applied on the embedding of the initial waveform to output the separated targets. A final 1-D convolutional layer is used as a decoder to recover the waveforms of each sub target. This type of architecture replaces RNNs in modeling sequential data, as series of dilated convolutions are a good way to capture temporal patterns.	
 			
-			\subsubsection{Universal sound separation}
+			\subsubsection{Universal Sound Separation}
 			\textbf{Non-negative Matrix Factorization}\\
 			Non-negative matrix factorization \cite{Cichocki_NMF} \cite{Fevotte_NMF} is an \`a priori method, which takes an input non-negative matrix, in this case a spectrogram $S$, in $\mathbb{R} ^{N\times M}$ and decomposes it into a basis matrix $A$ in $\mathbb{R}^{N\times J}$ and a component matrix $X$ in $\mathbb{R}^{J\times M}$ such that $S\approx A\times X$. We use the coordinate descent algorithm from the scikit-learn Python package based on \cite{Cichocki_NMF} with $J$ set to $4$, which selects for 4 features in the dataset. We then output 4 mono waveforms containing each isolated feature $F_i$, where $F_i=A_i\times X_i$ for $i = 1, 2, 3$, or $4$.
 
