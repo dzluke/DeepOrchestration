@@ -215,6 +215,12 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 		\label{tab:test}
 	\end{table}
 	
+	\begin{figure}[t]
+		\centering
+			\includegraphics[width=\columnwidth]{figures/graph.png}
+			\caption{Plot showing the average distance and standard deviation between target and solution for each orchestration method.}\label{fig:plot}
+	\end{figure}
+	
 	
 		\subsection{Results}
 		The average distances for full target, separated, and ground truth orchestrations are displayed in Table \ref{tab:distances}. These results are the average distance between target and orchestration for 300 different targets. We found that NMF performed the best out of all separation methods, and even outperformed the ground truth orchestrations, on average. TDCN++, Open-Unmix, and NMF performed better than the full target orchestrations, meaning that separating targets using these methods leads to a better orchestration than if no separation is applied.

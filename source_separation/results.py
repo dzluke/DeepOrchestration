@@ -1,5 +1,6 @@
 import json
-from statistics import median
+from statistics import median, stdev
+import matplotlib.pyplot as plt
 
 from pipeline import thresholds, mean, RESULTS_PATH
 
@@ -24,7 +25,37 @@ if __name__ == "__main__":
     separated_target_distances = results['separated_target_distances']
     ground_truth_distances = results['ground_truth_distances']
 
-    # aggregate_data(lambda x: x[0], median, 'Median')
+    y = []
+    e = []
+    x_labels = []
+
+    # order: Open-Unmix, Demucs, TDCN, NMF, TDCN++, Full, Ground
+
+    def make_plot_data(distances, label):
+        distances = [x[0] for x in distances]
+        y.append(mean(distances))
+        e.append(stdev(distances))
+        x_labels.append(label)
+
+    make_plot_data(separated_target_distances['OpenUnmix'], 'Open-Unmix')
+    make_plot_data(separated_target_distances['Demucs'], 'Demucs')
+    make_plot_data(separated_target_distances['TDCNN'], 'TDCN')
+    make_plot_data(separated_target_distances['NMF'], 'NMF')
+    make_plot_data(separated_target_distances['TDCNN++'], 'TDCN++')
+    make_plot_data(full_target_distances, 'Full target')
+    make_plot_data(ground_truth_distances, 'Ground truth')
+
+    x = list(range(len(y)))
+    plt.title("Average distance between target and solution with standard deviation")
+    plt.errorbar(x, y, e, linestyle='None', marker='.', markersize=10, capsize=3, color='black')
+    plt.xticks(x, x_labels, rotation=15)
+    plt.xlabel("Orchestration type")
+    plt.ylabel("Distance")
+    plt.ylim(0, 50)
+    plt.tight_layout()
+    plt.show()
+
+    aggregate_data(lambda x: x[0], median, 'Median')
     aggregate_data(lambda x: x[0], mean, 'Mean')
 
     x = 0  # num times separate is better than full
