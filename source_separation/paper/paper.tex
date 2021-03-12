@@ -144,6 +144,12 @@
 			\item The ground truth orchestration is created by orchestrating the four sources, using the same orchestra splits from step 4, and then combined to play simultaneously
 			\item The distances between target and orchestration are calculated for the full target orchestration, the separated orchestration, and the ground truth orchestration 
 		\end{enumerate}	
+
+		\begin{figure}[t]
+			\centering
+				\includegraphics[width=\columnwidth]{figures/evaluation_diagram.png}
+				\caption{Diagram showing the evaluation mathod. Note that in both orchestrations with split orchestra, the split is the same.}\label{fig:full_diagram}
+		\end{figure}
 		
 		The orchestrations performed are static orchestrations, meaning a single onset of notes is created for each target, no matter if the target itself has multiple onsets. The OrchideaSOL database of orchestral samples is used with Orchidea to create the orchestrations~\cite{Cella2020c}. This database contains recordings of extended playing techniques, which better fits the often noisy or inharmonic nature of our targets. The full orchestra, of which non-overlapping subsets were selected to orchestrate the subtargets, contains the following instruments: 8 violins, 4 violas, 3 cellos, 1 bass, 2 oboes, 2 flutes, 2 clarinets in B$\flat$, 2 bassoons, 2 trumpets, 2 trombones, and 2 French horns.
 		
