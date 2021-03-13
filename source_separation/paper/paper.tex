@@ -80,7 +80,7 @@
 		
 	Source separation is an important addition to improve orchestration as it allows for the orchestration of more complex sounds in a way that makes sense in an orchestral context. Orchestral music often uses multiple layers, so by separating the layers of a target and individually orchestrating them, the resulting solution is improved. 
 		
-	For example, consider a target that has a continuous drone sound throughout and a melody playing above this drone. Without source separation, Orchidea would detect each note of the melody as a new onset and cut the target in time at each new note. However, this segmentation in time would also effect the drone, cutting it in time and forcing it to have a new onset each time the melody changes notes. The resulting orchestration would have multiple onsets for the drone, even though only one onset is needed at the beginning of the drone. When source separation is applied to this target, the drone and melody would be orchestrated separately. Therefore, the drone could be orchestrated by a single onset that lasts for the duration of the drone. At the same time, the melody could have as many new onsets as needed without affecting the drone. The orchestration would be greatly improved by removing the unnecessary onsets in the orchestration of the drone. This is the effect we achieve through implementing source separation in computer-assisted orchestration.
+	For example, consider a target that has a continuous drone sound throughout and a melody playing above this drone. Without source separation, Orchidea would detect each note of the melody as a new onset and cut the target in time at each new note. However, this segmentation in time would also effect the drone, cutting it in time and forcing it to have a new onset each time the melody changes notes. The resulting orchestration would have multiple onsets for the drone, even though only one onset is needed at the beginning of the drone. When source separation is applied to this target, the drone and melody would be orchestrated separately. Therefore, the drone could be orchestrated by a single onset that lasts for the duration of the drone. At the same time, the melody could have as many new onsets as needed without affecting the drone. The orchestration would be greatly improved by removing the unnecessary onsets in the orchestration of the drone. Although this example is a dynamic orchestration, and we perform only static orchestrations, this paper represents a first step toward achieving dynamic orchestration with source separation.
 		
 	The codebase for this paper can be found at: \mbox{\url{https://github.com/dzluke/smc2021}}, and you can listen to a selection of targets and orchestrations here: \mbox{\url{https://dzluke.github.io/smc2021/}}.
 		
@@ -194,34 +194,34 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 		\label{tab:distances}
 	\end{table}
 	
-	\begin{table}[t]
-		\begin{center}
-		\begin{tabular}{|c|c|c|c|}
-			\hline
-			& Model & Average distance & Variance\\
-			\hline
-			\multirow{3}{4em}{Music source separation} & Open-Unmix & 24.48 & \\
-			& Demucs & 25.11 & \\
-			& TDCN & 26.44 & \\
-			\hline
-			\multirow{2}{4em}{Universal separation} & NMF & 22.44 & \\
-			& TDCN+++ & 24.38 & \\
-			\hline
-			\multirow{2}{4em}{} & Full target & 24.96 & \\
-			\hline
-			& Ground truth & 24.19 & \\
-			\hline
-		\end{tabular}
-		\end{center}
-		\caption{Average across 300 targets showing the distance between target and orchestration for various methods. ``Full target'' means no separation was performed. Lower values are better.}
-		\label{tab:test}
-	\end{table}
+%	\begin{table}[t]
+%		\begin{center}
+%		\begin{tabular}{|c|c|c|c|}
+%			\hline
+%			& Model & Average distance & Variance\\
+%			\hline
+%			\multirow{3}{4em}{Music source separation} & Open-Unmix & 24.48 & \\
+%			& Demucs & 25.11 & \\
+%			& TDCN & 26.44 & \\
+%			\hline
+%			\multirow{2}{4em}{Universal separation} & NMF & 22.44 & \\
+%			& TDCN+++ & 24.38 & \\
+%			\hline
+%			\multirow{2}{4em}{} & Full target & 24.96 & \\
+%			\hline
+%			& Ground truth & 24.19 & \\
+%			\hline
+%		\end{tabular}
+%		\end{center}
+%		\caption{Average across 300 targets showing the distance between target and orchestration for various methods. ``Full target'' means no separation was performed. Lower values are better.}
+%		\label{tab:test}
+%	\end{table}
 	
-	\begin{figure}[t]
-		\centering
-			\includegraphics[width=\columnwidth]{figures/graph.png}
-			\caption{Plot showing the average distance and standard deviation between target and solution for each orchestration method.}\label{fig:plot}
-	\end{figure}
+%	\begin{figure}[t]
+%		\centering
+%			\includegraphics[width=\columnwidth]{figures/graph.png}
+%			\caption{Plot showing the average distance and standard deviation between target and solution for each orchestration method.}\label{fig:plot}
+%	\end{figure}
 	
 		\subsection{Results}
 		The average distances for full target, separated, and ground truth orchestrations are displayed in Table \ref{tab:distances}. These results are the average distance between target and orchestration for 300 different targets. We found that NMF performed the best out of all separation methods, and even outperformed the ground truth orchestrations, on average. TDCN++, Open-Unmix, and NMF performed better than the full target orchestrations, meaning that separating targets using these methods leads to a better orchestration than if no separation is applied.
@@ -229,7 +229,7 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 	\section{Discussion}\label{sec:discussion}
 	In this paper, we addressed the problem of using source separation as a pre-processing step for computer-assisted orchestration. The results show that performing source separation followed by a static orchestration of each individual sub-target improved the spectral distance between the original target and its orchestrated version in three out of five of the methods tested. This shows that source separation is a useful pre-processing stage for computer-assisted orchestration. 
 	
-	Furthermore, the one unsupervised method we tested, NMF, outperformed all the supervised methods. This suggests that methods like NMF can still be useful for specific problems when available data is limited. It is logical that unsupervised methods will perform well for problems in which there is limited data, as they require less data than supervised methods. The NMF also outperformed the ground truth orchestrations, which could be due to the relative simplicity of NMF's output subtargets making subsequent orchestration easier for Orchidea, but more experimentation would need to be done in order to confirm this. It is important to notice that for the supervised methods, we used pre-trained versions of the neural models. All of these models, except for TDCN++, were trained on musical data. However, we tested them on a wide range of targets, many of which were not strictly musical. This could explain why Demucs, Open-Unmix, and TDCN performed worse than NMF, and why TDCN++, which was trained on arbitrary sounds, outperformed the other supervised methods. Therefore, we may infer from our results that models trained on generic sounds generate a better separation for orchestration when compared to models trained only on musical sounds.
+	Furthermore, the one unsupervised method we tested, NMF, outperformed all the supervised methods. This suggests that methods like NMF can still be useful for specific problems when available data is limited. It is logical that unsupervised methods will perform well for problems in which there is limited data, as they require less data than supervised methods. NMF also outperformed the ground truth orchestrations, which could be due to the relative simplicity of NMF's output subtargets making subsequent orchestration easier for Orchidea, but more experimentation would need to be done in order to confirm this. It is important to notice that for the supervised methods, we used pre-trained versions of the neural models. All of these models, except for TDCN++, were trained on musical data. However, we tested them on a wide range of targets, many of which were not strictly musical. This could explain why Demucs, Open-Unmix, and TDCN performed worse than NMF, and why TDCN++, which was trained on arbitrary sounds, outperformed the other supervised methods. Therefore, we may infer from our results that models trained on generic sounds generate a better separation for orchestration when compared to models trained only on musical sounds.
 	
 	Since unsupervised methods perform well, it is reasonable to think that supervised methods trained on a dataset of arbitrary sounds could yield better overall performance for orchestration.
 	
