@@ -8,7 +8,7 @@ import soundfile as sf
 import librosa
 import json
 
-import ConvTasNetUniversal.separate as TDCNNpp_separate
+import ConvTasNetUniversal.separate as TDCNpp_separate
 import open_unmix.separate as open_unmix
 import demucs.separate as demucs
 import NMF
@@ -22,7 +22,7 @@ SOL_PATH = "../OrchideaSOL2020"  # path to the SOL database
 ANALYSIS_DB_PATH = "../OrchideaSOL2020.spectrum.db"  # path to the analysis file of SOL, ex: TinySOL.spectrum.db
 TARGETS_PATH = "./targets"  # path to targets to be orchestrated
 SAMPLE_DATABASE_PATH = "./subtargets"  # path to samples that will be combined to create targets
-TDCNNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCNN++ model
+TDCNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCN++ model
 
 # If you want to save orchestrations, set the following variables
 SAVED_ORCHESTRATIONS_PATH = "./saved_orchestrations"
@@ -36,13 +36,13 @@ CONFIG_PATH = "orch_config.txt"  # path to the Orchidea configuration file (you 
 TEMP_OUTPUT_PATH = "./TEMP"
 RESULTS_PATH = "./results.json"
 TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'metadata.json')
-TDCNNpp_nb_sub_targets = 4
+TDCNpp_nb_sub_targets = 4
 SAMPLING_RATE = 44100
 NUM_SUBTARGETS = 4
 full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
                   'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
 
-separation_models = ["TDCNN++", "TDCNN", "Demucs", "OpenUnmix", "NMF"]
+separation_models = ["TDCN++", "TDCN", "Demucs", "OpenUnmix", "NMF"]
 thresholds = [0.1]  # onset thresholds for dynamic orchestration
 
 
@@ -90,13 +90,13 @@ def separate(audio_path, model_name, num_subtargets, *args):
     output_path = TEMP_OUTPUT_PATH + "/" + model_name + "/" + file_name
 
     if not os.path.exists(output_path):
-        if model_name == "TDCNN++":
+        if model_name == "TDCN++":
             # ConvTasNet for Universal Sound Separation
-            TDCNNpp_separate.separate(TDCNNpp_model_path + "/baseline_model",
-                                                       TDCNNpp_model_path + "/baseline_inference.meta",
+            TDCNpp_separate.separate(TDCNpp_model_path + "/baseline_model",
+                                                       TDCNpp_model_path + "/baseline_inference.meta",
                                                        audio_path,
                                                        output_path)
-        elif model_name == "TDCNN":
+        elif model_name == "TDCN":
             demucs.separate(audio_path, output_path, 'tasnet')
         elif model_name == "Demucs":
             demucs.separate(audio_path, output_path, 'demucs')
@@ -105,7 +105,7 @@ def separate(audio_path, model_name, num_subtargets, *args):
         elif model_name == "NMF":
             NMF.separate(audio_path, output_path)
         else:
-            raise Exception("Model name must be one of those four : TDCNN, TDCNN++, OpenUnmix, Demucs")
+            raise Exception("Model name must be one of those four : TDCN, TDCN++, OpenUnmix, Demucs")
 
     # Read sub targets and output them in numpy array format
     sub_targets = []
@@ -151,9 +151,9 @@ def gen_perm_group(l, n):
 
 def generate_separation_function(model_name, num_sub_targets):
     l = []
-    if model_name == "TDCNN++":
-        init_list = ["sub_target{}".format(x) for x in range(TDCNNpp_nb_sub_targets)]
-    elif model_name == "TDCNN":
+    if model_name == "TDCN++":
+        init_list = ["sub_target{}".format(x) for x in range(TDCNpp_nb_sub_targets)]
+    elif model_name == "TDCN":
         init_list = ["drums", "bass", "other", "vocals"]
     elif model_name == "Demucs":
         init_list = ["drums", "bass", "other", "vocals"]
@@ -162,7 +162,7 @@ def generate_separation_function(model_name, num_sub_targets):
     elif model_name == "NMF":
         init_list = ["feat1", "feat2", "feat3", "feat4"]
     else:
-        raise Exception("Model name must be one of those five : TDCNN, TDCNN++, OpenUnmix, Demucs, NMF")
+        raise Exception("Model name must be one of those five : TDCN, TDCN++, OpenUnmix, Demucs, NMF")
 
     for perm in gen_perm_group(init_list, num_sub_targets):
         l.append(lambda a, n: separate(a, model_name, n, perm))
