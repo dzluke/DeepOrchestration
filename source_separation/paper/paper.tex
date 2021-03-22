@@ -89,11 +89,11 @@
 	
 	We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this to the orchestration of the target if no separation was performed (see Fig. \ref{fig:full_diagram}). Following the previous example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
 	
-	\begin{figure}[t]
+	\begin{figure*}[t]
 		\centering
-			\includegraphics[width=\columnwidth]{figures/diagram.png}
+			\includegraphics[width=\textwidth]{figures/diagram.png}
 			\caption{Diagram comparing the process of orchestration with and without separation. At the top, the full target orchestration is created simply by orchestrating the target. At the bottom, the separation process is performed, and the resulting sub-targets are individually orchestrated with subsets of the orchestra before being recombined to obtain the full orchestration.}\label{fig:full_diagram}
-	\end{figure}
+	\end{figure*}
 	
 	
 	\section{Experiments}\label{sec:experiments}
@@ -141,11 +141,11 @@
 			\item The distances between target and orchestration are calculated for the full target orchestration, the separated orchestration, and the ground truth orchestration 
 		\end{enumerate}	
 
-		\begin{figure}[t]
+		\begin{figure*}[t]
 			\centering
-				\includegraphics[width=\columnwidth]{figures/evaluation_diagram.png}
+				\includegraphics[width=\textwidth]{figures/evaluation_diagram.png}
 				\caption{Diagram showing the testing process. Note that in both orchestrations that use a split orchestra, the split is the same.}\label{fig:eval_diagram}
-		\end{figure}
+		\end{figure*}
 		
 		The orchestrations performed are static orchestrations, meaning a single onset of notes is created for each target, no matter if the target itself has multiple onsets. The OrchideaSOL database of orchestral samples is used with Orchidea to create the orchestrations~\cite{Cella2020c}. This database contains recordings of extended playing techniques, which better fits the often noisy or inharmonic nature of our targets. The full orchestra, of which non-overlapping subsets were selected to orchestrate the subtargets, contains the following instruments: 8 violins, 4 violas, 3 cellos, 1 bass, 2 oboes, 2 flutes, 2 clarinets in B$\flat$, 2 bassoons, 2 trumpets, 2 trombones, and 2 French horns.
 		
