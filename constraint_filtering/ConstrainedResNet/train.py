@@ -153,7 +153,7 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = model.to(device)
 
-    criterion = CustomLoss(0.001)
+    criterion = CustomLoss(0.0001)
     sig = F.sigmoid
 
     best_acc = 0
@@ -219,7 +219,7 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
                     epoch + 1, GLOBAL_PARAMS.nb_epoch, i+1, size_train_load, out_num*total_loss/50))
                 total_loss = 0
 
-        # graph_loss(criterion.bce_loss_list, criterion.semantic_loss_list, epoch + 1, criterion.semantic_weight)
+        graph_loss(criterion.bce_loss_list, criterion.semantic_loss_list, epoch + 1, criterion.semantic_weight)
 
         if (epoch+1) % 5 == 0:
             model.eval()
@@ -249,10 +249,6 @@ def train(model, save_path, optimizer, train_load, test_load, start_epoch, out_n
 
                 test_loss += float(loss)
 
-                # result_ins = evaluate(predicts, labels, result_ins)
-
-            # pret_tmp[pret_tmp >= 0.05] = 1
-            # pret_tmp[pret_tmp < 0.05] = 0
             result = evaluate(pret_tmp, grod_tmp)
             f = open(save_path + '/result{}.pkl'.format(epoch), 'wb')
             pickle.dump(result, f)
@@ -384,6 +380,10 @@ def calculateConstraint(audio_combos, labels):
     for i in range(labels.shape[0]):
         audio = audio_combos[i]
         label = labels[i]
+        samples = []
+        for j in range(label.shape[0]):
+            if label[j] != 0:
+                samples.append(GLOBAL_PARAMS.index2sample[j])
         # list of pitches allowed in the orchestration
         pitches_to_include = get_harmonic_peaks(audio, GLOBAL_PARAMS.harmonic_threshold)
         # this part might be slow
@@ -407,7 +407,7 @@ def get_harmonic_peaks(audio, thresh):
     :return: a set of pitches (with octaves)
     """
     nyquist = GLOBAL_PARAMS.RATE / 2
-    n = next_power_of_2(audio.size)
+    n = next_power_of_2(audio.shape[0])
     fft = np.abs(np.fft.rfft(audio, n))
     fft /= (np.max(fft) * n)  # normalize
 
@@ -432,6 +432,13 @@ def get_harmonic_peaks(audio, thresh):
 def next_power_of_2(x):
     return 1 if x == 0 else 2**(x - 1).bit_length()
 
+def graph_loss(bce_loss_list, semantic_loss_list, epoch, semantic_weight):
+    plt.title("Loss after {} epochs; {} samples per epoch; semantic weight = {}"
+              .format(epoch, GLOBAL_PARAMS.nb_samples, semantic_weight))
+    plt.plot(bce_loss_list[1:], label="BCE Loss")
+    plt.plot(semantic_loss_list[1:], label="Semantic Loss")
+    plt.legend()
+    plt.show()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
