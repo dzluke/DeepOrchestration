@@ -39,7 +39,7 @@
 \mainmatter  % start of an individual contribution
 
 % first the title is needed
-\title{A Study on Neural Models for Target-Based Computer-Assisted Musical Orchestration}
+\title{Neural Models for Target-Based Computer-Assisted Musical Orchestration: A Preliminary Study}
 
 % a short form should be given in case it is too long for the running head
 \titlerunning{Neural Models for Target-Based Computer-Assisted Musical Orchestration}
@@ -70,7 +70,7 @@
 \maketitle
 
 \begin{abstract}
-In this paper we will perform a preliminary exploration on how neural networks can be used for the task of target-based computer-assisted musical orchestration. We will show how it is possible to model this  musical problem as a classification task and we will propose two deep learning models. We will show, first, how they perform as classifiers for musical instrument recognition by comparing them with specific baselines. We will then show how they perform, both qualitatively and quantitatively, in the task of computer-assisted orchestration by comparing them with state-of-the-art systems. Finally, we will highlight benefits and problems of neural approaches for assisted orchestration and we will propose possible future steps.
+In this paper we will perform a preliminary exploration on how neural networks can be used for the task of target-based computer-assisted musical orchestration. We will show how it is possible to model this  musical problem as a classification task and we will propose two deep learning models. We will show, first, how they perform as classifiers for musical instrument recognition by comparing them with specific baselines. We will then show how they perform, both qualitatively and quantitatively, in the task of computer-assisted orchestration by comparing them with state-of-the-art systems. Finally, we will highlight benefits and problems of neural approaches for assisted orchestration and we will propose possible future steps. This paper is an extended version of the paper ``A Study on Neural Models for Target-Based Computer-Assisted Musical Orchestration" published in the proceedings of \textit{The 2020 Joint Conference on AI Music Creativity}. 
 
 \keywords{computer-assisted orchestration, CNN, LSTM, ResNet, Orchidea}
 
@@ -94,7 +94,7 @@ After training these models on varying combinations of 10 instruments, we use pe
 
 The next sections will be as follows: section \ref{sec:models} will describe the dataset we used for experiments and the models we trained as classifiers, showing the classification results. Sections \ref{sec:orchestration} and \ref{sec:conclusions} will present, respectively, the results of orchestration experiments using the trained models and the conclusions of our preliminary study on neural approaches for target-based computer-assisted orchestration.
 
-This paper is an extended version of a paper by the same title in \textit{The 2020 Joint Conference on AI Music Creativity} \cite{Cella2020c}. This version includes additional figures and extended information on our baseline testing and orchestration process, among other additions. The codebase for this paper can be found at \url{https://github.com/dzluke/DeepOrchestration} and you can listen to audio examples at \url{https://dzluke.github.io/DeepOrchestration/}.
+\sloppypar{The codebase for this paper can be found at \url{https://github.com/dzluke/DeepOrchestration} and you can listen to audio examples at \url{https://dzluke.github.io/DeepOrchestration/}.}
 
 
 \section{Neural models}
@@ -211,15 +211,16 @@ This was still a simplified version of the problem, as we were identifying only 
 
 The first deep model we trained as a classifier for musical instruments and pitches was a CNN with a LSTM unit, whose structure is inspired by the success in~\cite{Salamon17}. CNNs show good performance on classification problems for their ability to extract spatial features, and have shown success in audio classification \cite{Hershey17}. LSTM units provide a way to learn long term dependencies in the data \cite{Hochreiter97}, which is relevant given the sequential nature of audio.
 
-Our architecture is made of four convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a $2 \times 2$  MaxPool layer with a stride of 2. The kernel size is $3 \times 3$ with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32, and 32.
-
-Following the first three convolutional layers, there is an LSTM layer which outputs 32 matrices. After the LSTM layer, there is a final convolutional layer yielding a tensor of dimensions $32\times 8 \times 21$. We flatten the outputs and feed them into a fully connected layer with Dropout, then another another fully connected layer. Finally, the sigmoid function is applied to the final layer. Since each class is independent, we are able to take the sigmoid activation and use binary classification for each class. The model architecture is shown in Figure \ref{cnn_lstm}.
-
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{../ISMIR_2020/figs/CNN_LSTM_diagram.png}
 	\caption{Diagram of the CNN with LSTM architecture. \label{cnn_lstm}}
 \end{figure}
+
+Our architecture is made of four convolutional layers and two fully connected layers. Each convolutional layer is followed by a BatchNorm layer, a ReLU activation layer and a $2 \times 2$  MaxPool layer with a stride of 2. The kernel size is $3 \times 3$ with a stride of 1 and a padding of 1. The number of filters are 8, 16, 32, and 32.
+
+Following the first three convolutional layers, there is an LSTM layer which outputs 32 matrices. After the LSTM layer, there is a final convolutional layer yielding a tensor of dimensions $32\times 8 \times 21$. We flatten the outputs and feed them into a fully connected layer with Dropout, then another another fully connected layer. Finally, the sigmoid function is applied to the final layer. Since each class is independent, we are able to take the sigmoid activation and use binary classification for each class. The model architecture is shown in Figure \ref{cnn_lstm}.
+
 
 \subsection{ResNet}
 
