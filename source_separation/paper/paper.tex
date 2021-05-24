@@ -78,7 +78,7 @@
 	
 	Using source separation techniques as a pre-processing step has been shown to improve results in several music processing tasks. Source separation can be used to remove part of the spectrum in order to enhance the clarity of the features of interest for the task at hand. For instance, in the task of automatic chord estimation from audio, some authors have chosen to remove part of the spectrum related to percussive sounds to improve chord accuracy \cite{Reed_al2009}. Similarly some authors have investigated how beat tracking can be improved by using source separation as a pre-processing step for difficult songs with highly predominant expressive vocals \cite{ZapGom2012}. Source separation can also be applied to separate different components of the signal and work on them separately to reduce the complexity of the task. For instance, in the context of tempo detection~\cite{ChoRae2009}, the authors decompose the signal into sources to reduce rhythmic complexity, under the idea that some layers may be more rhythmically regular than the overall mix. Another example can be found in~\cite{GomAbecan2018} where harmonic/percussive and solo/accompaniment source separation techniques are investigated as a pre-processing step to improve predominant instrument recognition in jazz music.
 		
-	Source separation is an important addition to improve orchestration as it allows for the orchestration of more complex sounds in a way that makes sense in an orchestral context. Orchestral music often uses multiple layers, so by separating the layers of a target and individually orchestrating them, the resulting solution is improved. 
+	Source separation is an important addition to improve orchestration as it allows for the orchestration of more complex sounds in a way that makes sense in an orchestral context. Orchestral music often uses multiple layers, so by separating the layers of a target and individually orchestrating them, the resulting orchestration may improve. 
 		
 	For example, consider a target that has a continuous drone sound throughout and a melody playing above this drone. Without source separation, Orchidea would detect each note of the melody as a new onset and cut the target in time at each new note. However, this segmentation in time would also effect the drone, cutting it in time and forcing it to have a new onset each time the melody changes notes. The resulting orchestration would have multiple onsets for the drone, even though only one onset is needed at the beginning of the drone. When source separation is applied to this target, the drone and melody would be orchestrated separately. Therefore, the drone could be orchestrated by a single onset that lasts for the duration of the drone. At the same time, the melody could have as many new onsets as needed without affecting the drone. The orchestration would be greatly improved by removing the unnecessary onsets in the orchestration of the drone. Although this example is a dynamic orchestration, and we perform only static orchestrations, this paper represents a first step toward achieving dynamic orchestration with source separation.
 		
@@ -104,20 +104,20 @@
 		We created our own targets as combinations of four source sounds. The sources come from the NIGENS \cite{NIGENS} and BBC \cite{BBC} databases, and freesound.org \cite{freesound}. We selected a total of 90 samples from these databases, choosing sounds that fit the following criteria: 
 		
 		\begin{enumerate}
-			\item Static sounds in which the harmonic average across time is a fitting representation of the sound
+			\item Static sounds that do not change harmonically over time
 			\item Sounds in which there is at least some pitched content and not only noise
 		\end{enumerate}			
 		The sounds chosen include alarms, bells, engine noises, soundscapes, synthesizer chords, and sound effects. Each target that we used for testing was a combination of four randomly chosen source sounds from the group of 90 sounds. 
 		When a target is created, the longest of the four sources is chosen to start playing at the beginning of the target. The other three sources are then randomly assigned different times to begin playing such that they will start between the beginning of the target and half-way through the longest source sound.
 		
 		\subsection{Separation Methods}
-	We consider source separation models trained to tackle two distinct separation problems. The first is music source separation (Open-Unmix, Demucs, ConvTasnet). For these architectures, we used models that were pre-trained on the MUSDB18 dataset~\cite{MUSDB18}. Thus, these models output 4 stereo tracks that correspond to broad instrumental categories defined in the SiSEC 2018 Mus evaluation campaign: \textit{vocals, drums, bass} and \textit{other}~\cite{Stoter_SiSEC}. Although the audio sources we consider in this work are often non-musical, we hope that these source separation methods can still improve the orchestration by separating other types of sound in a musically meaningful way.
-	The second type of model we tested are ones trained for universal sound separation (TDCN++, NMF), which \cite{tdcnpp} defines as \textit{separating mixtures of arbitrary sounds of different types}. 
+	We consider source separation models trained to tackle two distinct separation problems. The first is music source separation (Open-Unmix, Demucs, ConvTasnet). For these architectures, we used models that were pre-trained on the MUSDB18 dataset~\cite{MUSDB18}. Thus, these models output 4 stereo tracks that correspond to broad instrumental categories defined in the SiSEC 2018 Mus evaluation campaign: \textit{vocals, drums, bass} and \textit{other}~\cite{Stoter_SiSEC}. It is important here to make the distinction that we did not train these models ourselves. Therefore, we cannot guarantee that the data the models were trained on is optimal for solving our problem. However, one of the goals of this paper is to explore whether pre-trained music source separation models can separate non-musical sounds in a way that improves orchestration.
+	The second type of model we tested are ones that perform universal sound separation (TDCN++, NMF), which \cite{tdcnpp} defines as \textit{separating mixtures of arbitrary sounds of different types}. These methods more closely match our problem of separating non-musical target sounds.
 			
 			\subsubsection{Music source separation}
 			\textbf{Open-Unmix}~\cite{open-unmix} is an open source implementation of a deep music source separation model, based on \cite{Uhlich2017}. It is actually composed of multiple models that are trained for each instrumental target. Each of these models is trained on the specific target using the same architecture, based on a three layer bidirectional LSTM network. Open-Unmix operates on the Short Time Fourier Transform (STFT) of the input mixture, which is first standardized. It predicts the target by multiplying the output of the LSTM network with the magnitude spectrogram of the input, essentially applying a mask. Open-Unmix also uses Wiener filtering as a last processing step.
 			
-			The \textbf{Demucs}~\cite{demucs} architecture is a deep learning model for musical source separation. It takes as input the stereo mixture, and outputs 4 stereo waveforms corresponding to the four categories: vocals, bass, drums and other. Demucs is based on a convolutional encoder, a bidirectional LSTM, and a convolutional decoder. The encoder and the decoder are linked with skip U-Net connections. Both the encoder and the decoder are made of 6 blocks, each made of a combination of a convolutional layer with kernel size 8, followed by ReLU activation. Finally there is another convolution with kernel size 1, followed by gated linear units (GLU). The U-network structure allows the decoder to directly access the input signal and to transfer its phase, improving results.	
+			The \textbf{Demucs}~\cite{demucs} architecture is a deep learning model for musical source separation. It takes the stereo mixture as input, and outputs 4 stereo waveforms corresponding to the four categories: vocals, bass, drums and other. Demucs is based on a convolutional encoder, a bidirectional LSTM, and a convolutional decoder. The encoder and the decoder are linked with skip U-Net connections. Both the encoder and the decoder are made of 6 blocks, each made of a combination of a convolutional layer with kernel size 8, followed by ReLU activation. Finally there is another convolution with kernel size 1, followed by gated linear units (GLU). The U-network structure allows the decoder to directly access the input signal and to transfer its phase, improving results.	
 
 			We also used the Conv-Tasnet\cite{tdcn} implementation of~\cite{demucs}, who adapted the architecture, originally designed for speech separation at 8 kHz, for the task of music source separation. Conv-Tasnet is a model based on a convolutional encoder-decoder, with a time-dilated convolutional network separation module, estimating masks based on the encoder output. This is why we refer to it as \textbf{TDCN}, in accordance with~\cite{tdcnpp}. It uses the audio waveform as input and performs a series of 1-D convolutions at different resolutions with residual connections in order to generate a pool of masks that are then applied on the embedding of the initial waveform to output the separated targets. A final 1-D convolutional layer is used as a decoder to recover the waveforms of each sub target. This type of architecture replaces RNNs in modeling sequential data, as series of dilated convolutions are a good way to capture temporal patterns.
 			
@@ -127,24 +127,24 @@
 			\textbf{TDCN++}, a version of Conv-Tasnet, was improved by \cite{tdcnpp} in order to be used for general sound separation, and not only for speech. The main architecture remains the same as in \cite{tdcn}, and the changes only affect the masking network. More specifically, feature-wise normalization replaces global normalization, residual connection ranges are extended to improve the flow of information, and learnable scale parameters are introduced to weight the outputs of each residual layer. Those modifications help the model to better extract features without drastically increasing its size.
 			TDCN++ presents the interesting property of having almost the same architecture as TDCN but trained with generic sounds. Thus, it should naturally be better suited for our task, and the comparison between those two models in particular can give good insights about the impact of the data used for training.
 	
-		\subsection{Testing}
+		\subsection{Testing}\label{subsec:testing}
 		In order to compare the effectiveness of the separation methods, a full target orchestration and a ground truth orchestration are done for each target. The full target orchestration is the orchestration of the target without any separation performed. The ground truth orchestration takes the four sources that make up the target and orchestrates each one separately, then combines them. This ground truth represents the orchestration that could take place if the separation method was perfect and separated a target exactly into its constituent sources. 
 		
 		The procedure we use for testing is as follows:
 		\begin{enumerate}
-			\item The target is created as a combination of four randomly chosen sources, which are offset to begin playing at different times
-			\item The full target, without any separation performed, is orchestrated using the entire orchestra
-			\item Each separation method is performed on the target, each splitting the target into four sub-targets 
-			\item The full orchestra is randomly split into four equal sized subsets
-			\item For each method, the four sub-targets are separately orchestrated, each using a different subset of the orchestra, and then each orchestration is combined to play simultaneously
-			\item The ground truth orchestration is created by orchestrating the four sources, using the same orchestra splits from step 4, and then combined to play simultaneously
-			\item The distances between target and orchestration are calculated for the full target orchestration, the separated orchestration, and the ground truth orchestration 
+			\item The target is created as a combination of four randomly chosen sources, which are offset to begin playing at different times.
+			\item The full target, without any separation performed, is orchestrated using the entire orchestra. This is called the \textbf{full target orchestration}.
+			\item Each separation method is performed on the target, each splitting the target into four sub-targets. 
+			\item The full orchestra is randomly split into four equal sized subsets, each containing 7 to 8 instruments.
+			\item For each method, the four sub-targets are separately orchestrated, each using a different subset of the orchestra, and then each orchestration is combined to play simultaneously. This creates the \textbf{separated orchestrations}.
+			\item The \textbf{ground truth orchestration} is created by orchestrating the four sources, using the same orchestra subsets from step 4, and then combined to play simultaneously.
+			\item The distances between target and orchestration are calculated for the full target orchestration, the separated orchestration, and the ground truth orchestration. 
 		\end{enumerate}	
 
 		\begin{figure*}[t]
 			\centering
 				\includegraphics[width=\textwidth]{figures/evaluation_diagram.png}
-				\caption{Diagram showing the testing process. Note that in both orchestrations that use a split orchestra, the split is the same.}\label{fig:eval_diagram}
+				\caption{Diagram showing the testing process. Note that in both orchestrations that use a split orchestra, they use the same division of the orchestra to orchestrate their four sub-targets.}\label{fig:eval_diagram}
 		\end{figure*}
 		
 		The orchestrations performed are static orchestrations, meaning a single onset of notes is created for each target, no matter if the target itself has multiple onsets. The OrchideaSOL database of orchestral samples is used with Orchidea to create the orchestrations~\cite{Cella2020c}. This database contains recordings of extended playing techniques, which better fits the often noisy or inharmonic nature of our targets. The full orchestra, of which non-overlapping subsets were selected to orchestrate the subtargets, contains the following instruments: 8 violins, 4 violas, 3 cellos, 1 bass, 2 oboes, 2 flutes, 2 clarinets in B$\flat$, 2 bassoons, 2 trumpets, 2 trombones, and 2 French horns.
@@ -160,7 +160,7 @@
 		\subsection{Evaluation}
 		We compare the effectiveness of different separation methods by comparing how well they work for orchestration. The output of a method is orchestrated, and these orchestrations are compared. A quantitative evaluation is performed through the use of a distance metric that measures the spectral distance between target and solution. 
 		
-		The distance metric cuts the target and solution into successive frames that are 4,000 samples in length, which is approximately 90 milliseconds at a sampling rate of 44.1 kHz. The spectral distance, as defined in Eqn. \ref{eqn:distance}, is calculated between corresponding frames of the target and solution. The spectral distance metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization, and used in \cite{Cella2020b} to compare accuracies of orchestrations. The equation takes in the full FFT of the target $x$ and full FFT of the solution $\tilde{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways. For our purposes, we used $\lambda_1 = 0.5$ and $\lambda_2 = 10$, which penalizes a solution that overshoots the harmonic energy of the target.
+		The distance metric cuts the target and solution into successive frames that are 4,000 samples in length, which is approximately 90 milliseconds at a sampling rate of 44.1 kHz. The spectral distance, as defined in Eqn. \ref{eqn:distance}, is calculated between corresponding frames of the target and solution. The spectral distance metric is proposed in \cite{Cella2020} as part of the cost function used in Orchidea during the optimization, and used in \cite{Cella2020b} to compare accuracies of orchestrations. The equation takes in the FFT of the target $x$ and FFT of the solution $\tilde{x}$. Then for each bin $k$ of the FFT, it calculates the absolute difference between the values. The differing values of $\lambda_1$ and $\lambda_2$ allow the metric to penalize the solution in different ways. For our purposes, we used $\lambda_1 = 0.5$ and $\lambda_2 = 10$, which penalizes a solution that overshoots the harmonic energy of the target.
 		
 		\begin{equation}\label{eqn:distance}
 d(x, \tilde{x}) =\lambda_1 \sum_k \delta_{k1}(x_k - \tilde{x}_k) + \lambda_2 \sum_k \delta_{k2}|x_k - \tilde{x	}_k| \\
@@ -184,13 +184,13 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 				\hline
 				TDCN++ & 24.38 \\
 				\hline
-				Full target & 24.96 \\
+				Full target orchestration & 24.96 \\
 				\hline
-				Ground truth & 24.19 \\
+				Ground truth orchestration & 24.19 \\
 				\hline
 			\end{tabular}
 		\end{center}
-		\caption{Average across 300 targets showing the distance between target and orchestration for various methods. ``Full target'' means no separation was performed. Lower values are better.}
+		\caption{Average across 300 targets showing the distance between target and orchestration for various methods. For Demucs, Open-Unmix, TDCN, NMF, and TDCN++, the value shown is the average distance between the target sound and the ``separated orchestration'' created from the output of the given separation method (see Sec. \ref{subsec:testing}). Similarly, ``Full target orchestration'' and ``Ground truth orchestration'', as defined in Sec. \ref{subsec:testing}, are the average values between target and orchestrated solution. Lower values are better.}
 		\label{tab:distances}
 	\end{table}
 	
