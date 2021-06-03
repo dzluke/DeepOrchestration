@@ -74,7 +74,93 @@ def encode_mp3(wav, path, bitrate=320, samplerate=44100, channels=2, verbose=Fal
         f.write(mp3_data)
 
 
-def main():
+def separate(tracks, models=Path("models"), name="demucs_quantized",
+             device=None, out=Path("separated"), shifts=0, split=True,
+             overlap=0.25, mp3=False, float32=True, mp3_bitrate=320,
+             verbose=False):
+    """Separate the sources for the given tracks using demucs model.
+
+    Args:
+        tracks (Path): Path to tracks.
+        models (Path, optional): Folder where to put extracted tracks. A
+            subfolder with the model name will be created. Defaults to
+            Path("models").
+        name (str, optional): Model name. Defaults to "demucs_quantized".
+        device (torch.device, optional): Device to use, default is cuda
+            if available else cpu.
+        out (Path, optional): Path to trained models. Defaults to
+            Path("separated").
+        shifts (int, optional): Number of random shifts for equivariant
+            stabilization. INcrease separation time but imrpoves quality
+            for Demucs in the original paper. Defaults to 0.
+        split (bool, optional): [description]. Defaults to True.
+        overlap (float, optional): [description]. Defaults to 0.25.
+        mp3 (bool, optional): [description]. Defaults to False.
+        float32 (bool, optional): [description]. Defaults to True.
+        mp3_bitrate (int, optional): [description]. Defaults to 320.
+        verbose (bool, optional): [description]. Defaults to False.
+    """
+    # Convert paths to Path objects if not already
+    if type(tracks) == list:
+        map_object = map(Path, tracks)
+        tracks = list(map_object)
+    else:
+        tracks = [Path(tracks)]
+    models= Path(models)
+    out = Path(out)
+
+    if device is None:
+        device = "cuda" if th.cuda.is_available() else "cpu"
+
+    model_path = models / (name + ".th")
+    if model_path.is_file():
+        model = load_model(model_path)
+    else:
+        if is_pretrained(name):
+            model = load_pretrained(name)
+        else:
+            print(f"No pre-trained model {name}", file=sys.stderr)
+            sys.exit(1)
+    model.to(device)
+
+    out.mkdir(parents=True, exist_ok=True)
+    print(f"Separated tracks will be stored in {out.resolve()}")
+    for track in tracks:
+        if not track.exists():
+            print(
+                f"File {track} does not exist. If the path contains spaces, "
+                "please try again after surrounding the entire path with quotes \"\".",
+                file=sys.stderr)
+            continue
+        print(f"Separating track {track}")
+        wav = load_track(track, device, model.audio_channels, model.samplerate)
+
+        ref = wav.mean(0)
+        wav = (wav - ref.mean()) / ref.std()
+        sources = apply_model(model, wav, shifts=shifts, split=split,
+                              overlap=overlap, progress=True)
+        sources = sources * ref.std() + ref.mean()
+
+        track_folder = out #/ track.name.rsplit(".", 1)[0]
+        track_folder.mkdir(exist_ok=True)
+        for source, name in zip(sources, model.sources):
+            source = source / max(1.01 * source.abs().max(), 1)
+            if mp3 or not float32:
+                source = (source * 2**15).clamp_(-2**15, 2**15 - 1).short()
+            source = source.cpu()
+            stem = str(track_folder / name)
+            if mp3:
+                encode_mp3(source, stem + ".mp3",
+                           bitrate=mp3_bitrate,
+                           samplerate=model.samplerate,
+                           channels=model.audio_channels,
+                           verbose=verbose)
+            else:
+                wavname = str(track_folder / f"{name}.wav")
+                ta.save(wavname, source, sample_rate=model.samplerate)
+
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser("demucs.separate",
                                      description="Separate the sources for the given tracks")
     parser.add_argument("tracks", nargs='+', type=Path, default=[], help='Path to tracks')
@@ -131,55 +217,10 @@ def main():
                         help="Bitrate of converted mp3.")
 
     args = parser.parse_args()
-    name = args.name + ".th"
-    model_path = args.models / name
-    if model_path.is_file():
-        model = load_model(model_path)
-    else:
-        if is_pretrained(args.name):
-            model = load_pretrained(args.name)
-        else:
-            print(f"No pre-trained model {args.name}", file=sys.stderr)
-            sys.exit(1)
-    model.to(args.device)
-
-    out = args.out / args.name
-    out.mkdir(parents=True, exist_ok=True)
-    print(f"Separated tracks will be stored in {out.resolve()}")
-    for track in args.tracks:
-        if not track.exists():
-            print(
-                f"File {track} does not exist. If the path contains spaces, "
-                "please try again after surrounding the entire path with quotes \"\".",
-                file=sys.stderr)
-            continue
-        print(f"Separating track {track}")
-        wav = load_track(track, args.device, model.audio_channels, model.samplerate)
-
-        ref = wav.mean(0)
-        wav = (wav - ref.mean()) / ref.std()
-        sources = apply_model(model, wav, shifts=args.shifts, split=args.split,
-                              overlap=args.overlap, progress=True)
-        sources = sources * ref.std() + ref.mean()
-
-        track_folder = out / track.name.rsplit(".", 1)[0]
-        track_folder.mkdir(exist_ok=True)
-        for source, name in zip(sources, model.sources):
-            source = source / max(1.01 * source.abs().max(), 1)
-            if args.mp3 or not args.float32:
-                source = (source * 2**15).clamp_(-2**15, 2**15 - 1).short()
-            source = source.cpu()
-            stem = str(track_folder / name)
-            if args.mp3:
-                encode_mp3(source, stem + ".mp3",
-                           bitrate=args.mp3_bitrate,
-                           samplerate=model.samplerate,
-                           channels=model.audio_channels,
-                           verbose=args.verbose)
-            else:
-                wavname = str(track_folder / f"{name}.wav")
-                ta.save(wavname, source, sample_rate=model.samplerate)
-
-
-if __name__ == "__main__":
-    main()
+    # name = args.name + ".th"
+    # model_path = args.models / name
+    separate(tracks=args.track, models=args.models, name=args.name,
+             device=args.device, out=args.out, shifts=args.shifts,
+             split=args.split, overlap=args.overlap, mp3=args.mp3,
+             float32=args.float32, mp3_bitrate=args.mp3_bitrate,
+             verbose=args.verbose)
