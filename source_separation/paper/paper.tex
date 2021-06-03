@@ -20,14 +20,14 @@
 % Select one of the four copyright notices below. Only required for the camera-ready paper submission.
 % 
 % * For papers in which all authors are employed by the US government:
-\copyrightnotice{U.S.\ Government work not protected by U.S.\ copyright}
+%\copyrightnotice{U.S.\ Government work not protected by U.S.\ copyright}
 
 % * For papers in which all authors are employed by a Crown government (UK, Canada, and Australia):
-\copyrightnotice{978-1-7281-6338-3/21/\$31.00 {\copyright}2021 Crown}
+%\copyrightnotice{978-1-7281-6338-3/21/\$31.00 {\copyright}2021 Crown}
 
 % * For papers in which all authors are employed by the European Union:
-\copyrightnotice{978-1-7281-6338-3/21/\$31.00
-{\copyright}2021 European Union}
+%\copyrightnotice{978-1-7281-6338-3/21/\$31.00
+%{\copyright}2021 European Union}
 
 % * For all other papers:
 \copyrightnotice{978-1-7281-6338-3/21/\$31.00 {\copyright}2021 IEEE}
@@ -124,7 +124,7 @@ One, two, three, four, five
     
   For example, consider a target that has a continuous drone sound throughout and a melody playing above this drone. Without source separation, Orchidea would detect each note of the melody as a new onset and cut the target in time at each new note. However, this segmentation in time would also effect the drone, cutting it in time and forcing it to have a new onset each time the melody changes notes. The resulting orchestration would have multiple onsets for the drone, even though only one onset is needed at the beginning of the drone. When source separation is applied to this target, the drone and melody would be orchestrated separately. Therefore, the drone could be orchestrated by a single onset that lasts for the duration of the drone. At the same time, the melody could have as many new onsets as needed without affecting the drone. The orchestration would be greatly improved by removing the unnecessary onsets in the orchestration of the drone. Although this example is a dynamic orchestration, and we perform only static orchestrations, this paper represents a first step toward achieving dynamic orchestration with source separation.
     
-%  The codebase for this paper can be found at: \url{https://github.com/dzluke/smc2021}, and you can listen to a selection of targets and orchestrations here: \url{https://dzluke.github.io/smc2021/}.
+%  The codebase for this paper can be found at: \url{https://github.com/dzluke/MLSP2021}, and you can listen to a selection of targets and orchestrations here: \url{https://dzluke.github.io/MLSP2021/}.
   The codebase for this paper can be found at: \url{anonymous}, and you can listen to a selection of targets and orchestrations here: \url{anonymous}.
     
   
@@ -175,7 +175,7 @@ One, two, three, four, five
     The procedure we use for testing is as follows:
     \begin{enumerate}
       \item The target is created as a combination of four randomly chosen sources, which are offset to begin playing at different times.
-      \item The full target, without any separation performed, is orchestrated using the entire orchestra. This is called the full target orchestration.
+      \item The target, without any separation performed, is orchestrated using the entire orchestra. This is called the full target orchestration.
       \item Each separation method is performed on the target, each splitting the target into four sub-targets. 
       \item The full orchestra is randomly split into four equal sized subsets, each containing 7 to 8 instruments.
       \item For each method, the four sub-targets are separately orchestrated, each using a different subset of the orchestra, and then each orchestration is combined to play simultaneously. This creates the \textbf{separated orchestrations}.
