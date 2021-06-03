@@ -12,9 +12,14 @@ acc.csv
 /exp
 /exp_pre
 /other
+/.vscode
+/source_separation/trained_TDCNNpp
+/source_separation/targets
+/source_separation/subtargets
 .DS_Store
 *.th
 *.gz
+
 
 paper.aux
 paper.bbl
@@ -23,3 +28,4 @@ paper.log
 paper.out
 paper.pdf
 paper.synctex.gz
+
