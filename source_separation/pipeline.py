@@ -36,7 +36,7 @@ CONFIG_PATH = "orch_config.txt"  # path to the Orchidea configuration file (you 
 TEMP_OUTPUT_PATH = "./TEMP"
 RESULTS_PATH = "./results.json"
 TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'metadata.json')
-TDCNpp_nb_sub_targets = 4
+TDCNpp_nb_subtargets = 4
 SAMPLING_RATE = 44100
 NUM_SUBTARGETS = 4
 full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
@@ -93,15 +93,18 @@ def separate(audio_path, model_name, num_subtargets, *args):
         if model_name == "TDCN++":
             # ConvTasNet for Universal Sound Separation
             TDCNpp_separate.separate(TDCNpp_model_path + "/baseline_model",
-                                                       TDCNpp_model_path + "/baseline_inference.meta",
-                                                       audio_path,
-                                                       output_path)
+                                     TDCNpp_model_path + "/baseline_inference.meta",
+                                     audio_path,
+                                     output_path)
         elif model_name == "TDCN":
-            demucs.separate(audio_path, output_path, 'tasnet')
+            demucs.separate(audio_path, out=output_path, name='tasnet')
         elif model_name == "Demucs":
-            demucs.separate(audio_path, output_path, 'demucs')
+            # We use the quantized demucs model, which is much smaller and
+            # should have the same quality.
+            demucs.separate(audio_path, out=output_path,
+                            name='demucs_quantized')
         elif model_name == "OpenUnmix":
-            open_unmix.separate(audio_path, output_path)
+            open_unmix.separate(audio_path, outdir=output_path)
         elif model_name == "NMF":
             NMF.separate(audio_path, output_path)
         else:
@@ -149,10 +152,10 @@ def gen_perm_group(l, n):
     return r
 
 
-def generate_separation_function(model_name, num_sub_targets):
+def generate_separation_function(model_name, num_subtargets):
     l = []
     if model_name == "TDCN++":
-        init_list = ["sub_target{}".format(x) for x in range(TDCNpp_nb_sub_targets)]
+        init_list = ["sub_target{}".format(x) for x in range(TDCNpp_nb_subtargets)]
     elif model_name == "TDCN":
         init_list = ["drums", "bass", "other", "vocals"]
     elif model_name == "Demucs":
@@ -164,7 +167,7 @@ def generate_separation_function(model_name, num_sub_targets):
     else:
         raise Exception("Model name must be one of those five : TDCN, TDCN++, OpenUnmix, Demucs, NMF")
 
-    for perm in gen_perm_group(init_list, num_sub_targets):
+    for perm in gen_perm_group(init_list, num_subtargets):
         l.append(lambda audio_path, num_subtargets: separate(audio_path, model_name, num_subtargets, perm))
     return l
 
