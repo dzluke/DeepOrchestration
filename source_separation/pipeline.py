@@ -165,7 +165,7 @@ def generate_separation_function(model_name, num_sub_targets):
         raise Exception("Model name must be one of those five : TDCN, TDCN++, OpenUnmix, Demucs, NMF")
 
     for perm in gen_perm_group(init_list, num_sub_targets):
-        l.append(lambda a, n: separate(a, model_name, n, perm))
+        l.append(lambda audio_path, num_subtargets: separate(audio_path, model_name, num_subtargets, perm))
     return l
 
 
