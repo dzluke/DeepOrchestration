@@ -10,8 +10,8 @@ from contextlib import redirect_stderr
 import io
 import json
 
-import openunmix
-from openunmix import model
+import open_unmix
+from open_unmix import model
 
 
 def bandwidth_to_max_bin(rate: float, n_fft: int, bandwidth: float) -> np.ndarray:
@@ -233,7 +233,7 @@ def load_separator(
 
     # otherwise we load the separator from torchhub
     else:
-        hub_loader = getattr(openunmix, model_str_or_path)
+        hub_loader = getattr(open_unmix, model_str_or_path)
         separator = hub_loader(
             targets=targets,
             device=device,

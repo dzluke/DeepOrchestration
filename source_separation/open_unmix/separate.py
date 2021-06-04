@@ -5,9 +5,9 @@ import json
 import numpy as np
 
 
-from openunmix import utils
-from openunmix import predict
-from openunmix import data
+from open_unmix import utils
+from open_unmix import predict
+from open_unmix import data
 
 import argparse
 

@@ -9,7 +9,7 @@ import museval
 import torch
 import tqdm
 
-from openunmix import utils
+from open_unmix import utils
 
 
 def separate_and_evaluate(
