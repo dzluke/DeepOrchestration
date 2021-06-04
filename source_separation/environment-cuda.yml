@@ -5,7 +5,8 @@ channels:
   - conda-forge
 
 dependencies:
-  - cudatoolkit>=10
+  - cudatoolkit==10.2
+  - libsnfile>=1.0.31
   - python>=3.7,<3.9
   - ffmpeg==4.2.2
   - pytorch>=1.8.1
@@ -19,6 +20,6 @@ dependencies:
     - librosa>=0.8.1
     - musdb>=0.4.0
     - museval>=0.4.0
-    - soundfile
+    - soundfile==0.10.3.post1
     - tensorflow
     - treetable>=0.2.3
