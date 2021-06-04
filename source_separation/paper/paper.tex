@@ -138,7 +138,9 @@ computer-assisted orchestration, sound source separation, Orchidea
 
 \section{Experiments}\label{sec:experiments}
   
-  We test the effectiveness of five difference source separation methods, both supervised and unsupervised, on 300 custom made targets that are combinations of sounds from different databases. During testing, a target is input to a source separation method, which outputs four sub-targets. Then each sub-target is independently orchestrated with a randomly assigned subset of the full orchestra. These orchestrations are then combined to play simultaneously, creating a final orchestrated solution. Then the distance between the target and solution is calculated, giving us a metric to compare the various separation methods. The random split of the orchestra is the same for each separation method of the same target. See Fig.~\ref{fig:eval_diagram} for a diagram of this process.
+  We test the effectiveness of five difference source separation methods, both supervised and unsupervised, on 300 custom made targets that are combinations of sounds from different databases. During testing, a target is input to a source separation method, which outputs four sub-targets. Then each sub-target is independently orchestrated with a randomly assigned subset of the full orchestra. These orchestrations are then combined to play simultaneously, creating a final orchestrated solution. Then the distance between the target and solution is calculated, giving us a metric to compare the various separation methods. See Fig.~\ref{fig:eval_diagram} for a diagram of this process. 
+  
+  For each target, the same random split of the orchestra is used to orchestrate the output of each separation method. We randomly create these subsets of the orchestra in order to avoid any biases that could come from a hand-picking the instruments used to orchestrate each sub-target.  
   
     \subsection{Data}\label{subsec:data}
     We created our own targets as combinations of four source sounds. The sources come from the NIGENS~\cite{NIGENS} and BBC~\cite{BBC} databases, and freesound.org \cite{freesound}. We selected a total of 90 samples from these databases, choosing sounds that fit the following criteria: 
@@ -150,7 +152,7 @@ computer-assisted orchestration, sound source separation, Orchidea
     The sounds chosen include alarms, bells, engine noises, soundscapes, synthesizer chords, and sound effects. Each target that we used for testing was a combination of four randomly chosen source sounds from the group of 90 sounds. 
     When a target is created, the longest of the four sources is chosen to start playing at the beginning of the target. The other three sources are then randomly assigned different times to begin playing such that they will start between the beginning of the target and half-way through the longest source sound. This is done to ensure that the sources overlap and to minimize the amount of time in which there is only a single source sounding. 
     
-    \subsection{Separation Methods}
+    \subsection{Separation methods}
   We consider source separation models trained to tackle two distinct separation problems. The first is music source separation (Open-Unmix, Demucs, ConvTasnet). For these architectures, we used models that were pre-trained on the MUSDB18 dataset~\cite{MUSDB18}. Thus, these models output 4 stereo tracks that correspond to broad instrumental categories defined in the SiSEC 2018 Mus evaluation campaign: \textit{vocals, drums, bass} and \textit{other}~\cite{Stoter_SiSEC}. It is important here to make the distinction that we did not train these models ourselves. Therefore, we cannot guarantee that the data the models were trained on is optimal for solving our problem. However, one of the goals of this paper is to explore whether pre-trained music source separation models can separate non-musical sounds in a way that improves orchestration.
   The second type of model we tested are ones that perform universal sound separation (TDCN++, NMF), which \cite{tdcnpp} defines as \textit{separating mixtures of arbitrary sounds of different types}. These methods more closely match our problem of separating non-musical target sounds.
       
@@ -275,7 +277,7 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
   
   Since unsupervised methods perform well, it is reasonable to think that supervised methods trained on a dataset of arbitrary sounds could yield better overall performance for orchestration.
   
-    \subsection{Future Work}\label{sec:futurework}  
+    \subsection{Future work}\label{sec:futurework}  
     As we stated previously, we believe that one of the reasons the supervised methods did not perform as well is because of the data they were trained on. Therefore, a natural next step is to train these models with sounds that are more appropriate for computer-assisted orchestration.
     
     Another aspect we would like to work on is the assignment of the orchestras. Currently, the subset of the orchestra that is assigned to each sub-target is randomly selected. However, it is possible that this random assignment could reduce the quality of the final orchestration. If, for example, one of the sub-targets contains mostly low pitch content, but the orchestra assigned to it contains mostly violins, violas, flutes, and oboes, the resulting orchestration will suffer. To solve this problem, a step could be added that jointly-optimizes the orchestras assigned to each sub-target, ultimately choosing an assignment that leads to the best orchestration of each sub-target.
