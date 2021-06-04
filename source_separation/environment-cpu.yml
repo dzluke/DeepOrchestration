@@ -9,7 +9,7 @@ dependencies:
   - ffmpeg==4.2.2
   - pytorch>=1.8.1
   - cpuonly==1.0
-  - libsnfile>=1.0.31
+  - libsndfile>=1.0.31
   - torchaudio>=0.8
   - tqdm>=4.36
   - pip
