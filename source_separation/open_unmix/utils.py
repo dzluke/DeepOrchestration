@@ -129,7 +129,7 @@ def load_target_models(targets, model_str_or_path="umxhq", device="cpu", pretrai
         # model path does not exist, use pretrained models
         try:
             # disable progress bar
-            hub_loader = getattr(openunmix, model_str_or_path + "_spec")
+            hub_loader = getattr(open_unmix, model_str_or_path + "_spec")
             err = io.StringIO()
             with redirect_stderr(err):
                 return hub_loader(targets=targets, device=device, pretrained=pretrained)
