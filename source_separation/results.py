@@ -39,9 +39,9 @@ if __name__ == "__main__":
 
     make_plot_data(separated_target_distances['OpenUnmix'], 'Open-Unmix')
     make_plot_data(separated_target_distances['Demucs'], 'Demucs')
-    make_plot_data(separated_target_distances['TDCNN'], 'TDCN')
+    make_plot_data(separated_target_distances['TDCN'], 'TDCN')
     make_plot_data(separated_target_distances['NMF'], 'NMF')
-    make_plot_data(separated_target_distances['TDCNN++'], 'TDCN++')
+    make_plot_data(separated_target_distances['TDCN++'], 'TDCN++')
     make_plot_data(full_target_distances, 'Full target')
     make_plot_data(ground_truth_distances, 'Ground truth')
 
