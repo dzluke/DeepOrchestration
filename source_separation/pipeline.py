@@ -74,7 +74,7 @@ def clear_directory(path):
             os.remove(full_path)
 
 
-def separate(audio_path, model_name, num_subtargets, *args):
+def separate(audio_path, output_path, model_name, num_subtargets, *args):
     """
     Separate the audio into the given
     :param audio_path: path to audio input (wav file)
@@ -87,7 +87,7 @@ def separate(audio_path, model_name, num_subtargets, *args):
     """
 
     file_name = audio_path.split("/")[-1].split(".")[0]
-    output_path = TEMP_OUTPUT_PATH + "/" + model_name + "/" + file_name
+    output_path = output_path + "/" + model_name + "/" + file_name
 
     if not os.path.exists(output_path):
         if model_name == "TDCN++":
@@ -152,7 +152,7 @@ def gen_perm_group(l, n):
     return r
 
 
-def generate_separation_function(model_name, num_subtargets):
+def generate_separation_function(model_name, output_path, num_subtargets):
     l = []
     if model_name == "TDCN++":
         init_list = ["sub_target{}".format(x) for x in range(TDCNpp_nb_subtargets)]
@@ -168,21 +168,23 @@ def generate_separation_function(model_name, num_subtargets):
         raise Exception("Model name must be one of those five : TDCN, TDCN++, OpenUnmix, Demucs, NMF")
 
     for perm in gen_perm_group(init_list, num_subtargets):
-        l.append(lambda audio_path, num_subtargets: separate(audio_path, model_name, num_subtargets, perm))
+        l.append(lambda audio_path, num_subtargets:
+            separate(audio_path, output_path, model_name, num_subtargets, perm))
     return l
 
 
-def generate_all_separation_functions():
+def generate_all_separation_functions(output_path):
     functions = {}
     for model in separation_models:
-        functions[model] = generate_separation_function(model, NUM_SUBTARGETS)[0]
+        functions[model] = generate_separation_function(model, output_path,
+                                                        NUM_SUBTARGETS)[0]
     return functions
 
 
 # a dict of functions where each function takes two parameters
 # the first parameter is audio
 # the second parameter is the number of subtargets to separate the target into
-separation_functions = generate_all_separation_functions()
+separation_functions = generate_all_separation_functions(TEMP_OUTPUT_PATH)
 num_separation_functions = len(separation_functions)
 
 
