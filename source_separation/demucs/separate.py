@@ -124,7 +124,7 @@ def separate(tracks, models=Path("models"), name="demucs_quantized",
     model.to(device)
 
     out.mkdir(parents=True, exist_ok=True)
-    print(f"Separated tracks will be stored in {out.resolve()}")
+    # print(f"Separated tracks will be stored in {out.resolve()}")
     for track in tracks:
         if not track.exists():
             print(
@@ -132,7 +132,7 @@ def separate(tracks, models=Path("models"), name="demucs_quantized",
                 "please try again after surrounding the entire path with quotes \"\".",
                 file=sys.stderr)
             continue
-        print(f"Separating track {track}")
+        # print(f"Separating track {track}")
         wav = load_track(track, device, model.audio_channels, model.samplerate)
 
         ref = wav.mean(0)
