@@ -130,11 +130,11 @@ computer-assisted orchestration, sound source separation, Orchidea
   
   We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this to the orchestration of the target if no separation was performed (see Fig. \ref{fig:full_diagram}). Following the previous example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
   
-  \begin{figure*}[t]
+  \begin{figure}[t]
     \centering
-      \includegraphics[width=\textwidth]{figures/diagram.png}
+      \includegraphics[width=\columnwidth]{figures/diagram.png}
       \caption{Diagram comparing the process of orchestration with and without separation. At the top, the full target orchestration is created simply by orchestrating the target. At the bottom, the separation process is performed, and the resulting sub-targets are individually orchestrated with subsets of the orchestra before being recombined to obtain the full orchestration.}\label{fig:full_diagram}
-  \end{figure*}
+  \end{figure}
 
 \section{Experiments}\label{sec:experiments}
   
@@ -185,7 +185,7 @@ computer-assisted orchestration, sound source separation, Orchidea
 
     \begin{figure*}[t]
       \centering
-        \includegraphics[width=\textwidth]{figures/evaluation_diagram.png}
+        \includegraphics[width=0.7\textwidth]{figures/evaluation_diagram.png}
         \caption{Diagram showing the testing process. Note that in both orchestrations that use a split orchestra, they use the same division of the orchestra to orchestrate their four sub-targets.}\label{fig:eval_diagram}
     \end{figure*}
     
@@ -193,7 +193,7 @@ computer-assisted orchestration, sound source separation, Orchidea
     
     \begin{figure}[t]
     \centering
-      \includegraphics[width=\columnwidth]{figures/orch.jpg}
+      \includegraphics[width=0.7\columnwidth]{figures/orch.jpg}
       \caption{Example waveforms showing onsets of the four sources in the target, and possible onsets in the full, separated, and ground truth orchestrations. In this example, the separation method could not distinguish between sources 2 and 3 and identified them as a single sub-target. Therefore, the separated orchestration has only 3 onsets, one of them being an orchestration that combines sources 2 and 3. Note that this is a simplified representation, in the actual targets sources overlap in time and are not as discrete as this diagram shows.}\label{fig:orchestrations}
     \end{figure}    
     
