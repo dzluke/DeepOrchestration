@@ -8,7 +8,6 @@ from pathlib import Path
 
 def separate(audio_path,
              output_path,
-             model_name='nmf',
              n=4,
              blocksize=4096,
              hoplen=1024,

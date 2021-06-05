@@ -9,7 +9,7 @@ from pipeline import generate_separation_function, TEMP_OUTPUT_PATH
 
 def create_separated_subtargets(targets_directory, output_path):
     for target_name in tqdm(os.listdir(targets_directory)):
-        for model in ["TDCN++", "TDCN", "OpenUnmix", "Demucs"]:
+        for model in ["TDCN++", "TDCN", "OpenUnmix", "Demucs", "NMF"]:
             print(target_name, model)
             target = targets_directory + '/' + target_name
             l = generate_separation_function(model, output_path,
