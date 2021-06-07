@@ -33,7 +33,7 @@ num_orchestrations_to_save = 0
 ########################################################
 
 CONFIG_PATH = "orch_config.txt"  # path to the Orchidea configuration file (you shouldn't have to change this!)
-TEMP_OUTPUT_PATH = "./TEMP"
+TEMP_OUTPUT_PATH = "./separations"
 RESULTS_PATH = "./results.json"
 TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'metadata.json')
 TDCNpp_nb_sub_targets = 4
@@ -87,9 +87,15 @@ def separate(audio_path, model_name, num_subtargets, *args):
     """
 
     file_name = audio_path.split("/")[-1].split(".")[0]
+
+    # WORKAROUND (remove eventually)
+    file_name = file_name.replace("*", "_")
+
     output_path = TEMP_OUTPUT_PATH + "/" + model_name + "/" + file_name
 
-    if not os.path.exists(output_path):
+    if os.path.exists(output_path):
+        print("\tFound pre-separated files for", model_name)
+    else:
         if model_name == "TDCN++":
             # ConvTasNet for Universal Sound Separation
             TDCNpp_separate.separate(TDCNpp_model_path + "/baseline_model",
@@ -260,8 +266,8 @@ def normalized_magnitude_spectrum(target, solution):
 
     target_max = np.max(target_spectrum) if np.max(target_spectrum) > 0 else 1
     solution_max = np.max(solution_spectrum) if np.max(solution_spectrum) > 0 else 1
-    target_spectrum /= (target_max * N)
-    solution_spectrum /= (solution_max * N)
+    target_spectrum /= (target_max)
+    solution_spectrum /= (solution_max)
 
     return target_spectrum, solution_spectrum
 
@@ -520,6 +526,7 @@ if __name__ == "__main__":
         target_name = os.path.basename(target_path)
         target_name = os.path.splitext(target_name)[0]
         print("Target:", target_name)
+        print("num completed:", num_completed)
 
         # orchestrate full (non-separated) target with Orchidea
         print("Orchestrating full target")
@@ -662,10 +669,10 @@ if __name__ == "__main__":
             json.dump(results, f, indent='\t')
 
         # remove temp files created during separation
-        for model_name in separation_models:
-            path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name)
-            if os.path.exists(path):
-                remove_directory(path)
+        # for model_name in separation_models:
+        #     path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name)
+        #     if os.path.exists(path):
+        #         remove_directory(path)
 
     # remove files created during pipeline
     for file in ['target.wav', 'segments.txt']:
