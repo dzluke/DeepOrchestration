@@ -7,12 +7,13 @@ from pipeline import thresholds, mean, RESULTS_PATH
 
 def aggregate_data(f1, f2, name):
     avg_full_target_distance = [f1(x) for x in full_target_distances]
-    print(name, "full target distance:", f2(avg_full_target_distance))
+    print(name, "full target distance:", f2(avg_full_target_distance), "stdev:", stdev(avg_full_target_distance))
     print(name, "separated distance:")
     for model, distances in separated_target_distances.items():
-        print("\t{} : {}".format(model, f2([f1(x) for x in distances])))
+        d = [f1(x) for x in distances]
+        print("\t{} : {} stdev: {}".format(model, f2(d), stdev(d)))
     avg_ground_truth_distance = [f1(x) for x in ground_truth_distances]
-    print(name, "ground truth distance:", f2(avg_ground_truth_distance))
+    print(name, "ground truth distance:", f2(avg_ground_truth_distance), "stdev:", stdev(avg_ground_truth_distance))
     print("---------------------------")
 
 
@@ -45,17 +46,17 @@ if __name__ == "__main__":
     make_plot_data(full_target_distances, 'Full target')
     make_plot_data(ground_truth_distances, 'Ground truth')
 
-    x = list(range(len(y)))
-    plt.title("Average distance between target and solution with standard deviation")
-    plt.errorbar(x, y, e, linestyle='None', marker='.', markersize=10, capsize=3, color='black')
-    plt.xticks(x, x_labels, rotation=15)
-    plt.xlabel("Orchestration type")
-    plt.ylabel("Distance")
-    plt.ylim(0, 50)
-    plt.tight_layout()
-    plt.show()
+    # x = list(range(len(y)))
+    # plt.title("Average distance between target and solution with standard deviation")
+    # plt.errorbar(x, y, e, linestyle='None', marker='.', markersize=10, capsize=3, color='black')
+    # plt.xticks(x, x_labels, rotation=15)
+    # plt.xlabel("Orchestration type")
+    # plt.ylabel("Distance")
+    # plt.ylim(0, 1)
+    # plt.tight_layout()
+    # plt.show()
 
-    aggregate_data(lambda x: x[0], median, 'Median')
+    # aggregate_data(lambda x: x[0], median, 'Median')
     aggregate_data(lambda x: x[0], mean, 'Mean')
 
     x = 0  # num times separate is better than full
@@ -78,9 +79,9 @@ if __name__ == "__main__":
         if ground < full:
             z += 1
 
-    print("Separate is better than full:", x / num_completed * 100, "%")
-    print("Ground is better than separate:", y / num_completed * 100, "%")
-    print("Ground is better than full:", z / num_completed * 100, "%")
+    # print("Separate is better than full:", x / num_completed * 100, "%")
+    # print("Ground is better than separate:", y / num_completed * 100, "%")
+    # print("Ground is better than full:", z / num_completed * 100, "%")
 
     if len(thresholds) > 1:
         for i in range(len(thresholds)):
