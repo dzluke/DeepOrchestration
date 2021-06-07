@@ -22,7 +22,7 @@ partials_filtering	.1
 extra_pitches		N
 
 onsets_threshold 	0.1
-onsets_timegate		60000
+onsets_timegate		0.1
 
 export_solutions	0
 t60					2.8
