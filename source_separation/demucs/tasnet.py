@@ -30,25 +30,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import functools
 import math
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# from .utils import capture_init
+from .utils import capture_init
 
 EPS = 1e-8
-
-
-def capture_init(init):
-    @functools.wraps(init)
-    def __init__(self, *args, **kwargs):
-        self._init_args_kwargs = (args, kwargs)
-        init(self, *args, **kwargs)
-
-    return __init__
 
 
 def overlap_and_add(signal, frame_step):
@@ -77,6 +67,7 @@ def overlap_and_add(signal, frame_step):
 class ConvTasNet(nn.Module):
     @capture_init
     def __init__(self,
+                 sources,
                  N=256,
                  L=20,
                  B=256,
@@ -84,13 +75,15 @@ class ConvTasNet(nn.Module):
                  P=3,
                  X=8,
                  R=4,
-                 C=4,
-                 audio_channels=1,
+                 audio_channels=2,
                  norm_type="gLN",
                  causal=False,
-                 mask_nonlinear='relu'):
+                 mask_nonlinear='relu',
+                 samplerate=44100,
+                 segment_length=44100 * 2 * 4):
         """
         Args:
+            sources: list of sources
             N: Number of filters in autoencoder
             L: Length of the filters (in samples)
             B: Number of channels in bottleneck 1 × 1-conv block
@@ -98,20 +91,25 @@ class ConvTasNet(nn.Module):
             P: Kernel size in convolutional blocks
             X: Number of convolutional blocks in each repeat
             R: Number of repeats
-            C: Number of speakers
             norm_type: BN, gLN, cLN
             causal: causal or non-causal
             mask_nonlinear: use which non-linear function to generate mask
         """
         super(ConvTasNet, self).__init__()
         # Hyper-parameter
-        self.N, self.L, self.B, self.H, self.P, self.X, self.R, self.C = N, L, B, H, P, X, R, C
+        self.sources = sources
+        self.C = len(sources)
+        self.N, self.L, self.B, self.H, self.P, self.X, self.R = N, L, B, H, P, X, R
         self.norm_type = norm_type
         self.causal = causal
         self.mask_nonlinear = mask_nonlinear
+        self.audio_channels = audio_channels
+        self.samplerate = samplerate
+        self.segment_length = segment_length
         # Components
         self.encoder = Encoder(L, N, audio_channels)
-        self.separator = TemporalConvNet(N, B, H, P, X, R, C, norm_type, causal, mask_nonlinear)
+        self.separator = TemporalConvNet(
+            N, B, H, P, X, R, self.C, norm_type, causal, mask_nonlinear)
         self.decoder = Decoder(N, L, audio_channels)
         # init
         for p in self.parameters():

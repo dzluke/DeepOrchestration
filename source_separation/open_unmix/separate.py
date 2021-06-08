@@ -1,172 +1,207 @@
-# -*- coding: utf-8 -*-
-
-import torch
-import tqdm
-import numpy as np
-import soundfile as sf
-import norbert
-import warnings
-import resampy
 from pathlib import Path
-import io
-from contextlib import redirect_stderr
+import torch
+import torchaudio
 import json
-import scipy.signal
-
-from .utils import bandwidth_to_max_bin
-from .open_unmix import OpenUnmix
+import numpy as np
 
 
-def load_model(target, model_name='umxhq', device='cpu'):
-    """
-    target model path can be either <target>.pth, or <target>-sha256.pth
-    (as used on torchub)
-    """
-    model_path = Path(model_name).expanduser()
-    if not model_path.exists():
-        # model path does not exist, use hubconf model
-        try:
-            # disable progress bar
-            err = io.StringIO()
-            with redirect_stderr(err):
-                return torch.hub.load(
-                    'sigsep/open-unmix-pytorch',
-                    model_name,
-                    target=target,
-                    device=device,
-                    pretrained=True
-                )
-            print(err.getvalue())
-        except AttributeError:
-            raise NameError('Model does not exist on torchhub')
-            # assume model is a path to a local model_name direcotry
-    else:
-        # load model from disk
-        with open(Path(model_path, target + '.json'), 'r') as stream:
-            results = json.load(stream)
+from open_unmix import utils
+from open_unmix import predict
+from open_unmix import data
 
-        target_model_path = next(Path(model_path).glob("%s*.pth" % target))
-        state = torch.load(
-            target_model_path,
-            map_location=device
-        )
-
-        max_bin = bandwidth_to_max_bin(
-            state['sample_rate'],
-            results['args']['nfft'],
-            results['args']['bandwidth']
-        )
-
-        unmix = OpenUnmix(
-            n_fft=results['args']['nfft'],
-            n_hop=results['args']['nhop'],
-            nb_channels=results['args']['nb_channels'],
-            hidden_size=results['args']['hidden_size'],
-            max_bin=max_bin
-        )
-
-        unmix.load_state_dict(state)
-        unmix.stft.center = True
-        unmix.eval()
-        unmix.to(device)
-        return unmix
+import argparse
 
 
-def istft(X, rate=44100, n_fft=4096, n_hopsize=1024):
-    t, audio = scipy.signal.istft(
-        X / (n_fft / 2),
-        rate,
-        nperseg=n_fft,
-        noverlap=n_fft - n_hopsize,
-        boundary=True
+def separate(input, outdir=None, targets=None, model='umxhq', start=0.0,
+             duration=None, niter=1, residual=None, ext='.wav',
+             wiener_win_len=300, filterbank='torch', aggregate=None,
+             no_cuda=False, audio_backend='sox_io'):
+    if audio_backend != "stempeg":
+        torchaudio.set_audio_backend(audio_backend)
+
+    use_cuda = not no_cuda and torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
+    print("Using ", device)
+    # parsing the output dict
+    aggregate_dict = None if aggregate is None else json.loads(aggregate)
+
+    # create separator only once to reduce model loading
+    # when using multiple files
+    separator = utils.load_separator(
+        model_str_or_path=model,
+        targets=targets,
+        niter=niter,
+        residual=residual,
+        wiener_win_len=wiener_win_len,
+        device=device,
+        pretrained=True,
+        filterbank=filterbank,
     )
-    return audio
 
+    separator.freeze()
+    separator.to(device)
 
-def separate(input_path,
-             output_path,
-             model_name='umxhq',
-             targets=('vocals', 'drums', 'bass', 'other'),
-             samplerate=44100,
-             device='cpu',
-             softmask=False,
-             residual_model=False,
-             alpha=1.0,
-             niter=1):
-    """
-    generate 4 subtargets
-    """
+    if audio_backend == "stempeg":
+        try:
+            import stempeg
+        except ImportError:
+            raise RuntimeError("Please install pip package `stempeg`")
 
-    # ENTREE : input path
-    # SORTIE : OUTPUT PATH NOM DE DOSSIER ECRIT LES SUBTARGETS EN .WAV DANS CE PATH
+    # If we're dealing with a single file.
+    if type(input) != list:
+        input = [input]
 
-    # handling an input audio path
-    audio, rate = sf.read(
-        input_path,
-        always_2d=True,
+    # loop over the files
+    for input_file in input:
+        if audio_backend == "stempeg":
+            audio, rate = stempeg.read_stems(
+                input_file,
+                start=start,
+                duration=duration,
+                sample_rate=separator.sample_rate,
+                dtype=np.float32,
+            )
+            audio = torch.tensor(audio)
+        else:
+            audio, rate = data.load_audio(input_file, start=start, dur=duration)
+        estimates = predict.separate(
+            audio=audio,
+            rate=rate,
+            aggregate_dict=aggregate_dict,
+            separator=separator,
+            device=device,
         )
+        if not outdir:
+            model_path = Path(model)
+            if not model_path.exists():
+                outdir = Path(Path(input_file).stem + "_" + model)
+            else:
+                outdir = Path(Path(input_file).stem + "_" + model_path.stem)
+        else:
+            outdir = Path(outdir) #/ Path(input_file).stem
+        outdir.mkdir(exist_ok=True, parents=True)
 
-    if audio.shape[1] > 2:
-        warnings.warn(
-            'Channel count > 2! '
-            'Only the first two channels will be processed!')
-        audio = audio[:, :2]
+        # write out estimates
+        if audio_backend == "stempeg":
+            target_path = str(outdir / Path("target").with_suffix(ext))
+            # convert torch dict to numpy dict
+            estimates_numpy = {}
+            for target, estimate in estimates.items():
+                estimates_numpy[target] = torch.squeeze(estimate).detach().cpu().numpy().T
 
-    if rate != samplerate:
-        # resample to model samplerate if needed
-        audio = resampy.resample(audio, rate, samplerate, axis=0)
+            stempeg.write_stems(
+                target_path,
+                estimates_numpy,
+                sample_rate=separator.sample_rate,
+                writer=stempeg.FilesWriter(multiprocess=True, output_sample_rate=rate),
+            )
+        else:
+            for target, estimate in estimates.items():
+                target_path = str(outdir / Path(target).with_suffix(ext))
+                torchaudio.save(
+                    target_path,
+                    torch.squeeze(estimate).to("cpu"),
+                    sample_rate=separator.sample_rate,
+                )
 
-    if audio.shape[1] == 1:
-        # if we have mono, let's duplicate it
-        # as the input of OpenUnmix is always stereo
-        audio = np.repeat(audio, 2, axis=1)
-    # convert numpy audio to torch
-    audio_torch = torch.tensor(audio.T[None, ...]).float().to(device)
+# if __name__ == '__main__':
+#     parser = argparse.ArgumentParser(
+#         description="UMX Inference",
+#         add_help=True,
+#         formatter_class=argparse.RawDescriptionHelpFormatter,
+#     )
 
-    source_names = []
-    V = []
+#     parser.add_argument("input", type=str, nargs="+", help="List of paths to wav/flac files.")
 
-    for j, target in enumerate(tqdm.tqdm(targets)):
-        unmix_target = load_model(
-            target=target,
-            model_name=model_name,
-            device=device
-        )
-        Vj = unmix_target(audio_torch).cpu().detach().numpy()
-        if softmask:
-            # only exponentiate the model if we use softmask
-            Vj = Vj**alpha
-        # output is nb_frames, nb_samples, nb_channels, nb_bins
-        V.append(Vj[:, 0, ...])  # remove sample dim
-        source_names += [target]
+#     parser.add_argument(
+#         "--model",
+#         default="umxhq",
+#         type=str,
+#         help="path to mode base directory of pretrained models",
+#     )
 
-    V = np.transpose(np.array(V), (1, 3, 2, 0))
+#     parser.add_argument(
+#         "--targets",
+#         nargs="+",
+#         type=str,
+#         help="provide targets to be processed. \
+#               If none, all available targets will be computed",
+#     )
 
-    X = unmix_target.stft(audio_torch).detach().cpu().numpy()
-    # convert to complex numpy type
-    X = X[..., 0] + X[..., 1]*1j
-    X = X[0].transpose(2, 1, 0)
+#     parser.add_argument(
+#         "--outdir",
+#         type=str,
+#         help="Results path where audio evaluation results are stored",
+#     )
 
-    if residual_model or len(targets) == 1:
-        V = norbert.residual_model(V, X, alpha if softmask else 1)
-        source_names += (['residual'] if len(targets) > 1
-                         else ['accompaniment'])
+#     parser.add_argument(
+#         "--ext",
+#         type=str,
+#         default=".wav",
+#         help="Output extension which sets the audio format",
+#     )
 
-    Y = norbert.wiener(V, X.astype(np.complex128), niter,
-                       use_softmask=softmask)
+#     parser.add_argument("--start", type=float, default=0.0, help="Audio chunk start in seconds")
 
-    output_path = Path(output_path)
-    output_path.mkdir(parents=True, exist_ok=True)
-    estimates = {}
-    for j, name in enumerate(source_names):
-        audio_hat = istft(
-            Y[..., j].T,
-            n_fft=unmix_target.stft.n_fft,
-            n_hopsize=unmix_target.stft.n_hop
-        )
-        estimates[name] = audio_hat.T
+#     parser.add_argument(
+#         "--duration",
+#         type=float,
+#         help="Audio chunk duration in seconds, negative values load full track",
+#     )
 
-        # write wav file in output_path
-        subtarget_path = output_path.joinpath(name + '.wav')
-        sf.write(subtarget_path, estimates[name], samplerate)
-    return estimates
+#     parser.add_argument(
+#         "--no-cuda", action="store_true", default=False, help="disables CUDA inference"
+#     )
+
+#     parser.add_argument(
+#         "--audio-backend",
+#         type=str,
+#         default="sox_io",
+#         help="Set torchaudio backend "
+#         "(`sox_io`, `sox`, `soundfile` or `stempeg`), defaults to `sox_io`",
+#     )
+
+#     parser.add_argument(
+#         "--niter",
+#         type=int,
+#         default=1,
+#         help="number of iterations for refining results.",
+#     )
+
+#     parser.add_argument(
+#         "--wiener-win-len",
+#         type=int,
+#         default=300,
+#         help="Number of frames on which to apply filtering independently",
+#     )
+
+#     parser.add_argument(
+#         "--residual",
+#         type=str,
+#         default=None,
+#         help="if provided, build a source with given name"
+#         "for the mix minus all estimated targets",
+#     )
+
+#     parser.add_argument(
+#         "--aggregate",
+#         type=str,
+#         default=None,
+#         help="if provided, must be a string containing a valid expression for "
+#         "a dictionary, with keys as output target names, and values "
+#         "a list of targets that are used to build it. For instance: "
+#         '\'{"vocals":["vocals"], "accompaniment":["drums",'
+#         '"bass","other"]}\'',
+#     )
+
+#     parser.add_argument(
+#         "--filterbank",
+#         type=str,
+#         default="torch",
+    #     help="filterbank implementation method. "
+    #     "Supported: `['torch', 'asteroid']`. `torch` is ~30% faster"
+    #     "compared to `asteroid` on large FFT sizes such as 4096. However"
+    #     "asteroids stft can be exported to onnx, which makes is practical"
+    #     "for deployment.",
+    # )
+    # args = parser.parse_args()

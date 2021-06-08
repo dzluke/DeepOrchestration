@@ -12,7 +12,7 @@ from pathlib import Path
 import ConvTasNetUniversal.separate as TDCNpp_separate
 import open_unmix.separate as open_unmix
 import demucs.separate as demucs
-import NMF
+import NMF.separate as NMF
 
 
 ############################################################################
@@ -38,7 +38,7 @@ CONFIG_PATH = "orch_config.txt"  # path to the Orchidea configuration file (you 
 SEPARATIONS_PATH = "/volumes/Untitled/DeepOrchestration/MLSP21/separations"
 RESULTS_PATH = "./results.json"
 TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'metadata.json')
-TDCNpp_nb_sub_targets = 4
+TDCNpp_nb_subtargets = 4
 SAMPLING_RATE = 44100
 NUM_SUBTARGETS = 4
 full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
@@ -68,7 +68,7 @@ def clear_directory(path):
             os.remove(full_path)
 
 
-def separate(audio_path, model_name, num_subtargets, *args):
+def separate(audio_path, output_path, model_name, num_subtargets, *args):
     """
     Separate the audio into the given
     :param audio_path: path to audio input (wav file)
@@ -81,11 +81,10 @@ def separate(audio_path, model_name, num_subtargets, *args):
     """
 
     file_name = audio_path.split("/")[-1].split(".")[0]
-
     # WORKAROUND (remove eventually)
     file_name = file_name.replace("*", "_")
 
-    output_path = SEPARATIONS_PATH + "/" + model_name + "/" + file_name
+    output_path = output_path + "/" + model_name + "/" + file_name
 
     if os.path.exists(output_path):
         print("\tFound pre-separated files for", model_name)
@@ -93,15 +92,18 @@ def separate(audio_path, model_name, num_subtargets, *args):
         if model_name == "TDCN++":
             # ConvTasNet for Universal Sound Separation
             TDCNpp_separate.separate(TDCNpp_model_path + "/baseline_model",
-                                                       TDCNpp_model_path + "/baseline_inference.meta",
-                                                       audio_path,
-                                                       output_path)
+                                     TDCNpp_model_path + "/baseline_inference.meta",
+                                     audio_path,
+                                     output_path)
         elif model_name == "TDCN":
-            demucs.separate(audio_path, output_path, 'tasnet')
+            demucs.separate(audio_path, out=output_path, name='tasnet')
         elif model_name == "Demucs":
-            demucs.separate(audio_path, output_path, 'demucs')
+            # We use the quantized demucs model, which is much smaller and
+            # should have the same quality.
+            demucs.separate(audio_path, out=output_path,
+                            name='demucs_quantized')
         elif model_name == "OpenUnmix":
-            open_unmix.separate(audio_path, output_path)
+            open_unmix.separate(audio_path, outdir=output_path)
         elif model_name == "NMF":
             NMF.separate(audio_path, output_path)
         else:
@@ -149,10 +151,10 @@ def gen_perm_group(l, n):
     return r
 
 
-def generate_separation_function(model_name, num_sub_targets):
+def generate_separation_function(model_name, output_path, num_subtargets):
     l = []
     if model_name == "TDCN++":
-        init_list = ["sub_target{}".format(x) for x in range(TDCNpp_nb_sub_targets)]
+        init_list = ["sub_target{}".format(x) for x in range(TDCNpp_nb_subtargets)]
     elif model_name == "TDCN":
         init_list = ["drums", "bass", "other", "vocals"]
     elif model_name == "Demucs":
@@ -160,26 +162,28 @@ def generate_separation_function(model_name, num_sub_targets):
     elif model_name == "OpenUnmix":
         init_list = ["drums", "bass", "other", "vocals"]
     elif model_name == "NMF":
-        init_list = ["feat1", "feat2", "feat3", "feat4"]
+        init_list = ["source_0", "source_1", "source_2", "source_3"]
     else:
         raise Exception("Model name must be one of those five : TDCN, TDCN++, OpenUnmix, Demucs, NMF")
 
-    for perm in gen_perm_group(init_list, num_sub_targets):
-        l.append(lambda a, n: separate(a, model_name, n, perm))
+    for perm in gen_perm_group(init_list, num_subtargets):
+        l.append(lambda audio_path, num_subtargets:
+            separate(audio_path, output_path, model_name, num_subtargets, perm))
     return l
 
 
-def generate_all_separation_functions():
+def generate_all_separation_functions(output_path):
     functions = {}
     for model in separation_models:
-        functions[model] = generate_separation_function(model, NUM_SUBTARGETS)[0]
+        functions[model] = generate_separation_function(model, output_path,
+                                                        NUM_SUBTARGETS)[0]
     return functions
 
 
 # a dict of functions where each function takes two parameters
 # the first parameter is audio
 # the second parameter is the number of subtargets to separate the target into
-separation_functions = generate_all_separation_functions()
+separation_functions = generate_all_separation_functions(SEPARATIONS_PATH)
 num_separation_functions = len(separation_functions)
 
 
