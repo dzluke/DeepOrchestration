@@ -7,6 +7,7 @@ import numpy as np
 import soundfile as sf
 import librosa
 import json
+from pathlib import Path
 
 import ConvTasNetUniversal.separate as TDCNpp_separate
 import open_unmix.separate as open_unmix
@@ -32,8 +33,9 @@ num_orchestrations_to_save = 0
 # You shouldn't need to change the following variables #
 ########################################################
 
+ALL_ORCHESTRATIONS_PATH = "./orchestrations"  # place to save every orchestration performed
 CONFIG_PATH = "orch_config.txt"  # path to the Orchidea configuration file (you shouldn't have to change this!)
-TEMP_OUTPUT_PATH = "./separations"
+SEPARATIONS_PATH = "/volumes/Untitled/DeepOrchestration/MLSP21/separations"
 RESULTS_PATH = "./results.json"
 TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'metadata.json')
 TDCNpp_nb_subtargets = 4
@@ -43,15 +45,7 @@ full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr'
                   'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
 
 separation_models = ["TDCN++", "TDCN", "Demucs", "OpenUnmix", "NMF"]
-thresholds = [0.1]  # onset thresholds for dynamic orchestration
-
-
-def clear_temp():
-    """
-    Clear the temp directory containing the outputs of the different models
-    """
-    if os.path.exists(TEMP_OUTPUT_PATH):
-        remove_directory(TEMP_OUTPUT_PATH)
+thresholds = [0.05, 0.1, 0.2]  # onset thresholds for dynamic orchestration
 
 
 def remove_directory(path):
@@ -89,6 +83,7 @@ def separate(audio_path, output_path, model_name, num_subtargets, *args):
     file_name = audio_path.split("/")[-1].split(".")[0]
     # WORKAROUND (remove eventually)
     file_name = file_name.replace("*", "_")
+
     output_path = output_path + "/" + model_name + "/" + file_name
 
     if os.path.exists(output_path):
@@ -188,7 +183,7 @@ def generate_all_separation_functions(output_path):
 # a dict of functions where each function takes two parameters
 # the first parameter is audio
 # the second parameter is the number of subtargets to separate the target into
-separation_functions = generate_all_separation_functions(TEMP_OUTPUT_PATH)
+separation_functions = generate_all_separation_functions(SEPARATIONS_PATH)
 num_separation_functions = len(separation_functions)
 
 
@@ -472,6 +467,32 @@ def save_best_orchestration(solutions, distances, file_path):
     sf.write(file_path, best_solution, SAMPLING_RATE)
 
 
+def orchestrate_with_threshold(target, save_path):
+    """
+    Orchestrates 'target' with multiple thresholds, stores them on disk, and returns them
+    If the orchestrations already exist on desk, they are not redone but simply loaded and returned
+    :param target: audio
+    :param save_path: Path object to save the orchestrations and check for existing orchestrations
+    :return: list of solutions
+    """
+    solutions = []
+    save_path.mkdir(parents=True, exist_ok=True)
+    for onset_threshold in thresholds:
+        save_name = "threshold" + str(onset_threshold)
+        save_name = save_name.replace(".", "_") + ".wav"
+        save_path = save_path / save_name
+        if os.path.exists(save_path):
+            # print("Found orchestration on disk")
+            solution, _ = librosa.load(save_path, sr=SAMPLING_RATE)
+        else:
+            set_config_parameter(CONFIG_PATH, 'onsets_threshold', onset_threshold)
+            solution = orchestrate(target)
+            sf.write(save_path, solution, samplerate=SAMPLING_RATE)
+        save_path = save_path.parent
+        solutions.append(solution)
+    return solutions
+
+
 if __name__ == "__main__":
     distance_metric = frame_distance(cosine_similarity)  # the distance metric to be used to evaluate solutions
 
@@ -528,6 +549,8 @@ if __name__ == "__main__":
         target, _ = librosa.load(target_path, sr=SAMPLING_RATE)
         target_name = os.path.basename(target_path)
         target_name = os.path.splitext(target_name)[0]
+        save_path = Path(ALL_ORCHESTRATIONS_PATH) / target_name
+
         print("Target:", target_name)
         print("num completed:", num_completed)
 
@@ -537,13 +560,15 @@ if __name__ == "__main__":
         set_config_parameter(CONFIG_PATH, 'orchestra', full_orchestra)
         full_target_solutions = []
         distances = []
-        for onset_threshold in thresholds:
-            set_config_parameter(CONFIG_PATH, 'onsets_threshold', onset_threshold)
-            solution = orchestrate(target)
-            full_target_solutions.append(solution)
+        save_path = save_path / "full_orchestration"
+
+        solutions = orchestrate_with_threshold(target, save_path)
+        full_target_solutions.append(solutions)
+        for solution in solutions:
             distance = distance_metric(target, solution)
             distances.append(distance)
         full_target_distances.append(distances)
+        save_path = save_path.parent
 
         # separate target into subtargets using different separator functions
         print("Separating target into subtargets")
@@ -562,18 +587,19 @@ if __name__ == "__main__":
         for model in separation_functions.keys():
             orchestrated_subtargets[model] = [[] for _ in range(NUM_SUBTARGETS)]
 
-        for model, subtargets in all_subtargets.items():
-            # for each separation algorithm
-            for j in range(len(subtargets)):
-                # for each subtarget
+        for model, subtargets in all_subtargets.items():  # for each separation algorithm
+            save_path = save_path / model
+            for j in range(len(subtargets)):  # for each subtarget
                 subtarget = subtargets[j]
                 orchestra = orchestras[j]
                 set_config_parameter(CONFIG_PATH, 'orchestra', orchestra)
-                for threshold in thresholds:
-                    # orchestrate with threshold
-                    set_config_parameter(CONFIG_PATH, 'onsets_threshold', threshold)
-                    solution = orchestrate(subtarget)
-                    orchestrated_subtargets[model][j].append(solution)
+                save_name = "subtarget" + str(j)
+                save_path = save_path / save_name
+                solutions = orchestrate_with_threshold(subtarget, save_path)
+                orchestrated_subtargets[model][j] = solutions
+                save_path = save_path.parent
+            save_path = save_path.parent
+
 
         # create all possible combinations of orchestrated subtargets and calculate distance
         # print("Combining subtargets and calculating distance")
@@ -606,18 +632,21 @@ if __name__ == "__main__":
                 orchestras = orchestras[:2]
             else:
                 raise Exception("Code is not ready to handle {} sources".format(len(sources)))
-        solutions = [[] for _ in range(len(sources))]
+        ground_truth_solutions = [[] for _ in range(len(sources))]
+        save_path = save_path / "ground_truth"
         for i in range(len(sources)):
             source = sources[i]
             orchestra = orchestras[i]
             set_config_parameter(CONFIG_PATH, 'orchestra', orchestra)
-            for threshold in thresholds:
-                # orchestrate with threshold
-                set_config_parameter(CONFIG_PATH, 'onsets_threshold', threshold)
-                solution = orchestrate(source)
-                solutions[i].append(solution)
+            save_name = "source" + str(i)
+            save_path = save_path / save_name
 
-        ground_truth_combinations = create_combinations(solutions)
+            solutions = orchestrate_with_threshold(source, save_path)
+            ground_truth_solutions[i] = solutions
+            save_path = save_path.parent
+        save_path = save_path.parent
+
+        ground_truth_combinations = create_combinations(ground_truth_solutions)
         distances = []
         for solution in ground_truth_combinations:
             distance = distance_metric(target, solution)
@@ -654,7 +683,7 @@ if __name__ == "__main__":
             if not os.path.exists(separations_folder):
                 os.mkdir(separations_folder)
             for model_name in separation_models:
-                folder = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name)
+                folder = os.path.join(SEPARATIONS_PATH, model_name, target_name)
                 if not os.path.exists(os.path.join(separations_folder, model_name)):
                     os.mkdir(os.path.join(separations_folder, model_name))
                 for source in os.listdir(folder):
@@ -673,7 +702,7 @@ if __name__ == "__main__":
 
         # remove temp files created during separation
         # for model_name in separation_models:
-        #     path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name)
+        #     path = os.path.join(SEPARATIONS_PATH, model_name, target_name)
         #     if os.path.exists(path):
         #         remove_directory(path)
 
