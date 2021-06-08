@@ -167,7 +167,7 @@ def generate_separation_function(model_name, output_path, num_subtargets):
     elif model_name == "OpenUnmix":
         init_list = ["drums", "bass", "other", "vocals"]
     elif model_name == "NMF":
-        init_list = ["source_1", "source_2", "source_3", "source_4"]
+        init_list = ["source_0", "source_1", "source_2", "source_3"]
     else:
         raise Exception("Model name must be one of those five : TDCN, TDCN++, OpenUnmix, Demucs, NMF")
 
