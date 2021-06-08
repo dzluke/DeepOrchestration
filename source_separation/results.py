@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # plt.show()
 
     # aggregate_data(lambda x: x[0], median, 'Median')
-    aggregate_data(lambda x: x[0], mean, 'Mean')
+    aggregate_data(mean, mean, 'Mean')
 
     x = 0  # num times separate is better than full
     y = 0  # num times ground truth is better than separate

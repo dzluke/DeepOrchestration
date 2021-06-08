@@ -44,8 +44,9 @@ NUM_SUBTARGETS = 4
 full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
                   'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
 
-separation_models = ["TDCN++", "TDCN", "Demucs", "OpenUnmix", "NMF"]
-thresholds = [0.05, 0.1, 0.2]  # onset thresholds for dynamic orchestration
+# separation_models = ["TDCN++", "TDCN", "Demucs", "OpenUnmix", "NMF"]
+separation_models = ["TDCN++", "OpenUnmix", "NMF"]
+thresholds = [0.1, 0.3]  # onset thresholds for dynamic orchestration
 
 
 def remove_directory(path):
