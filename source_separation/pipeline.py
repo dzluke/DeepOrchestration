@@ -11,7 +11,7 @@ import json
 import ConvTasNetUniversal.separate as TDCNpp_separate
 import open_unmix.separate as open_unmix
 import demucs.separate as demucs
-import NMF
+import NMF.separate as NMF
 
 
 ############################################################################
@@ -163,7 +163,7 @@ def generate_separation_function(model_name, output_path, num_subtargets):
     elif model_name == "OpenUnmix":
         init_list = ["drums", "bass", "other", "vocals"]
     elif model_name == "NMF":
-        init_list = ["feat1", "feat2", "feat3", "feat4"]
+        init_list = ["source_1", "source_2", "source_3", "source_4"]
     else:
         raise Exception("Model name must be one of those five : TDCN, TDCN++, OpenUnmix, Demucs, NMF")
 
