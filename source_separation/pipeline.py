@@ -33,7 +33,7 @@ num_orchestrations_to_save = 0
 ########################################################
 
 CONFIG_PATH = "orch_config.txt"  # path to the Orchidea configuration file (you shouldn't have to change this!)
-TEMP_OUTPUT_PATH = "./TEMP"
+TEMP_OUTPUT_PATH = "./separations"
 RESULTS_PATH = "./results.json"
 TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'metadata.json')
 TDCNpp_nb_subtargets = 4
@@ -87,9 +87,13 @@ def separate(audio_path, output_path, model_name, num_subtargets, *args):
     """
 
     file_name = audio_path.split("/")[-1].split(".")[0]
+    # WORKAROUND (remove eventually)
+    file_name = file_name.replace("*", "_")
     output_path = output_path + "/" + model_name + "/" + file_name
 
-    if not os.path.exists(output_path):
+    if os.path.exists(output_path):
+        print("\tFound pre-separated files for", model_name)
+    else:
         if model_name == "TDCN++":
             # ConvTasNet for Universal Sound Separation
             TDCNpp_separate.separate(TDCNpp_model_path + "/baseline_model",
@@ -205,15 +209,14 @@ def set_config_parameter(config_file_path, parameter, value):
         config_file.write('\n')
 
 
-def orchestrate(target, config_file_path):
+def orchestrate(target):
     """
-    Orchestrate 'target' given the parameters defined in 'config_file_path'
+    Orchestrate 'target' using Orchidea
     :param target: sound file as numpy array, shape (len,)
-    :param config_file_path: path to Orchidea config text file
     :return: orchestrated solution as numpy array, shape (len,)
     """
     sf.write('target.wav', target, samplerate=SAMPLING_RATE)
-    cmd = ["./orchestrate", "target.wav", config_file_path]
+    cmd = ["./orchestrate", "target.wav", CONFIG_PATH]
     subprocess.run(cmd, stdout=subprocess.DEVNULL)  # this suppresses output
     solution, _ = librosa.load('connection.wav', sr=SAMPLING_RATE)
     return solution
@@ -243,6 +246,33 @@ def assign_orchestras(num_orchestras):
         orchestras[i].append(instrument)
 
     return orchestras
+
+
+def normalized_magnitude_spectrum(target, solution):
+    """
+    Given a target and solution as audio files, returns the normalized magnitude spectrum of each as np arrays
+    The normalized magnitude spectrum is the absolute value of the real FFT, normalized by dividing by its
+    largest element
+    :param target: audio, shape (len,)
+    :param solution: audio, shape (len,)
+    :return: target normalized magnitude spectrum, solution normalized magnitude spectrum
+    """
+    # if the target is longer than the solution, must trim the target
+    if target.size > solution.size:
+        target = target[:solution.size]
+        N = next_power_of_2(target.size)
+    else:
+        N = next_power_of_2(solution.size)
+
+    target_spectrum = np.abs(np.fft.rfft(target, N))
+    solution_spectrum = np.abs(np.fft.rfft(solution, N))
+
+    target_max = np.max(target_spectrum) if np.max(target_spectrum) > 0 else 1
+    solution_max = np.max(solution_spectrum) if np.max(solution_spectrum) > 0 else 1
+    target_spectrum /= (target_max)
+    solution_spectrum /= (solution_max)
+
+    return target_spectrum, solution_spectrum
 
 
 def spectral_distance(target, solution):
@@ -283,41 +313,59 @@ def spectral_distance(target, solution):
     return distance * 1000
 
 
-def frame_spectral_distance(target, solution):
+def frame_distance(custom_distance_metric):
     """
-    Calculates a weighted sum of the spectral difference between frames of target and solution
-    :param target: audio as numpy array
-    :param solution: audio as numpy array
-    :return: distance as float
+    :param distance_metric: a function that takes in two parameters: target and solution
+    :return: a function that will return the distance between target and solution
     """
-    # target and solution should be the same length
-    length = max(target.size, solution.size)
-    target = librosa.util.fix_length(target, length)
-    solution = librosa.util.fix_length(solution, length)
+    def custom_distance(target, solution):
+        """
+        Calculates a weighted sum of the distance between frames of target and solution, using the provided
+        distance metric
+        :param target: audio as numpy array
+        :param solution: audio as numpy array
+        :return: distance as float
+        """
+        # target and solution should be the same length
+        length = max(target.size, solution.size)
+        target = librosa.util.fix_length(target, length)
+        solution = librosa.util.fix_length(solution, length)
 
-    frame_length = 4000  # 4000 samples ~ 90 ms
-    target_frames = librosa.util.frame(target, frame_length, frame_length, axis=0)
-    # last_frame = target[num_frames * frame_length:]
-    # last_frame = librosa.util.fix_length(last_frame, frame_length)
-    # target_frames = np.append(target_frames, [last_frame], axis=0)
+        frame_length = 4000  # 4000 samples ~ 90 ms
+        target_frames = librosa.util.frame(target, frame_length, frame_length, axis=0)
+        solution_frames = librosa.util.frame(solution, frame_length, frame_length, axis=0)
 
-    solution_frames = librosa.util.frame(solution, frame_length, frame_length, axis=0)
-    # last_frame = solution[num_frames * frame_length:]
-    # last_frame = librosa.util.fix_length(last_frame, frame_length)
-    # solution_frames = np.append(solution_frames, [last_frame], axis=0)
+        distances = []
+        target_energy = []
+        assert target_frames.size == solution_frames.size
+        for i in range(target_frames.shape[0]):
+            distance = custom_distance_metric(target_frames[i], solution_frames[i])
+            distances.append(distance)
+            energy = np.sum(np.sqrt(np.square(target_frames[i])))
+            target_energy.append(energy)
+        distances = np.array(distances)
+        energy = np.array(target_energy)
+        weighted_sum = np.sum(distances * energy) / np.sum(energy)
+        return weighted_sum.item()
 
-    distances = []
-    target_energy = []
-    assert target_frames.size == solution_frames.size
-    for i in range(target_frames.shape[0]):
-        distance = spectral_distance(target_frames[i], solution_frames[i])
-        distances.append(distance)
-        energy = np.sum(np.sqrt(np.square(target_frames[i])))
-        target_energy.append(energy)
-    distances = np.array(distances)
-    energy = np.array(target_energy)
-    weighted_sum = np.sum(distances * energy) / np.sum(energy)
-    return weighted_sum.item()
+    return custom_distance
+
+
+def cosine_similarity(target, solution):
+    """
+    Calculates the cosine similarity between target and solution
+    cosine_similarity(X, Y) = <X, Y> / (||X||*||Y||)
+    :param target: audio, shape: (len,)
+    :param solution: audio, shape: (len,)
+    :return: scalar representing the similarity (distance)
+    """
+    target_spectrum, solution_spectrum = normalized_magnitude_spectrum(target, solution)
+    dot_product = np.dot(target_spectrum, solution_spectrum)
+    norms = np.linalg.norm(target_spectrum) * np.linalg.norm(solution_spectrum)
+    norms = norms if norms > 0 else 1
+    similarity = dot_product / norms
+    similarity = 1 - similarity
+    return similarity
 
 
 def next_power_of_2(x):
@@ -425,7 +473,7 @@ def save_best_orchestration(solutions, distances, file_path):
 
 
 if __name__ == "__main__":
-    distance_metric = frame_spectral_distance  # the distance metric to be used to evaluate solutions
+    distance_metric = frame_distance(cosine_similarity)  # the distance metric to be used to evaluate solutions
 
     num_completed = 0
     # full_target_distances is a nested list of distances of orchestrating full targets without separation
@@ -481,6 +529,7 @@ if __name__ == "__main__":
         target_name = os.path.basename(target_path)
         target_name = os.path.splitext(target_name)[0]
         print("Target:", target_name)
+        print("num completed:", num_completed)
 
         # orchestrate full (non-separated) target with Orchidea
         print("Orchestrating full target")
@@ -490,7 +539,7 @@ if __name__ == "__main__":
         distances = []
         for onset_threshold in thresholds:
             set_config_parameter(CONFIG_PATH, 'onsets_threshold', onset_threshold)
-            solution = orchestrate(target, CONFIG_PATH)
+            solution = orchestrate(target)
             full_target_solutions.append(solution)
             distance = distance_metric(target, solution)
             distances.append(distance)
@@ -523,7 +572,7 @@ if __name__ == "__main__":
                 for threshold in thresholds:
                     # orchestrate with threshold
                     set_config_parameter(CONFIG_PATH, 'onsets_threshold', threshold)
-                    solution = orchestrate(subtarget, CONFIG_PATH)
+                    solution = orchestrate(subtarget)
                     orchestrated_subtargets[model][j].append(solution)
 
         # create all possible combinations of orchestrated subtargets and calculate distance
@@ -565,7 +614,7 @@ if __name__ == "__main__":
             for threshold in thresholds:
                 # orchestrate with threshold
                 set_config_parameter(CONFIG_PATH, 'onsets_threshold', threshold)
-                solution = orchestrate(source, CONFIG_PATH)
+                solution = orchestrate(source)
                 solutions[i].append(solution)
 
         ground_truth_combinations = create_combinations(solutions)
@@ -623,10 +672,10 @@ if __name__ == "__main__":
             json.dump(results, f, indent='\t')
 
         # remove temp files created during separation
-        for model_name in separation_models:
-            path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name)
-            if os.path.exists(path):
-                remove_directory(path)
+        # for model_name in separation_models:
+        #     path = os.path.join(TEMP_OUTPUT_PATH, model_name, target_name)
+        #     if os.path.exists(path):
+        #         remove_directory(path)
 
     # remove files created during pipeline
     for file in ['target.wav', 'segments.txt']:
