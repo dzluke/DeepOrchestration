@@ -12,8 +12,9 @@
 \usepackage{hyperref}
 \usepackage[figure,table]{hypcap}% hyperref companion
 \usepackage{multirow}
-
 \usepackage{amssymb}
+
+\renewcommand{\baselinestretch}{0.96} % use the smallest value to make our paper 6 pages long (including references!)
 
 % Copyright notices.
 % ------------------
@@ -110,7 +111,13 @@ computer-assisted orchestration, sound source separation, Orchidea
 \end{keywords}
 %
 \section{Introduction}\label{sec:introduction}
-  Computer-assisted composition is a field that focuses on the creation of computational tools to aid in the musical composition process \cite{FerVic2013, Ari2005}. Within this field, target-based computer-assisted musical orchestration is an example of how musical creativity can be supported by tools such as machine learning. Orchestration has been traditionally taught in an intuitive and non-formalized way, and computer-assisted orchestration seeks to help composers by accelerating certain creative processes. In particular, target-based computer-assisted orchestration helps composers explore new timbral possibilities by combining instrumental samples in such a way as to mimic the timbre of a given target sound. Formally, it is the process of creating an orchestral score that best matches an arbitrary target sound given a similarity metric and constraints~\cite{Maresz2003}. Static orchestration is a type of orchestration that considers the target as a single vector of timbral features and creates only a single onset of note(s) as the solution, no matter if the target contains multiple onsets of sounds. In our experiments, we only perform static orchestrations.
+  Computer-assisted composition is a field that focuses on the creation of computational tools to aid in the musical composition process \cite{FerVic2013, Ari2005}. Within this field, target-based computer-assisted musical orchestration is an example of how musical creativity can be supported by tools such as machine learning.
+  
+	Orchestration is hard to define, however one could say that orchestration is the set of musical writing techniques that focus on timbre, or \textit{tone color} of the sound. A simplistic  definition of musical orchestration would be to say that it consists of the distribution of the different musical voices of a piece to the instruments of the orchestra. Orchestration has been traditionally taught in an intuitive and non-formalized way, and computer-assisted orchestration seeks to help composers by accelerating certain creative processes.
+	
+	 Among the different approaches and techniques of computer-assisted orchestration, one of them, \textit{target-based orchestration}~\cite{Maresz2003}. Target-based computer-assisted orchestration helps composers explore new timbral possibilities by combining instrumental samples in such a way as to mimic the timbre of a given target sound. This target corresponds to an audio extract, of the composer's choice, which can be musical or not. Formally, it is the process of creating an orchestral score that best matches an arbitrary target sound given a similarity metric and constraints.
+
+  Static orchestration is a type of orchestration that considers the target as a single vector of timbral features and creates only a single onset of note(s) as the solution, no matter if the target contains multiple onsets of sounds. In our experiments, we only perform static orchestrations.
   
   Orchidea is a framework and set of tools that is currently considered the state-of-the-art for computer-assisted orchestration. It embeds the target in a feature space and uses a jointly-optimized heuristic and constraint solver to find a combination of samples that best match the target~\cite{Cella18, Cella2020}. All of our orchestrations are done using Orchidea's command line tools for batch processing, which is available for download at \url{http://www.orch-idea.org}
 
@@ -118,7 +125,7 @@ computer-assisted orchestration, sound source separation, Orchidea
   
   Using source separation techniques as a pre-processing step has been shown to improve results in several music processing tasks. Source separation can be used to remove part of the spectrum in order to enhance the clarity of the features of interest for the task at hand. For instance, in the task of automatic chord estimation from audio, some authors have chosen to remove part of the spectrum related to percussive sounds to improve chord accuracy \cite{Reed_al2009}. Similarly some authors have investigated how beat tracking can be improved by using source separation as a pre-processing step for difficult songs with highly predominant expressive vocals \cite{ZapGom2012}. Source separation can also be applied to separate different components of the signal and work on them separately to reduce the complexity of the task. For instance, in the context of tempo detection~\cite{ChoRae2009}, the authors decompose the signal into sources to reduce rhythmic complexity, under the idea that some layers may be more rhythmically regular than the overall mix. Another example can be found in~\cite{GomAbecan2018} where harmonic/percussive and solo/accompaniment source separation techniques are investigated as a pre-processing step to improve predominant instrument recognition in jazz music.
     
-%  Source separation is an important addition to improve orchestration as it allows for the orchestration of more complex sounds in a way that makes sense in an orchestral context. Orchestral music often uses multiple layers, so by separating the layers of a target and individually orchestrating them, the resulting orchestration may improve. 
+  We think source separation could be an important addition to improve orchestration as it allows for the orchestration of more complex sounds in a way that makes sense in an orchestral context. Orchestral music often uses multiple layers, so by separating the layers of a target and individually orchestrating them, the resulting orchestration may improve. 
     
   For example, consider a target that has a continuous drone sound throughout and a melody playing above this drone. Without source separation, Orchidea would detect each note of the melody as a new onset and cut the target in time at each new note. However, this segmentation in time would also effect the drone, cutting it in time and forcing it to have a new onset each time the melody changes notes. The resulting orchestration would have multiple onsets for the drone, even though only one onset is needed at the beginning of the drone. When source separation is applied to this target, the drone and melody would be orchestrated separately. Therefore, the drone could be orchestrated by a single onset that lasts for the duration of the drone. At the same time, the melody could have as many new onsets as needed without affecting the drone. The orchestration would be greatly improved by removing the unnecessary onsets in the orchestration of the drone.
     
@@ -130,11 +137,13 @@ computer-assisted orchestration, sound source separation, Orchidea
   
   We compare the effectiveness of different source separation methods for the task of orchestration by applying the separation methods to various targets, orchestrating the separated output of the method, and finally comparing this to the orchestration of the target if no separation was performed (see Fig. \ref{fig:full_diagram}). Following the previous example, consider a target sound that is a combination of a low droning sound and high-pitched whistle. With separation, these two sounds would be disentangled into two separate sub-targets and each would be individually orchestrated. The separated orchestrations would then be combined to create the solution. This would then be compared to the orchestration if no separation had been performed.
   
-  \begin{figure}[t]
+  \begin{figure*}[t]
+%  \begin{figure}[t]
     \centering
-      \includegraphics[width=\columnwidth]{figures/diagram.png}
+      \includegraphics[width=0.7\textwidth]{figures/diagram.png}
       \caption{Diagram comparing the process of orchestration with and without separation. At the top, the full target orchestration is created simply by orchestrating the target. At the bottom, the separation process is performed, and the resulting sub-targets are individually orchestrated with subsets of the orchestra before being recombined to obtain the full orchestration.}\label{fig:full_diagram}
-  \end{figure}
+%  \end{figure}  
+  \end{figure*}
 
 \section{Experiments}\label{sec:experiments}
   
@@ -170,7 +179,7 @@ computer-assisted orchestration, sound source separation, Orchidea
       TDCN++ presents the interesting property of having almost the same architecture as TDCN but trained with generic sounds. Thus, it should naturally be better suited for our task, and the comparison between those two models in particular can give good insights about the impact of the data used for training.
   
     \subsection{Testing}\label{subsec:testing}
-    In order to compare the effectiveness of the separation methods, a full target orchestration and a ground truth orchestration are done for each target. The \textbf{full target orchestration} is the orchestration of the target without any separation performed. The \textbf{ground truth orchestration} takes the four sources that make up the target and orchestrates each one separately, then combines the orchestrations. This ground truth represents the orchestration that could take place if the separation method was perfect and separated a target exactly into its constituent sources. 
+    In order to compare the effectiveness of the separation methods, we compare them with \textit{a full target orchestration}. The \textbf{full target orchestration} is the orchestration of the target without any separation performed.
     
     The procedure we use for testing is as follows:
     \begin{enumerate}
@@ -179,8 +188,7 @@ computer-assisted orchestration, sound source separation, Orchidea
       \item Each separation method is performed on the target, each splitting the target into four sub-targets. 
       \item The full orchestra is randomly split into four equal sized subsets, each containing 7 to 8 instruments.
       \item For each method, the four sub-targets are separately orchestrated, each using a different subset of the orchestra, and then each orchestration is combined to play simultaneously. This creates the \textbf{separated orchestrations}.
-      \item The ground truth orchestration is created by orchestrating the four sources, using the same orchestra subsets from step 4, and then combined to play simultaneously.
-      \item The distances between target and orchestration are calculated for the full target orchestration, the separated orchestration, and the ground truth orchestration. 
+      \item The distances between target and orchestration are calculated for the full target orchestration and the separated orchestration.
     \end{enumerate} 
 
     \begin{figure}[t]
@@ -191,15 +199,15 @@ computer-assisted orchestration, sound source separation, Orchidea
     
     The orchestrations performed are static orchestrations, meaning a single onset of notes is created for each target, no matter if the target itself has multiple onsets. The OrchideaSOL database of orchestral samples is used with Orchidea to create the orchestrations~\cite{Cella2020c}. This database contains recordings of extended playing techniques, which better fits the often noisy or inharmonic nature of our targets. The full orchestra, of which non-overlapping subsets were selected to orchestrate the subtargets, contains the following instruments: 8 violins, 4 violas, 3 cellos, 1 bass, 2 oboes, 2 flutes, 2 clarinets in B$\flat$, 2 bassoons, 2 trumpets, 2 trombones, and 2 French horns.
     
-    \begin{figure}[t]
+    \begin{figure}
     \centering
       \includegraphics[width=0.7\columnwidth]{figures/orch.jpg}
-      \caption{Example waveforms showing onsets of the four sources in the target, and possible onsets in the full, separated, and ground truth orchestrations. In this example, the separation method could not distinguish between sources 2 and 3 and identified them as a single sub-target. Therefore, the separated orchestration has only 3 onsets, one of them being an orchestration that combines sources 2 and 3. Note that this is a simplified representation, in the actual targets sources overlap in time and are not as discrete as this diagram shows.}\label{fig:orchestrations}
+      \caption{Example waveforms showing onsets of the four sources in the target, and possible onsets in the full and separated orchestrations. In this example, the separation method could not distinguish between sources 2 and 3 and identified them as a single sub-target. Therefore, the separated orchestration has only 3 onsets, one of them being an orchestration that combines sources 2 and 3. Note that this is a simplified representation, in the actual targets sources overlap in time and are not as discrete as this diagram shows.}\label{fig:orchestrations}
     \end{figure}    
     
-    As described in Section \ref{subsec:data}, each target is comprised of four sources that are offset in time to begin playing at different times. Figure~\ref{fig:orchestrations} illustrates the effect this offset has on the full target, separated, and ground truth orchestrations. In the full target orchestration, all onsets occur at the beginning of the orchestration. Since there is no knowledge of different sources, Orchidea cannot place the different orchestrations at the appropriate offsets. 
+    As described in Section \ref{subsec:data}, each target is comprised of four sources that are offset in time to begin playing at different times. Figure~\ref{fig:orchestrations} illustrates the effect this offset has on the full target and separated orchestrations. In the full target orchestration, all onsets occur at the beginning of the orchestration. Since there is no knowledge of different sources, Orchidea cannot place the different orchestrations at the appropriate offsets. 
     
-    For the separated orchestrations, the onsets of the sub-target orchestrations can be placed at the correct offset if the separation method has correctly separated out the sources. In the ground truth orchestration, the sources are manually offset, leading to the ground truth having each source orchestration beginning at the correct time. For this reason, despite only performing static orchestrations, the resulting separated and ground truth orchestrations are offset in time compared to the full target orchestration.
+    For the separated orchestrations, the onsets of the sub-target orchestrations can be placed at the correct offset if the separation method has correctly separated out the sources. For this reason, despite only performing static orchestrations, the resulting separated orchestrations are offset in time compared to the full target orchestration.
     
     \subsection{Evaluation}
     We compare the effectiveness of different separation methods by comparing how well they work for orchestration. The output of a method is orchestrated, and these orchestrations are compared. A quantitative evaluation is performed through the use of a distance metric that measures the spectral distance between target and solution. 
@@ -220,7 +228,7 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 %\end{equation}
   
   
-  \begin{table}[t]
+  \begin{table}
     \begin{center}
       \begin{tabular}{|c|c|}
         \hline
@@ -232,17 +240,15 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
         \hline
         TDCN & 26.44\\
         \hline
-        NMF & 22.44 \\
+        \textbf{NMF} & \textbf{22.44} \\
         \hline
         TDCN++ & 24.38 \\
         \hline
         Full target orchestration & 24.96 \\
         \hline
-        Ground truth orchestration & 24.19 \\
-        \hline
       \end{tabular}
     \end{center}
-    \caption{Average across 300 targets showing the distance between target and orchestration for various methods. For Demucs, Open-Unmix, TDCN, NMF, and TDCN++, the value shown is the average distance between the target sound and the ``separated orchestration'' created from the output of the given separation method (see Sec. \ref{subsec:testing}). Similarly, ``Full target orchestration'' and ``Ground truth orchestration'', as defined in Sec. \ref{subsec:testing}, are the average values between target and orchestrated solution. Lower values are better.}
+    \caption{Average across 300 targets showing the distance between target and orchestration for various methods. For Demucs, Open-Unmix, TDCN, NMF, and TDCN++, the value shown is the average distance between the target sound and the ``separated orchestration'' created from the output of the given separation method (see Sec. \ref{subsec:testing}). Similarly, ``Full target orchestration'', as defined in Sec. \ref{subsec:testing}, is the average values between target and orchestrated solution. Lower values are better.}
     \label{tab:distances}
   \end{table}
   
@@ -276,14 +282,14 @@ where $\delta_{k1} = 1 \text{  if  } x_k \ge \tilde{x}_k, 0 \text{  otherwise}$;
 % \end{figure}
   
     \subsection{Results}
-    The average distances for full target, separated, and ground truth orchestrations are displayed in Table \ref{tab:distances}. These results are the average distance between target and orchestration for 300 different targets. We found that NMF performed the best out of all separation methods, and even outperformed the ground truth orchestrations, on average. TDCN++, Open-Unmix, and NMF performed better than the full target orchestrations, meaning that separating targets using these methods leads to a better orchestration than if no separation is applied.
+    The average distances for full target and separated orchestrations are displayed in Table \ref{tab:distances}. These results are the average distance between target and orchestration for 300 different targets. We found that NMF performed the best out of all separation methods. TDCN++, Open-Unmix, and NMF performed better than the full target orchestrations, meaning that separating targets using these methods leads to a better orchestration than if no separation is applied. However, Demucs and TDCN performed worse.
   
   \section{Discussion}\label{sec:discussion}
-  In this paper, we addressed the problem of using source separation as a pre-processing step for computer-assisted orchestration. The results show that performing source separation followed by a static orchestration of each individual sub-target improved the spectral distance between the original target and its orchestrated version in three out of five of the methods tested. This shows that source separation is a useful pre-processing stage for computer-assisted orchestration. 
+  In this paper, we addressed the problem of using source separation as a pre-processing step for computer-assisted orchestration. The results show that performing source separation followed by a static orchestration of each individual sub-target improved the spectral distance between the original target and its orchestrated version in three out of five of the methods tested. We believe this shows that source separation is a useful pre-processing stage for computer-assisted orchestration. We also conducted a qualitative assessment of the orchestrations by acoustic inspection and found that the separated orchestrations are better from a musical standpoint.
   
-  Furthermore, the one unsupervised method we tested, NMF, outperformed all the supervised methods. This suggests that methods like NMF can still be useful for specific problems when available data is limited. It is logical that unsupervised methods will perform well for problems in which there is limited data, as they require less data than supervised methods. NMF also outperformed the ground truth orchestrations, which could be due to the relative simplicity of NMF's output subtargets making subsequent orchestration easier for Orchidea, but more experimentation would need to be done in order to confirm this. It is important to notice that for the supervised methods, we used pre-trained versions of the neural models. All of these models, except for TDCN++, were trained on musical data. However, we tested them on a wide range of targets, many of which were not strictly musical. This could explain why Demucs, Open-Unmix, and TDCN performed worse than NMF, and why TDCN++, which was trained on arbitrary sounds, outperformed the other supervised methods. Therefore, we may infer from our results that models trained on generic sounds generate a better separation for orchestration when compared to models trained only on musical sounds.
+  Furthermore, the one unsupervised method we tested, NMF, outperformed all the supervised methods. This suggests that methods like NMF can still be useful for specific problems when available data is limited. It is logical that unsupervised methods will perform well for problems in which there is limited data, as they require less data than supervised methods. It is important to notice that for the supervised methods, we used pre-trained versions of the neural models. All of these models, except for TDCN++, were trained on musical data. However, we tested them on a wide range of targets, many of which were not strictly musical. This could explain why Demucs, Open-Unmix, and TDCN performed worse than NMF, and why TDCN++, which was trained on arbitrary sounds, outperformed the other supervised methods. Therefore, we may infer from our results that models trained on generic sounds generate a better separation for orchestration when compared to models trained only on musical sounds.
   
-  Since unsupervised methods perform well, it is reasonable to think that supervised methods trained on a dataset of arbitrary sounds could yield better overall performance for orchestration.
+  Since unsupervised methods perform well, it is reasonable to think that supervised methods trained on an appropriate dataset of arbitrary sounds could yield better overall performance for orchestration.
   
     \subsection{Future work}\label{sec:futurework}  
     As we stated previously, we believe that one of the reasons the supervised methods did not perform as well is because of the data they were trained on. Therefore, a natural next step is to train these models with sounds that are more appropriate for computer-assisted orchestration.
