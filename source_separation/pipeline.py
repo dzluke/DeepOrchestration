@@ -35,7 +35,7 @@ num_orchestrations_to_save = 0
 
 ALL_ORCHESTRATIONS_PATH = "./orchestrations"  # place to save every orchestration performed
 CONFIG_PATH = "orch_config.txt"  # path to the Orchidea configuration file (you shouldn't have to change this!)
-SEPARATIONS_PATH = "/volumes/Untitled/DeepOrchestration/MLSP21/separations"
+SEPARATIONS_PATH = "/volumes/Untitled/DeepOrchestration/MLSP21/separated"
 RESULTS_PATH = "./results.json"
 TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'metadata.json')
 TDCNpp_nb_subtargets = 4
@@ -494,6 +494,12 @@ def orchestrate_with_threshold(target, save_path):
     return solutions
 
 
+def clean_orch_config():
+    copyfile('orch_config_template.txt', CONFIG_PATH)
+    set_config_parameter(CONFIG_PATH, 'sound_paths', SOL_PATH)
+    set_config_parameter(CONFIG_PATH, 'db_files', ANALYSIS_DB_PATH)
+
+
 if __name__ == "__main__":
     distance_metric = frame_distance(cosine_similarity)  # the distance metric to be used to evaluate solutions
 
@@ -536,13 +542,8 @@ if __name__ == "__main__":
 
     targets = librosa.util.find_files(TARGETS_PATH)
     print("Database contains {} targets".format(len(targets)))
-    copyfile('orch_config_template.txt', CONFIG_PATH)
 
-    set_config_parameter(CONFIG_PATH, 'sound_paths', SOL_PATH)
-    set_config_parameter(CONFIG_PATH, 'db_files', ANALYSIS_DB_PATH)
-
-    if num_orchestrations_to_save > 0:
-        if not os.path.exists(SAVED_ORCHESTRATIONS_PATH):
+    if num_orchestrations_to_save > 0 and not os.path.exists(SAVED_ORCHESTRATIONS_PATH):
             os.mkdir(SAVED_ORCHESTRATIONS_PATH)
 
     while num_completed < len(targets):
@@ -554,6 +555,8 @@ if __name__ == "__main__":
 
         print("Target:", target_name)
         print("num completed:", num_completed)
+
+        clean_orch_config()
 
         # orchestrate full (non-separated) target with Orchidea
         print("Orchestrating full target")
