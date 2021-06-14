@@ -88,8 +88,8 @@ if __name__ == "__main__":
             threshold_distance = [x[i] for x in full_target_distances]
             avg_threshold_distance = mean(threshold_distance)
             print("Average full target distance for threshold {}: {}".format(thresholds[i], avg_threshold_distance))
-
-        threshold_indices = [0, 40, 80]
+        if len(thresholds) == 3:
+            threshold_indices = [0, 40, 80]
         print("Average distances across thresholds per method")
         for model, distances in separated_target_distances.items():
             print("\t" + model)
