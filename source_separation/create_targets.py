@@ -5,16 +5,18 @@ import json
 import os
 import librosa
 import soundfile as sf
-from itertools import product
 
-from pipeline import NUM_SUBTARGETS, SAMPLE_DATABASE_PATH, TARGETS_PATH, TARGET_METADATA_PATH, SAMPLING_RATE, clear_directory, combine_with_offset
+from pipeline import NUM_SUBTARGETS, SAMPLE_DATABASE_PATH, TARGETS_PATH, \
+    TARGET_METADATA_PATH, SAMPLING_RATE, clear_directory, combine_with_offset
 
 NUM_TARGETS = 300  # number of targets to create
+
 
 def create_targets(paths):
     """
     All samples in paths[i] are combined into a single target and written as .wav's to TARGETS_PATH
-    :param paths: A nested list of paths to samples, ex:[['Beethoven_chord1.wav', 'drops.wav], ['gong.wav', 'bell.wav']]
+    :param paths: A nested list of paths to samples, ex:
+    [['Beethoven_chord1.wav', 'drops.wav], ['gong.wav', 'bell.wav']]
     :return:
     """
     targets = []
@@ -49,7 +51,7 @@ def create_targets(paths):
         combination = combine_with_offset(samples)
         targets.append(combination)
         name = [sample_metadata['name'] for sample_metadata in samples]
-        name = '*'.join(sorted(name))
+        name = '+'.join(sorted(name))
         for sample in samples:
             sample.pop('audio')  # we don't need to store the audio anymore
         metadata[name] = samples
