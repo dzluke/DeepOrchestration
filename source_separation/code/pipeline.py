@@ -1,29 +1,26 @@
-import os
-import subprocess
 import itertools
-import random
+import json
+import os
+from pathlib import Path
 from shutil import copyfile
+
+import librosa
 import numpy as np
 import soundfile as sf
-import librosa
-import json
-from pathlib import Path
 
-import ConvTasNetUniversal.separate as TDCNpp_separate
-import open_unmix.separate as open_unmix
-import demucs.separate as demucs
-import NMF.separate as NMF
+from orchestration import (assign_orchestras, clean_orch_config,
+                           orchestrate_with_threshold)
+from utils import next_power_of_2, set_config_parameter
 
 
 ############################################################################
 # To run this file, fill in the following path variables then run the file #
 ############################################################################
-
 SOL_PATH = "../OrchideaSOL2020"  # path to the SOL database
 ANALYSIS_DB_PATH = "../OrchideaSOL2020.spectrum.db"  # path to the analysis file of SOL, ex: TinySOL.spectrum.db
 TARGETS_PATH = "./targets"  # path to targets to be orchestrated
 SAMPLE_DATABASE_PATH = "./subtargets"  # path to samples that will be combined to create targets
-TDCNpp_model_path = "./trained_TDCNNpp"  # path to pretrained TDCN++ model
+TASNET_UNIVERSAL_MODEL_PATH = "./trained_TDCNNpp"  # path to pretrained TDCN++ model
 
 # If you want to save orchestrations, set the following variables
 SAVED_ORCHESTRATIONS_PATH = "./saved_orchestrations"
@@ -43,148 +40,15 @@ TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'metadata.json')
 TDCNpp_nb_subtargets = 4
 SAMPLING_RATE = 44100
 NUM_SUBTARGETS = 4
-full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
-                  'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
+FULL_ORCHESTRA = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr',
+                  'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn',
+                  'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc',
+                  'Cb']
 
 separation_models = ["TDCN++", "TDCN", "Demucs", "OpenUnmix", "NMF"]
 # separation_models = ["TDCN++", "OpenUnmix", "NMF"]
 
 thresholds = [1]  # onset thresholds for dynamic orchestration
-
-
-
-def remove_directory(path):
-    for file in os.listdir(path):
-        full_path = os.path.join(path, file)
-        if os.path.isdir(full_path):
-            remove_directory(full_path)
-        else:
-            os.remove(full_path)
-    if os.path.isdir(path):
-        os.rmdir(path)
-
-
-def clear_directory(path):
-    for file in os.listdir(path):
-        full_path = os.path.join(path, file)
-        if os.path.isdir(full_path):
-            clear_directory(full_path)
-        else:
-            os.remove(full_path)
-
-
-def separate(audio_path, output_path, model_name, num_subtargets, *args):
-    """
-    Separate the audio into the given
-    :param audio_path: path to audio input (wav file)
-    :param model_name: name of the model ('demucs' or...)
-    :param num_subtargets: the number of subtargets to estimate from the mix
-    :param *args: any relevant additional argument (for example combinations
-                    of sub targets to match NUM_SUBTARGETS)
-
-    Returns array containing sub_targets as numpy arrays in float32, and the sample rate of the output
-    """
-
-    file_name = audio_path.split("/")[-1].split(".")[0]
-    # WORKAROUND (remove eventually)
-    # this is a workaround because when the separations were performed, the target names were incorrectly concatenated
-    # instead of being joined with a "*", they were joined with a "_"
-    file_name = file_name.replace("*", "_")
-
-    output_path = output_path + "/" + model_name + "/" + file_name
-
-    if os.path.exists(output_path):
-        print("\tFound pre-separated files for", model_name)
-    else:
-        if model_name == "TDCN++":
-            # ConvTasNet for Universal Sound Separation
-            TDCNpp_separate.separate(TDCNpp_model_path + "/baseline_model",
-                                     TDCNpp_model_path + "/baseline_inference.meta",
-                                     audio_path,
-                                     output_path)
-        elif model_name == "TDCN":
-            demucs.separate(audio_path, out=output_path, name='tasnet')
-        elif model_name == "Demucs":
-            # We use the quantized demucs model, which is much smaller and
-            # should have the same quality.
-            demucs.separate(audio_path, out=output_path,
-                            name='demucs_quantized')
-        elif model_name == "OpenUnmix":
-            open_unmix.separate(audio_path, outdir=output_path)
-        elif model_name == "NMF":
-            NMF.separate(audio_path, output_path)
-        else:
-            raise Exception("Model name must be one of: TDCN, TDCN++, OpenUnmix, Demucs, NMF")
-
-    # Read sub targets and output them in numpy array format
-    sub_targets = []
-    sr = None
-
-    if model_name in separation_models:
-        if num_subtargets != len(args[0]):
-            raise Exception("For {}, it is required to specify the way to combine the sub targets to generate NUM_SUBTARGETS sub targets. Must be of the form [[0, 3], [1, 2]]".format(model_name))
-        for l in args[0]:
-            # Combine sub_targets generated according to the list in *args
-            a = None
-            for s in l:
-                t,sr = librosa.load(output_path + "/{}.wav".format(s), sr=SAMPLING_RATE)
-                if a is None:
-                    a = t
-                else:
-                    a += t
-            sub_targets.append(a)
-    else:
-        raise Exception("Unknown model name")
-
-    if sr == None:
-        raise Exception("No sample rate for output detected")
-
-    return sub_targets, sr
-
-def gen_perm_group(l, n):
-    if n > 0 and len(l) == 0:
-        return None
-    elif n == 1:
-        return [[l]]
-    t = gen_perm_group(l[1:], n-1)
-    r = []
-    if t != None:
-        r = [[[l[0]]] + x for x in t]
-    for i in range(1,len(l)):
-        for c in itertools.combinations(l[1:], i):
-            t = gen_perm_group([x for x in l[1:] if x not in c], n-1)
-            if t != None:
-                r.extend([[[l[0]] + list(c)] + x for x in t])
-    return r
-
-
-def generate_separation_function(model_name, output_path, num_subtargets):
-    l = []
-    if model_name == "TDCN++":
-        init_list = ["sub_target{}".format(x) for x in range(TDCNpp_nb_subtargets)]
-    elif model_name == "TDCN":
-        init_list = ["drums", "bass", "other", "vocals"]
-    elif model_name == "Demucs":
-        init_list = ["drums", "bass", "other", "vocals"]
-    elif model_name == "OpenUnmix":
-        init_list = ["drums", "bass", "other", "vocals"]
-    elif model_name == "NMF":
-        init_list = ["source_0", "source_1", "source_2", "source_3"]
-    else:
-        raise Exception("Model name must be one of those five : TDCN, TDCN++, OpenUnmix, Demucs, NMF")
-
-    for perm in gen_perm_group(init_list, num_subtargets):
-        l.append(lambda audio_path, num_subtargets:
-            separate(audio_path, output_path, model_name, num_subtargets, perm))
-    return l
-
-
-def generate_all_separation_functions(output_path):
-    functions = {}
-    for model in separation_models:
-        functions[model] = generate_separation_function(model, output_path,
-                                                        NUM_SUBTARGETS)[0]
-    return functions
 
 
 # a dict of functions where each function takes two parameters
@@ -194,62 +58,7 @@ separation_functions = generate_all_separation_functions(SEPARATIONS_PATH)
 num_separation_functions = len(separation_functions)
 
 
-def set_config_parameter(config_file_path, parameter, value):
-    """
-    Set the given 'parameter' to 'value' in the config file at 'config_file_path'
-    The config file *must* end in a newline
-    :param config_file_path: path to the Orchidea config file
-    :param parameter: the parameter to be set
-    :param value: the value to set the parameter to
-    :return: None
-    """
-    with open(config_file_path, 'a') as config_file:  # 'a' means append mode
-        config_file.write(parameter + " ")
-        if parameter == 'orchestra':
-            value = " ".join(value)  # turns a list of instruments into a string of instruments
-        config_file.write(str(value))
-        config_file.write('\n')
-
-
-def orchestrate(target):
-    """
-    Orchestrate 'target' using Orchidea
-    :param target: sound file as numpy array, shape (len,)
-    :return: orchestrated solution as numpy array, shape (len,)
-    """
-    sf.write('target.wav', target, samplerate=SAMPLING_RATE)
-    cmd = ["./orchestrate", "target.wav", CONFIG_PATH]
-    subprocess.run(cmd, stdout=subprocess.DEVNULL)  # this suppresses output
-    solution, _ = librosa.load('connection.wav', sr=SAMPLING_RATE)
-    return solution
-
-
-def assign_orchestras(num_orchestras):
-    """
-    Randomly divide the full orchestra into 'num_orchestras' sub-orchestras
-    :param num_orchestras: the number of orchestras you want the full orchestra divided into
-    :return orchestras: a nested list of orchestras where len(orchestras) == num_orchestras
-    """
-    orchestras = []  # nested list of orchestras, orchestras[i] is the orchestra for segment i
-    available_instruments = full_orchestra.copy()
-    orchestra_size = len(available_instruments) // num_orchestras
-    extra_instruments = len(available_instruments) % num_orchestras
-
-    random.shuffle(available_instruments)
-
-    for i in range(num_orchestras):
-        orchestra = available_instruments[:orchestra_size]
-        for instrument in orchestra:
-            available_instruments.remove(instrument)
-        orchestras.append(orchestra)
-
-    for i in random.sample(range(num_orchestras), extra_instruments):
-        instrument = available_instruments.pop()
-        orchestras[i].append(instrument)
-
-    return orchestras
-
-
+#%%
 def normalized_magnitude_spectrum(target, solution):
     """
     Given a target and solution as audio files, returns the normalized magnitude spectrum of each as np arrays
@@ -322,8 +131,8 @@ def frame_distance(custom_distance_metric):
     """
     def custom_distance(target, solution):
         """
-        Calculates a weighted sum of the distance between frames of target and solution, using the provided
-        distance metric
+        Calculates a weighted sum of the distance between frames of target and
+        solution, using the provided distance metric.
         :param target: audio as numpy array
         :param solution: audio as numpy array
         :return: distance as float
@@ -370,10 +179,6 @@ def cosine_similarity(target, solution):
     return similarity
 
 
-def next_power_of_2(x):
-    return 1 if x == 0 else 2**(x - 1).bit_length()
-
-
 def create_combinations(samples):
     """
     given a nested list of samples, create combinations.
@@ -390,76 +195,6 @@ def create_combinations(samples):
     return list(combinations)
 
 
-def combine(samples):
-    """
-    combine all samples in 'samples' to play simultaneously
-    :param samples: list of audio signals where each element is a numpy array
-    :return: single audio signal as numpy array, shape (len,) where len is the length of the longest sample in 'samples'
-    """
-    max_length = max(samples, key=lambda x: x.size)
-    max_length = max_length.size
-    samples = sorted(samples, key=lambda x: x.size, reverse=True)
-    num_samples = len(samples)
-    samples = [librosa.util.fix_length(y, max_length) for y in samples]
-    combination = np.zeros(max_length)
-    for sample in samples:
-        combination += sample
-    combination /= num_samples  # normalize by number of samples
-    return combination
-
-
-def combine_with_offset(metadata):
-    """
-    Combine samples with offsets/padding given in metadata
-    :param metadata: a list of dictionaries with the following key/values:
-                            audio: audio as np array
-                            name: name as string
-                            padding: padding as list of 2 integers
-    :return: single audio signal as numpy array representing the combination of samples
-    """
-    samples = [np.pad(sample['audio'], sample['padding']) for sample in metadata]
-    return combine(samples)
-
-
-def mean(lst):
-    return sum(lst) / len(lst)
-
-
-def get_fuss_subset(num_sources):
-    """
-    :param num_sources: Only targets made with 'num_sources' sources will be returned
-    :return: A list of paths to a subset of the FUSS database where each target
-    has exactly NUM_SUBTARGETS sources
-    """
-    subset = []  # each element is a path to a FUSS database sample
-    for file in os.listdir(TARGETS_PATH):
-        directory = os.path.join(TARGETS_PATH, file)
-        if os.path.isdir(directory):
-            dir_len = len([_ for _ in os.listdir(directory)])
-            if dir_len == num_sources:
-                file_name = file.split("_")[0] + ".wav"
-                full_path = os.path.join(TARGETS_PATH, file_name)
-                subset.append(full_path)
-    subset.sort()  # to keep consistency across different computers
-    return subset
-
-
-def get_fuss_sources(target_path):
-    """
-    :param target_path: Path to target
-    :return: List of the sources as audio files that created the target
-    """
-    parent, name = os.path.split(target_path)
-    name = name[:-4]  # remove '.wav' from the name
-    sources_folder = os.path.join(parent, name + '_sources')
-    sources = []
-    for file in os.listdir(sources_folder):
-        file = os.path.join(sources_folder, file)
-        audio, _ = librosa.load(file, sr=SAMPLING_RATE)
-        sources.append(audio)
-    return sources
-
-
 def save_best_orchestration(solutions, distances, file_path):
     """
     Save the solution in 'solutions' with shortest distance in 'distances'. Writes a wav to 'file_path'
@@ -472,38 +207,6 @@ def save_best_orchestration(solutions, distances, file_path):
     index = distances.index(min(distances))
     best_solution = solutions[index]
     sf.write(file_path, best_solution, SAMPLING_RATE)
-
-
-def orchestrate_with_threshold(target, save_path):
-    """
-    Orchestrates 'target' with multiple thresholds, stores them on disk, and returns them
-    If the orchestrations already exist on desk, they are not redone but simply loaded and returned
-    :param target: audio
-    :param save_path: Path object to save the orchestrations and check for existing orchestrations
-    :return: list of solutions
-    """
-    solutions = []
-    save_path.mkdir(parents=True, exist_ok=True)
-    for onset_threshold in thresholds:
-        save_name = "threshold" + str(onset_threshold)
-        save_name = save_name.replace(".", "_") + ".wav"
-        save_path = save_path / save_name
-        if os.path.exists(save_path):
-            # print("Found orchestration on disk")
-            solution, _ = librosa.load(save_path, sr=SAMPLING_RATE)
-        else:
-            set_config_parameter(CONFIG_PATH, 'onsets_threshold', onset_threshold)
-            solution = orchestrate(target)
-            sf.write(save_path, solution, samplerate=SAMPLING_RATE)
-        save_path = save_path.parent
-        solutions.append(solution)
-    return solutions
-
-
-def clean_orch_config():
-    copyfile('orch_config_template.txt', CONFIG_PATH)
-    set_config_parameter(CONFIG_PATH, 'sound_paths', SOL_PATH)
-    set_config_parameter(CONFIG_PATH, 'db_files', ANALYSIS_DB_PATH)
 
 
 if __name__ == "__main__":
@@ -562,12 +265,12 @@ if __name__ == "__main__":
         print("Target:", target_name)
         print("num completed:", num_completed)
 
-        clean_orch_config()
+        clean_orch_config(CONFIG_PATH, SOL_PATH, ANALYSIS_DB_PATH)
 
         # orchestrate full (non-separated) target with Orchidea
         print("Orchestrating full target")
         full_target_distance = 0
-        set_config_parameter(CONFIG_PATH, 'orchestra', full_orchestra)
+        set_config_parameter(CONFIG_PATH, 'orchestra', FULL_ORCHESTRA)
         full_target_solutions = []
         distances = []
         save_path = save_path / "full_orchestration"
@@ -590,7 +293,7 @@ if __name__ == "__main__":
 
         # orchestrate subtargets with different segmentation thresholds
         print("Orchestrating subtargets with different thresholds")
-        orchestras = assign_orchestras(NUM_SUBTARGETS)
+        orchestras = assign_orchestras(NUM_SUBTARGETS, FULL_ORCHESTRA)
         # orchestrated_subtargets[model][j][k] is
         # the jth subtarget, separated via 'model', orchestrated with threshold k
         orchestrated_subtargets = {}

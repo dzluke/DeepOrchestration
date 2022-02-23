@@ -1,17 +1,22 @@
-import argparse
 import csv
 import json
 import os
+from argparse import ArgumentParser
+from configparser import ConfigParser
 
 import librosa
 import mir_eval
 import museval
 import numpy as np
 
-from pipeline import SAMPLING_RATE, separation_models
+# Get configuration
+config = ConfigParser()
+config.read("config.ini")
 
 
 def main(metadata_path, subtargets_path, separated_path, outdir=None):
+    separation_models = config['separation']['methods'].split(", ")
+    sample_rate = config['audio'].getint('sample_rate')
 
     # Get metadata
     with open(metadata_path, 'r') as f:
@@ -32,7 +37,7 @@ def main(metadata_path, subtargets_path, separated_path, outdir=None):
         for data in target_metadata:
             audio, _ = librosa.load(os.path.join(subtargets_path,
                                                  data['name'] + '.wav'),
-                                    sr=SAMPLING_RATE)
+                                    sr=sample_rate)
             audio = librosa.util.normalize(audio)
             audio = np.pad(audio, data['padding'])
             ref_sources.append(audio)
@@ -40,6 +45,8 @@ def main(metadata_path, subtargets_path, separated_path, outdir=None):
         # ref_sources = ref_sources[..., np.newaxis]  #probably unnecessary
 
         # WORKAROUND (remove eventually)
+        # this is a workaround because when the separations were performed, the target names were incorrectly concatenated
+        # instead of being joined with a "*", they were joined with a "_"
         target = target.replace('*', '_')
 
         # Evaluate for each separation model
@@ -51,7 +58,8 @@ def main(metadata_path, subtargets_path, separated_path, outdir=None):
 
             est_sources = []
             for file in est_sources_files:
-                audio, _ = librosa.load(file, sr=SAMPLING_RATE)
+                audio, _ = librosa.load(file,
+                                        sr=sample_rate)
                 audio = librosa.util.normalize(audio)
                 est_sources.append(audio)
             est_sources = np.array(est_sources)
@@ -70,9 +78,8 @@ def main(metadata_path, subtargets_path, separated_path, outdir=None):
     return 0
 
 
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument('metadata_file', type=str)
     parser.add_argument('subtargets_path', type=str)
     parser.add_argument('separated_path', type=str)

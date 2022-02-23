@@ -19,7 +19,9 @@ acc.csv
 .DS_Store
 *.th
 *.gz
-
+.idea
+TEMP/
+target.wav
 
 paper.aux
 paper.bbl

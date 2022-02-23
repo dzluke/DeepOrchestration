@@ -7,13 +7,15 @@ from pipeline import thresholds, mean, RESULTS_PATH
 
 def aggregate_data(f1, f2, name):
     avg_full_target_distance = [f1(x) for x in full_target_distances]
-    print(name, "full target distance:", f2(avg_full_target_distance), "stdev:", stdev(avg_full_target_distance))
+    print(name, "full target distance:", f2(avg_full_target_distance),
+          "stdev:", stdev(avg_full_target_distance))
     print(name, "separated distance:")
     for model, distances in separated_target_distances.items():
         d = [f1(x) for x in distances]
         print("\t{} : {} stdev: {}".format(model, f2(d), stdev(d)))
     avg_ground_truth_distance = [f1(x) for x in ground_truth_distances]
-    print(name, "ground truth distance:", f2(avg_ground_truth_distance), "stdev:", stdev(avg_ground_truth_distance))
+    print(name, "ground truth distance:", f2(avg_ground_truth_distance),
+          "stdev:", stdev(avg_ground_truth_distance))
     print("---------------------------")
 
 
@@ -48,7 +50,8 @@ if __name__ == "__main__":
 
     # x = list(range(len(y)))
     # plt.title("Average distance between target and solution with standard deviation")
-    # plt.errorbar(x, y, e, linestyle='None', marker='.', markersize=10, capsize=3, color='black')
+    # plt.errorbar(x, y, e, linestyle='None', marker='.', markersize=10,
+    #              capsize=3, color='black')
     # plt.xticks(x, x_labels, rotation=15)
     # plt.xlabel("Orchestration type")
     # plt.ylabel("Distance")
@@ -87,7 +90,8 @@ if __name__ == "__main__":
         for i in range(len(thresholds)):
             threshold_distance = [x[i] for x in full_target_distances]
             avg_threshold_distance = mean(threshold_distance)
-            print("Average full target distance for threshold {}: {}".format(thresholds[i], avg_threshold_distance))
+            print("Average full target distance for threshold {}: {}".format(
+                thresholds[i], avg_threshold_distance))
         if len(thresholds) == 3:
             threshold_indices = [0, 40, 80]
         print("Average distances across thresholds per method")
@@ -97,5 +101,5 @@ if __name__ == "__main__":
                 index = threshold_indices[i]
                 threshold_distance = [x[index] for x in distances]
                 avg_threshold_distance = mean(threshold_distance)
-                print("\t\tAverage distance for threshold {}: {}".format(thresholds[i], avg_threshold_distance))
-
+                print("\t\tAverage distance for threshold {}: {}".format
+                      (thresholds[i], avg_threshold_distance))
