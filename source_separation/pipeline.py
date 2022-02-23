@@ -33,9 +33,11 @@ num_orchestrations_to_save = 0
 # You shouldn't need to change the following variables #
 ########################################################
 
-ALL_ORCHESTRATIONS_PATH = "./orchestrations"  # place to save every orchestration performed
+ALL_ORCHESTRATIONS_PATH = "/volumes/Untitled/DeepOrchestration/MLSP21/orchestrations"  # place to save every orchestration performed
+# ALL_ORCHESTRATIONS_PATH = "./temp_orchestrations"
 CONFIG_PATH = "orch_config.txt"  # path to the Orchidea configuration file (you shouldn't have to change this!)
 SEPARATIONS_PATH = "/volumes/Untitled/DeepOrchestration/MLSP21/separated"
+# SEPARATIONS_PATH = "./temp_separations"
 RESULTS_PATH = "./results.json"
 TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'metadata.json')
 TDCNpp_nb_subtargets = 4
@@ -44,9 +46,11 @@ NUM_SUBTARGETS = 4
 full_orchestra = ['Fl', 'Fl', 'Ob', 'Ob', 'ClBb', 'ClBb', 'Bn', 'Bn', 'Tr', 'Tr', 'Tbn', 'Tbn', 'Hn', 'Hn',
                   'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Vn', 'Va', 'Va', 'Va', 'Va', 'Vc', 'Vc', 'Vc', 'Cb']
 
-# separation_models = ["TDCN++", "TDCN", "Demucs", "OpenUnmix", "NMF"]
-separation_models = ["TDCN++", "OpenUnmix", "NMF"]
-thresholds = [0.1, 0.3]  # onset thresholds for dynamic orchestration
+separation_models = ["TDCN++", "TDCN", "Demucs", "OpenUnmix", "NMF"]
+# separation_models = ["TDCN++", "OpenUnmix", "NMF"]
+
+thresholds = [1]  # onset thresholds for dynamic orchestration
+
 
 
 def remove_directory(path):
@@ -74,7 +78,7 @@ def separate(audio_path, output_path, model_name, num_subtargets, *args):
     Separate the audio into the given
     :param audio_path: path to audio input (wav file)
     :param model_name: name of the model ('demucs' or...)
-    :param num_subtargets: the number of subtargerts to estimate from the mix
+    :param num_subtargets: the number of subtargets to estimate from the mix
     :param *args: any relevant additional argument (for example combinations
                     of sub targets to match NUM_SUBTARGETS)
 
@@ -83,6 +87,8 @@ def separate(audio_path, output_path, model_name, num_subtargets, *args):
 
     file_name = audio_path.split("/")[-1].split(".")[0]
     # WORKAROUND (remove eventually)
+    # this is a workaround because when the separations were performed, the target names were incorrectly concatenated
+    # instead of being joined with a "*", they were joined with a "_"
     file_name = file_name.replace("*", "_")
 
     output_path = output_path + "/" + model_name + "/" + file_name
@@ -108,7 +114,7 @@ def separate(audio_path, output_path, model_name, num_subtargets, *args):
         elif model_name == "NMF":
             NMF.separate(audio_path, output_path)
         else:
-            raise Exception("Model name must be one of those four : TDCN, TDCN++, OpenUnmix, Demucs")
+            raise Exception("Model name must be one of: TDCN, TDCN++, OpenUnmix, Demucs, NMF")
 
     # Read sub targets and output them in numpy array format
     sub_targets = []
@@ -501,7 +507,7 @@ def clean_orch_config():
 
 
 if __name__ == "__main__":
-    distance_metric = frame_distance(cosine_similarity)  # the distance metric to be used to evaluate solutions
+    distance_metric = frame_distance(spectral_distance)  # the distance metric to be used to evaluate solutions
 
     num_completed = 0
     # full_target_distances is a nested list of distances of orchestrating full targets without separation
@@ -544,7 +550,7 @@ if __name__ == "__main__":
     print("Database contains {} targets".format(len(targets)))
 
     if num_orchestrations_to_save > 0 and not os.path.exists(SAVED_ORCHESTRATIONS_PATH):
-            os.mkdir(SAVED_ORCHESTRATIONS_PATH)
+        os.mkdir(SAVED_ORCHESTRATIONS_PATH)
 
     while num_completed < len(targets):
         target_path = targets[num_completed]
@@ -567,7 +573,7 @@ if __name__ == "__main__":
         save_path = save_path / "full_orchestration"
 
         solutions = orchestrate_with_threshold(target, save_path)
-        full_target_solutions.append(solutions)
+        full_target_solutions = solutions
         for solution in solutions:
             distance = distance_metric(target, solution)
             distances.append(distance)
@@ -687,6 +693,8 @@ if __name__ == "__main__":
             if not os.path.exists(separations_folder):
                 os.mkdir(separations_folder)
             for model_name in separation_models:
+                # WORKAROUND (remove eventually)
+                target_name = target_name.replace("*", "_")
                 folder = os.path.join(SEPARATIONS_PATH, model_name, target_name)
                 if not os.path.exists(os.path.join(separations_folder, model_name)):
                     os.mkdir(os.path.join(separations_folder, model_name))
