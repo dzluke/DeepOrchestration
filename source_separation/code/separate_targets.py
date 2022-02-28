@@ -9,7 +9,8 @@ import nmf.separate as nmf
 import open_unmix.separate as open_unmix
 import tdcn.separate as tdcn
 
-config = ConfigParser().read("config.ini")
+config = ConfigParser(inline_comment_prefixes="#")
+config.read("config.ini")
 separation_functions = {
     "demucs": demucs.separate,
     "nmf": nmf.separate,

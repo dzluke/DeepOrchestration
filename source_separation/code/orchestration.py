@@ -11,7 +11,7 @@ from utils import set_config_parameter
 # from pipeline import SAMPLING_RATE, CONFIG_PATH
 
 # Get configuration
-config = ConfigParser()
+config = ConfigParser(inline_comment_prefixes="#")
 config.read("config.ini")
 
 

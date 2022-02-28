@@ -11,7 +11,7 @@ import soundfile as sf
 from .utils import clear_directory, combine_with_offset
 
 # Get configuration
-config = ConfigParser()
+config = ConfigParser(inline_comment_prefixes="#")
 config.read("config.ini")
 
 
