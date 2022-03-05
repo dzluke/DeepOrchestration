@@ -2,13 +2,13 @@
 import argparse
 import json
 import os
-import random
 from configparser import ConfigParser
+from random import randint, sample
 
 import librosa
 import soundfile as sf
 
-from .utils import clear_directory, combine_with_offset
+from utils import clear_directory, combine_with_offset
 
 # Get configuration
 config = ConfigParser(inline_comment_prefixes="#")
@@ -23,8 +23,6 @@ def create_targets(paths):
     [['Beethoven_chord1.wav', 'drops.wav], ['gong.wav', 'bell.wav']]
     :return:
     """
-    targets = []
-    names = []
     metadata = {}
 
     for sample_paths in paths:
@@ -36,7 +34,9 @@ def create_targets(paths):
                                      sr=config['audio'].getint('sample_rate'))
             base = os.path.basename(path)
             name = os.path.splitext(base)[0]
-            sample_metadata = {'name': name, 'path': path, 'audio': sample}
+            sample_metadata = {'name': name,
+                               'path': path,
+                               'audio': sample}
             samples.append(sample_metadata)
             if sample.size > longest_length:
                 longest_sample = sample_metadata
@@ -46,7 +46,7 @@ def create_targets(paths):
             if sample_metadata == longest_sample:
                 sample_metadata['padding'] = [0]
             else:
-                sample_metadata['padding'] = [random.randint(1, longest_length // 2)]
+                sample_metadata['padding'] = [randint(1, longest_length // 2)]
         # recalculate longest length to include offset
         for sample_metadata in samples:
             longest_length = max(longest_length, sample_metadata['audio'].size
@@ -56,45 +56,52 @@ def create_targets(paths):
             pad = longest_length - (sample_metadata['padding'][0]
                                     + sample_metadata['audio'].size)
             sample_metadata['padding'].append(pad)
-        combination = combine_with_offset(samples)
-        targets.append(combination)
+
+        # Combine samples into a single audio
+        target = combine_with_offset(samples)
         name = [sample_metadata['name'] for sample_metadata in samples]
         name = '+'.join(sorted(name))
+
+        # Add informations to metadata file
         for sample in samples:
             sample.pop('audio')  # we don't need to store the audio anymore
         metadata[name] = samples
-        names.append(name)
-    # write to folder
-    for i in range(len(targets)):
-        target = targets[i]
-        name = names[i]
-        path = os.path.join(config['paths']['targets_path'], name) + '.wav'
-        if not os.path.exists(path):
-            sf.write(path, target,
-                     samplerate=config['audio'].getint('sample_rate'))
+
+        # write to folder
+        target_fname = os.path.join(config['paths']['targets'],
+                                    f"{len(samples)}sources",
+                                    name + '.wav')
+        sf.write(target_fname, target,
+                 samplerate=config['audio'].getint('sample_rate'))
+
     # write metadata
-    with open(config['paths']['target_metadata_path'], 'w') as metadata_file:
-        json.dump(metadata, metadata_file, indent=2)
+    metadata_file = os.path.join(config['paths']['targets'],
+                                 f"{len(samples)}sources",
+                                 "metadata.json")
+    with open(metadata_file, 'w') as f:
+        json.dump(metadata, f, indent=2)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("num-subtargets",
+    parser.add_argument("--num-samples",
                         type=int,
-                        help="Number of subtargets (samples) to combine to get \
-                            a target.",
-                        default=4)
+                        help="Number of samples to combine to get a target.",
+                        default=config['separation'].getint('num_samples'))
     parser.add_argument("--num-targets",
                         type=int,
                         help="Number of targets to create.",
-                        default=config["misc"]["n_targets"])
+                        default=config["misc"].getint("num_targets"))
     args, _ = parser.parse_known_args()
 
-    clear_directory(config['paths']['targets_path'])
-    samples = librosa.util.find_files(config['paths']['sample_database'])
+
+    targets_path = os.path.join(config['paths']['targets'],
+                                f"{args.num_samples}sources")
+    clear_directory(targets_path)
+    samples = librosa.util.find_files(config['paths']['samples'])
     sample_paths = set()
     while len(sample_paths) < args.num_targets:
-        paths = random.sample(samples, args.num_subtargets)
+        paths = sample(samples, args.num_samples)
         paths = sorted(paths)
         paths = tuple(paths)  # you can't add lists to a set
         sample_paths.add(paths)
