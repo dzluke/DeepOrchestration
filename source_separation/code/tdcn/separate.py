@@ -16,12 +16,10 @@
 import argparse
 import os
 
-import numpy as np
-import pandas as pd
 import tensorflow.compat.v1 as tf
 
 from . import inference
-from .train import data_io
+from . import data_io
 
 tf.enable_eager_execution()
 
@@ -33,7 +31,7 @@ def decode_wav(wav):
     return waveform
 
 
-def separate(ckpt, mtgph, input_path, output_path):
+def separate(input_path, output_path, ckpt, mtgph):
     model = inference.SeparationModel(ckpt,
                                       mtgph)
     if not os.path.exists(input_path):

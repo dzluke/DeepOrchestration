@@ -1,20 +1,18 @@
 # From https://github.com/CarmineCella/nmf_sources
 from pathlib import Path
 
-import soundfile as sf
-import numpy as np
 import librosa as lr
+import numpy as np
+import soundfile as sf
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-from .kl_nmf import kl_nmf
+from kl_nmf import kl_nmf
 
 FFT_SIZE = 2048
-HOPLEN = 512
-COMPONENTS = 32 # NMF components
-SOURCES = 4 # K in KMeans
-DIMENSIONS = 20 # PCA reduction (0 for no reduction)
-PHI_ITER = 0 # if 0 uses original phases otherwise reconstruct by iteration
+HOPLEN = 256
+# COMPONENTS = 32 # NMF components
+# SOURCES = 4 # K in KMeans
 
 # Given a complex signal, find its polar coordinates
 def car2pol(sig):
@@ -24,9 +22,9 @@ def car2pol(sig):
     return amp, angle
 
 
-def get_sources (mix, nsources=4, components=32, fft_size=4096, hoplen=512):
+def get_sources (mix, n_sources=4, components=32, fft_size=4096, hoplen=512):
     # data preparation
-    sources = np.zeros((nsources, len (mix)))
+    sources = np.zeros((n_sources, len (mix)))
     specgram = lr.stft(mix, n_fft=fft_size, hop_length=hoplen);
     A, Phi = car2pol(specgram)
 
@@ -43,10 +41,10 @@ def get_sources (mix, nsources=4, components=32, fft_size=4096, hoplen=512):
     # clustering
     scaler = StandardScaler()
     scaled_features = scaler.fit_transform(H)
-    clusters = KMeans (n_clusters=nsources).fit(scaled_features)
+    clusters = KMeans (n_clusters=n_sources).fit(scaled_features)
 
     # assignment and reconstruction
-    for s in range(0, nsources):
+    for s in range(0, n_sources):
         comp = np.zeros(specgram.shape)
         for k in range (0, components):
             if clusters.labels_[k] == s:
@@ -59,22 +57,14 @@ def get_sources (mix, nsources=4, components=32, fft_size=4096, hoplen=512):
     return W, H, clusters.labels_, sources
 
 
-def separate(in_path, out_path, verbose=False):
+def separate(in_path, out_path, n_sources=4):
     out_path = Path(out_path)
     mix, sr = sf.read(in_path)
-    if verbose:
-        print('total samples: ', len (mix))
-        print('sources      : ', SOURCES)
-        print('components   : ', COMPONENTS)
     W, H, labels, sources = get_sources(mix,
-                                        nsources=SOURCES,
+                                        n_sources=n_sources,
                                         components=COMPONENTS,
                                         fft_size=FFT_SIZE,
                                         hoplen=HOPLEN)
-    if verbose:
-        print('W            : ', W.shape)
-        print('H            : ', H.shape)
-        print('labels       : ', labels)
     out_path.mkdir(parents=True, exist_ok=True)
-    for s in range (SOURCES):
+    for s in range (n_sources):
         sf.write(out_path.joinpath('source_' + str (s) + '.wav'), sources[s], sr)

@@ -1,3 +1,4 @@
+import os
 import warnings
 from argparse import ArgumentParser
 from configparser import ConfigParser
@@ -11,12 +12,21 @@ import tdcn.separate as tdcn
 
 config = ConfigParser(inline_comment_prefixes="#")
 config.read("config.ini")
-separation_functions = {
-    "demucs": demucs.separate,
-    "nmf": nmf.separate,
-    "open_unmix": open_unmix.separate,
-    "tdcn": tdcn.separate
-}
+
+
+def separate(method, target_fname, outdir, n_sources, **kwargs):
+    assert method in config['separation']['methods'].split(", ")
+
+    if method == "demucs":
+        demucs.separate(target_fname, outdir)
+    elif method == "nmf":
+        nmf.separate(target_fname, outdir, n_sources)
+    elif method == "open_unmix":
+        open_unmix.separate(target_fname, outdir)
+    elif method == "tdcn":
+        ckpt = os.path.join(kwargs['tdcn_model_path'], "baseline_model")
+        mtgph = os.path.join(kwargs['tdcn_model_path'], "baseline_inference.meta")
+        tdcn.separate(target_fname, outdir, ckpt, mtgph)
 
 
 if __name__ == "__main__":
@@ -42,10 +52,7 @@ if __name__ == "__main__":
 
     targets = find_files(args.targets_path)
 
-    for t in targets:
+    for target_fname in targets:
         for method in separation_methods:
-            if num_subtargets == 4:
-                separation_functions[method](t, args.outdir)
-            else:
-                #TODO: Add support for num_subtargets != 4
-                separation_functions[method]
+            separate(method, target_fname, args.outdir, args.n_sources,
+                     tdcn_model_path=config['paths']['tdcn_model'])
