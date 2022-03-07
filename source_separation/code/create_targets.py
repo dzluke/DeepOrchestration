@@ -7,6 +7,7 @@ from random import randint, sample
 
 import librosa
 import soundfile as sf
+from tqdm import tqdm
 
 from utils import clear_directory, combine_with_offset
 
@@ -25,7 +26,7 @@ def create_targets(paths):
     """
     metadata = {}
 
-    for sample_paths in paths:
+    for sample_paths in tqdm(paths):
         samples = []
         longest_sample = None
         longest_length = 0
