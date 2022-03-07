@@ -59,7 +59,7 @@ def combine(samples):
     max_length = max_length.size
     samples = sorted(samples, key=lambda x: x.size, reverse=True)
     num_samples = len(samples)
-    samples = [librosa.util.fix_length(y, max_length) for y in samples]
+    samples = [librosa.util.fix_length(y, size=max_length) for y in samples]
     combination = np.zeros(max_length)
     for sample in samples:
         combination += sample
