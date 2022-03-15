@@ -21,8 +21,10 @@ from configparser import ConfigParser
 from multiprocessing import Manager, Process
 
 import librosa
+import museval
 import numpy as np
 import tensorflow.compat.v1 as tf
+from tqdm import tqdm
 
 # Get configuration
 config = ConfigParser(inline_comment_prefixes="#")
@@ -144,7 +146,7 @@ def snr_with_permutations(estimates, ref_sources):
 
     best_permutation = candidate_permutations[np.argmax(results)]
 
-    return np.max(results) / n_sources, best_permutation.tolist()
+    return np.max(results)/n_sources, best_permutation.tolist()
 
 
 def eval_one_target(subtargets_path, separated_path, separation_models,
@@ -183,13 +185,16 @@ def eval_one_target(subtargets_path, separated_path, separation_models,
             est_sources.append(audio)
         est_sources = np.array(est_sources)
 
-        snr, permutation = snr_with_permutations(est_sources, ref_sources)
+        # snr, permutation = snr_with_permutations(est_sources, ref_sources)
+        snr, _, _, _, permutation = museval.metrics.bss_eval(
+            ref_sources, est_sources, compute_permutation=True,
+            window=est_sources.shape[-1])
+        snr = np.mean(snr)
         print("\t{}\t Mean sdr: {}".format(model, snr))
         results[model] = {"snr": snr,
                           "permutation": permutation}
 
     return results
-
 
 
 def main(metadata_path, subtargets_path, separated_path, outdir=None,
@@ -227,7 +232,7 @@ def main(metadata_path, subtargets_path, separated_path, outdir=None,
     else:
         results = {}
         # Evaluate each target
-        for idx, target in enumerate(metadata):
+        for idx, target in enumerate(tqdm(metadata)):
             print('{}/{} Evaluating results for {}'.format(idx, len(metadata),
                                                         target))
             # Get reference sources (= padded subtargets)
@@ -239,7 +244,7 @@ def main(metadata_path, subtargets_path, separated_path, outdir=None,
                                               target)
     results = dict(results)
     if outdir is not None:
-        with open(os.path.join(outdir, "results.json"), 'w') as f:
+        with open(os.path.join(outdir, "resultsmuseval.json"), 'w') as f:
             json.dump(results, f, indent=2)
 
     average_results = {model: [] for model in separation_models}
