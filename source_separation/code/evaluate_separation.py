@@ -16,9 +16,10 @@
 import itertools
 import json
 import os
+from pathlib import Path
 from argparse import ArgumentParser
 from configparser import ConfigParser
-from multiprocessing import Manager, Process
+from multiprocessing import Manager, Process, RLock
 
 import librosa
 import museval
@@ -29,7 +30,7 @@ from tqdm import tqdm
 # Get configuration
 config = ConfigParser(inline_comment_prefixes="#")
 config.read("config.ini")
-
+RESULTS_FNAME = "results_museval.json"
 
 def calculate_signal_to_noise_ratio_from_power(signal_power, noise_power,
                                                epsilon):
@@ -146,7 +147,7 @@ def snr_with_permutations(estimates, ref_sources):
 
     best_permutation = candidate_permutations[np.argmax(results)]
 
-    return np.max(results)/n_sources, best_permutation.tolist()
+    return np.max(results)/n_sources, best_permutation
 
 
 def eval_one_target(subtargets_path, separated_path, separation_models,
@@ -192,60 +193,71 @@ def eval_one_target(subtargets_path, separated_path, separation_models,
         snr = np.mean(snr)
         print("\t{}\t Mean sdr: {}".format(model, snr))
         results[model] = {"snr": snr,
-                          "permutation": permutation}
+                          "permutation": permutation.flatten().tolist()}
 
     return results
 
 
-def main(metadata_path, subtargets_path, separated_path, outdir=None,
+def main(metadata_path, subtargets_path, separated_path, outdir,
          jobs=None):
     separation_models = config['separation']['methods'].split(", ")
     sample_rate = config['audio'].getint('sample_rate')
+
+    Path(outdir).mkdir(parents=True, exist_ok=True)
 
     # Get metadata
     with open(metadata_path, 'r') as f:
         metadata = json.load(f)
 
     # Initialize results dictionary.
+    results_file = os.path.join(outdir, RESULTS_FNAME)
+    if os.path.isfile(results_file):
+        with open(results_file, "r") as f:
+            results = json.load(f)
+    else:
+        results = {}
     if jobs:
+        lock = RLock()
         def process_fn(shared_dict, target, subtargets_path, separated_path,
-                       separation_models, sample_rate, metadata):
-            shared_dict[target] = eval_one_target(subtargets_path,
-                                                  separated_path,
-                                                  separation_models,
-                                                  sample_rate,
-                                                  metadata,
-                                                  target)
+                       separation_models, sample_rate, metadata, lock):
+            if target not in shared_dict:
+                shared_dict[target] = eval_one_target(subtargets_path,
+                                                    separated_path,
+                                                    separation_models,
+                                                    sample_rate,
+                                                    metadata,
+                                                    target)
+                with lock:
+                    with open(os.path.join(outdir, RESULTS_FNAME), 'w') as f:
+                        json.dump(dict(results), f, indent=2)
+
         manager = Manager()
-        results = manager.dict()  # this is a shared dict bewteen processese
+        results = manager.dict(results)  # this is a shared dict bewteen processese
         processes = []
         for idx, target in enumerate(metadata):
             p = Process(target=process_fn,
                         args=(results, target, subtargets_path,
                               separated_path, separation_models, sample_rate,
-                              metadata)
+                              metadata, lock)
             )
             p.start()
             processes.append(p)
         for p in processes:
             p.join()
     else:
-        results = {}
         # Evaluate each target
         for idx, target in enumerate(tqdm(metadata)):
             print('{}/{} Evaluating results for {}'.format(idx, len(metadata),
                                                         target))
-            # Get reference sources (= padded subtargets)
-            results[target] = eval_one_target(subtargets_path,
-                                              separated_path,
-                                              separation_models,
-                                              sample_rate,
-                                              metadata,
-                                              target)
-    results = dict(results)
-    if outdir is not None:
-        with open(os.path.join(outdir, "resultsmuseval.json"), 'w') as f:
-            json.dump(results, f, indent=2)
+            if target not in results:  #skip if this already exists
+                results[target] = eval_one_target(subtargets_path,
+                                                  separated_path,
+                                                  separation_models,
+                                                  sample_rate,
+                                                  metadata,
+                                                  target)
+                with open(os.path.join(outdir, RESULTS_FNAME), 'w') as f:
+                    json.dump(results, f, indent=2)
 
     average_results = {model: [] for model in separation_models}
     for target in results:
