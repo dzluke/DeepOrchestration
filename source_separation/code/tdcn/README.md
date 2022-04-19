@@ -1,3 +1,6 @@
+This particular folder is a copy of this folder: https://github.com/google-research/sound-separation/tree/master/models/dcase2020_fuss_baseline
+(with just a few adjustments so it works here)
+
 # README for the DCASE2020 FUSS baseline model.
 This model is the source separation baseline for
 <a href="http://dcase.community/challenge2020/task-sound-event-detection-and-separation-in-domestic-environments">

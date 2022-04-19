@@ -7,7 +7,7 @@ import soundfile as sf
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-from kl_nmf import kl_nmf
+from nmf.kl_nmf import kl_nmf
 
 FFT_SIZE = 2048
 HOPLEN = 256
@@ -32,10 +32,11 @@ def get_sources (mix, n_sources=4, components=32, fft_size=4096, hoplen=512):
     [W, H] = kl_nmf(A, components)
 
     # masking
-    masks = np.zeros((A.shape[0],A.shape[1],COMPONENTS), dtype=complex)
+    masks = np.zeros((A.shape[0],A.shape[1], components), dtype=complex)
     comps = np.zeros(masks.shape, dtype=complex)
-    for i in range(0, COMPONENTS):
+    for i in range(0, components):
         masks[:, :, i] = np.outer(W[:, i], H[i, :]) / np.dot(W, H)
+        masks[np.isnan(masks)] = 0
         comps[:, :, i] =  masks[:, :, i] * specgram
 
     # clustering
@@ -57,12 +58,12 @@ def get_sources (mix, n_sources=4, components=32, fft_size=4096, hoplen=512):
     return W, H, clusters.labels_, sources
 
 
-def separate(in_path, out_path, n_sources=4):
+def separate(in_path, out_path, n_sources=4, components=32):
     out_path = Path(out_path)
     mix, sr = sf.read(in_path)
     W, H, labels, sources = get_sources(mix,
                                         n_sources=n_sources,
-                                        components=COMPONENTS,
+                                        components=components,
                                         fft_size=FFT_SIZE,
                                         hoplen=HOPLEN)
     out_path.mkdir(parents=True, exist_ok=True)
