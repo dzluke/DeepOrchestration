@@ -8,6 +8,7 @@ import soundfile as sf
 import librosa
 import json
 from pathlib import Path
+from scipy.spatial import distance
 
 import ConvTasNetUniversal.separate as TDCNpp_separate
 import open_unmix.separate as open_unmix
@@ -39,7 +40,7 @@ CONFIG_PATH = "orch_config.txt"  # path to the Orchidea configuration file (you 
 SEPARATIONS_PATH = "/volumes/Untitled/DeepOrchestration/MLSP21/separated"
 # SEPARATIONS_PATH = "./temp_separations"
 RESULTS_PATH = "./results.json"
-TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'metadata.json')
+TARGET_METADATA_PATH = os.path.join(TARGETS_PATH, 'new_metadata.json')
 TDCNpp_nb_subtargets = 4
 SAMPLING_RATE = 44100
 NUM_SUBTARGETS = 4
@@ -330,12 +331,12 @@ def frame_distance(custom_distance_metric):
         """
         # target and solution should be the same length
         length = max(target.size, solution.size)
-        target = librosa.util.fix_length(target, length)
-        solution = librosa.util.fix_length(solution, length)
+        target = librosa.util.fix_length(target, size=length)
+        solution = librosa.util.fix_length(solution, size=length)
 
         frame_length = 4000  # 4000 samples ~ 90 ms
-        target_frames = librosa.util.frame(target, frame_length, frame_length, axis=0)
-        solution_frames = librosa.util.frame(solution, frame_length, frame_length, axis=0)
+        target_frames = librosa.util.frame(target, frame_length=frame_length, hop_length=frame_length, axis=0)
+        solution_frames = librosa.util.frame(solution, frame_length=frame_length, hop_length=frame_length, axis=0)
 
         distances = []
         target_energy = []
@@ -366,8 +367,12 @@ def cosine_similarity(target, solution):
     norms = np.linalg.norm(target_spectrum) * np.linalg.norm(solution_spectrum)
     norms = norms if norms > 0 else 1
     similarity = dot_product / norms
-    similarity = 1 - similarity
     return similarity
+
+# this throws errors
+# def scipy_cosine_distance(target, solution):
+#     target_spectrum, solution_spectrum = normalized_magnitude_spectrum(target, solution)
+#     return distance.cosine(target_spectrum, solution_spectrum)
 
 
 def next_power_of_2(x):
@@ -400,7 +405,7 @@ def combine(samples):
     max_length = max_length.size
     samples = sorted(samples, key=lambda x: x.size, reverse=True)
     num_samples = len(samples)
-    samples = [librosa.util.fix_length(y, max_length) for y in samples]
+    samples = [librosa.util.fix_length(y, size=max_length) for y in samples]
     combination = np.zeros(max_length)
     for sample in samples:
         combination += sample
@@ -489,9 +494,10 @@ def orchestrate_with_threshold(target, save_path):
         save_name = save_name.replace(".", "_") + ".wav"
         save_path = save_path / save_name
         if os.path.exists(save_path):
-            # print("Found orchestration on disk")
+            # print("\tFound orchestration on disk")
             solution, _ = librosa.load(save_path, sr=SAMPLING_RATE)
         else:
+            print("\t***Did NOT find orch on disk; performing orchestration***")
             set_config_parameter(CONFIG_PATH, 'onsets_threshold', onset_threshold)
             solution = orchestrate(target)
             sf.write(save_path, solution, samplerate=SAMPLING_RATE)
@@ -507,7 +513,7 @@ def clean_orch_config():
 
 
 if __name__ == "__main__":
-    distance_metric = frame_distance(spectral_distance)  # the distance metric to be used to evaluate solutions
+    distance_metric = frame_distance(cosine_similarity)  # the distance metric to be used to evaluate solutions
 
     num_completed = 0
     # full_target_distances is a nested list of distances of orchestrating full targets without separation
