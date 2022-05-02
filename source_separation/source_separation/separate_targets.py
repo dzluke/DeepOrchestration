@@ -16,17 +16,20 @@ def separate(method, target_fname, outdir, n_sources):
     assert method in config["separation"]["methods"].split(", ")
 
     if method == "Demucs":
+        warnings.warn('This is deprecated', DeprecationWarning)
         import demucs.separate as demucs
         demucs.separate(target_fname, outdir)
     elif method == "NMF":
+        warnings.warn('This is deprecated', DeprecationWarning)
         import nmf.separate as nmf
         nmf.separate(target_fname, outdir, n_sources)
     elif method == "OpenUnmix":
+        warnings.warn('This is deprecated', DeprecationWarning)
         import open_unmix.separate as open_unmix
         open_unmix.separate(target_fname, outdir)
     elif method == "TDCN++":
+        warnings.warn('This is deprecated', DeprecationWarning)
         import tdcn.separate as tdcn
-
         tdcn_model_path = config["paths"]["tdcn_model"]
         ckpt = os.path.join(tdcn_model_path, "baseline_model")
         mtgph = os.path.join(tdcn_model_path, "baseline_inference.meta")
@@ -43,7 +46,6 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("ds_path", type=str)
     parser.add_argument("--n-sources", type=int, default=4)
-
     args, _ = parser.parse_known_args()
 
     separation_methods = config["separation"]["methods"].split(", ")
