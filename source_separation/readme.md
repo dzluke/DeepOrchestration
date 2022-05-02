@@ -12,6 +12,24 @@ Where 'script' can be:
 Targets metadata.json files contain the offsets used to create the targets and needed to evaluate separation.
 
 	/dataset_folder
+		orchestrated/
+			2sources/
+				...
+			3sources/
+				...
+			4sources/
+				full_target_orch.wav
+				/ground_truth/
+					source1_orch.wav
+					source2_orch.wav
+					source3_orch.wav
+					source4_orch.wav
+				/method1/
+					source1_orch.wav
+					source2_orch.wav
+					...
+				/method2/
+					...
 		samples/
 		separated/
 			2sources/

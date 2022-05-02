@@ -1,3 +1,4 @@
+import itertools
 import os
 
 import librosa
@@ -8,6 +9,7 @@ import scipy.spatial
 def rm_extension(fname):
     """Remove the file extension at the end of a string."""
     return os.path.splitext(fname)[0]
+
 
 def remove_directory(path):
     for file in os.listdir(path):
@@ -42,16 +44,18 @@ def set_config_parameter(config_file_path, parameter, value):
     :param value: the value to set the parameter to
     :return: None
     """
-    with open(config_file_path, 'a') as config_file:  # 'a' means append mode
+    with open(config_file_path, "a") as config_file:  # 'a' means append mode
         config_file.write(parameter + " ")
-        if parameter == 'orchestra':
-            value = " ".join(value)  # turns a list of instruments into a string of instruments
+        if parameter == "orchestra":
+            value = " ".join(
+                value
+            )  # turns a list of instruments into a string of instruments
         config_file.write(str(value))
-        config_file.write('\n')
+        config_file.write("\n")
 
 
 def next_power_of_2(x):
-    return 1 if x == 0 else 2**(x - 1).bit_length()
+    return 1 if x == 0 else 2 ** (x - 1).bit_length()
 
 
 def combine(samples):
@@ -81,7 +85,7 @@ def combine_with_offset(metadata):
                             padding: padding as list of 2 integers
     :return: single audio signal as numpy array representing the combination of samples
     """
-    samples = [np.pad(sample['audio'], sample['padding']) for sample in metadata]
+    samples = [np.pad(sample["audio"], sample["padding"]) for sample in metadata]
     return combine(samples)
 
 
@@ -106,8 +110,8 @@ def normalized_magnitude_spectrum(target, solution):
 
     target_max = np.max(target_spectrum) if np.max(target_spectrum) > 0 else 1
     solution_max = np.max(solution_spectrum) if np.max(solution_spectrum) > 0 else 1
-    target_spectrum /= (target_max)
-    solution_spectrum /= (solution_max)
+    target_spectrum /= target_max
+    solution_spectrum /= solution_max
 
     return target_spectrum, solution_spectrum
 
@@ -126,8 +130,7 @@ def cosine_distance(target, solution):
     # norms = norms if norms > 0 else 1
     # similarity = dot_product / norms
     # similarity = 1 - similarity
-    distance = scipy.spatial.distance.cosine(target_spectrum,
-                                             solution_spectrum)
+    distance = scipy.spatial.distance.cosine(target_spectrum, solution_spectrum)
     return distance
 
 
@@ -140,7 +143,7 @@ def spectral_distance(target, solution):
     """
     # if the target is longer than the solution, must trim the target
     if target.size > solution.size:
-        target = target[:solution.size]
+        target = target[: solution.size]
         N = next_power_of_2(target.size)
     else:
         N = next_power_of_2(solution.size)
@@ -150,8 +153,8 @@ def spectral_distance(target, solution):
 
     target_max = np.max(target_fft) if np.max(target_fft) > 0 else 1
     solution_max = np.max(solution_fft) if np.max(solution_fft) > 0 else 1
-    target_fft /= (target_max * N)
-    solution_fft /= (solution_max * N)
+    target_fft /= target_max * N
+    solution_fft /= solution_max * N
 
     lambda_1 = 0.5
     lambda_2 = 10
@@ -174,6 +177,7 @@ def frame_distance(custom_distance_metric):
     :param distance_metric: a function that takes in two parameters: target and solution
     :return: a function that will return the distance between target and solution
     """
+
     def custom_distance(target, solution):
         """
         Calculates a weighted sum of the distance between frames of target and solution, using the provided
@@ -188,13 +192,12 @@ def frame_distance(custom_distance_metric):
         solution = librosa.util.fix_length(solution, size=length)
 
         frame_length = 4000  # 4000 samples ~ 90 ms
-        target_frames = librosa.util.frame(target,
-                                           frame_length=frame_length,
-                                           hop_length=frame_length,
-                                           axis=0)
-        solution_frames = librosa.util.frame(solution,
-                                             frame_length=frame_length,
-                                             hop_length=frame_length, axis=0)
+        target_frames = librosa.util.frame(
+            target, frame_length=frame_length, hop_length=frame_length, axis=0
+        )
+        solution_frames = librosa.util.frame(
+            solution, frame_length=frame_length, hop_length=frame_length, axis=0
+        )
 
         distances = []
         target_energy = []
@@ -208,7 +211,9 @@ def frame_distance(custom_distance_metric):
         energy = np.array(target_energy)
         weighted_sum = np.sum(distances * energy) / np.sum(energy)
         return weighted_sum.item()
+
     return custom_distance
+
 
 def create_combinations(samples):
     """

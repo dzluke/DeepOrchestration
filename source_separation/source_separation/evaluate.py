@@ -99,7 +99,7 @@ def eval_target(ds_path, separation_models, sample_rate, metadata, target):
     return results
 
 
-def main(metadata_path, ds_path, outdir, jobs=None):
+def evaluate_separation(metadata_path, ds_path, outdir, jobs=None):
     separation_models = config["separation"]["methods"].split(", ")
     sample_rate = config["audio"].getint("sample_rate")
 
@@ -142,6 +142,10 @@ def main(metadata_path, ds_path, outdir, jobs=None):
     return 0
 
 
+def evaluate_orchestration():
+    pass
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("metadata_file", type=str)
@@ -155,4 +159,4 @@ if __name__ == "__main__":
         help="Number of jobs for multiprocessing.",
     )
     args, _ = parser.parse_known_args()
-    main(args.metadata_file, args.ds_path, args.outdir, args.jobs)
+    evaluate_separation(args.metadata_file, args.ds_path, args.outdir, args.jobs)
