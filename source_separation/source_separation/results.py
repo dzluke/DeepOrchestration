@@ -2,7 +2,7 @@ import json
 from statistics import median, stdev
 import matplotlib.pyplot as plt
 
-from pipeline import thresholds, mean, RESULTS_PATH
+from source_separation.source_separation.main import thresholds, mean, RESULTS_PATH
 
 
 def aggregate_data(f1, f2, name):

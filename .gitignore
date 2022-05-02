@@ -13,7 +13,8 @@ acc.csv
 /exp_pre
 /other
 /.vscode
-/source_separation/trained_TDCNNpp
+trained_TDCNNpp/
+baseline_model/
 /source_separation/targets
 /source_separation/subtargets
 .DS_Store

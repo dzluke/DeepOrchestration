@@ -16,12 +16,14 @@
 import argparse
 import os
 
+import librosa
 import tensorflow.compat.v1 as tf
 
+from .train import data_io
 from . import inference
-from . import data_io
 
 tf.enable_eager_execution()
+
 
 def decode_wav(wav):
     audio_bytes = tf.read_file(wav)
@@ -31,33 +33,23 @@ def decode_wav(wav):
     return waveform
 
 
-def separate(input_path, output_path, ckpt, mtgph):
-    model = inference.SeparationModel(ckpt,
-                                      mtgph)
+def separate(input_path, output_path, ckpt, mtgph, target_sr=44100):
+    model = inference.SeparationModel(ckpt, mtgph)
     if not os.path.exists(input_path):
         raise Exception("Wrong input file {}".format(input_path))
-    file_list = [input_path]
-    from scipy.io.wavfile import read as read_wav
     from scipy.io.wavfile import write as write_wav
-    sr, f = read_wav(file_list[0])
+    # sr, f = read_wav(file_list[0])
+    target_waveform, _ = librosa.load(input_path, sr=16000)
 
-    with model.graph.as_default():
-        dataset = data_io.wavs_to_dataset(file_list, batch_size=1,
-                                          num_samples=len(f),
-                                          repeat=False)
-        # Strip batch and mic dimensions.
-        dataset['receiver_audio'] = dataset['receiver_audio'][0, 0]
-        dataset['source_images'] = dataset['source_images'][0, :, 0]
-
-    waveforms = model.sess.run(dataset)
-    separated_waveforms = model.separate(waveforms['receiver_audio'])
-    # print(separated_waveforms)
-    # print(separated_waveforms.shape)
+    separated_waveforms = model.separate(target_waveform)
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     for i in range(separated_waveforms.shape[0]):
-        write_wav(output_path + '/sub_target{}.wav'.format(i),
-                  sr, separated_waveforms[i, :])
+        resampled_waveform = librosa.resample(separated_waveforms[i, :],
+                                              orig_sr=16000,
+                                              target_sr=target_sr)
+        write_wav(output_path + '/separated{}.wav'.format(i),
+                  target_sr, resampled_waveform)
 
 
 def main():

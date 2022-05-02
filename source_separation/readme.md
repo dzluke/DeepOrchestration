@@ -1,29 +1,40 @@
-## Folder organization
+## How to run this code?
+Go in DeepOrchestration/source_separation folder.
+Launch using python script
 
-Subtargets are samples used to create targets, that are mixture of 2-4 subtargets.
-Targets metadata.json files contain the offsets used to create the targets and needed
-to evaluate separation.
+Where 'script' can be:
+- create_targets
+- separate_targets
+- orchestrate_targets
+- evaluate (separation or orchestration)
+
+## Dataset folder organization
+Targets metadata.json files contain the offsets used to create the targets and needed to evaluate separation.
 
 	/dataset_folder
+		samples/
 		separated/
-			2_sources/
-				demucs/
-				nmf/
-				google/
-				open-unmix/
-			3_sources/
+			2sources/
+				method1/
+					target1/
+						source1.wav
+						source2.wav
+				method2/
+			3sources/
+				method1/
+					target1/
+						source1.wav
+			4sources/
 				...
-			4_sources/
-				...
-		subtargets/
 		targets/
-			2_sources/
+			2sources/
 				metadata.json
 				target1.wav
 				...
-			3_sources/
-				metadata.json
-			4_sources/
+			3sources/
+				...
+			4sources/
+				...
 
 ## TODO list
 

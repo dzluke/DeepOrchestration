@@ -1,3 +1,4 @@
+# This contains various I/O function
 import os
 
 import librosa
@@ -21,16 +22,16 @@ def load_audio_files(paths, sample_rate, normalize=True, paddings=None):
     return waveforms
 
 
-class FileStruct():
+class Target():
     """Inspired by MSAF
     Holds every paths stuff for a given target.
     """
 
-    def __init__(self, ds_path, target, target_metadata):
+    def __init__(self, ds_path, target_name, n_sources):
         self.ds_path = ds_path
-        self.target = target
-        self.target_metadata = target_metadata
-        self.n_sources = len(target_metadata)
+        self.name = target_name
+        self.n_sources = n_sources
+        self.target_metadata = 0 # target_metadata  #TODO: load metadata in json file
 
     def get_samples_paths(self):
         files = []
@@ -49,14 +50,14 @@ class FileStruct():
         sep_folder = os.path.join(self.ds_path, 'separated',
                                   f'{self.n_sources}sources',
                                   model_name,
-                                  self.target)
+                                  self.target_name)
         files = librosa.util.find_files(sep_folder)
         return files
 
-    def get_mixture_path(self):
+    def path(self):
         """Mixture? Target? Which one should I use?
         """
         file = os.path.join(self.ds_path, 'targets',
                             f'{self.n_sources}sources',
-                            self.target + '.wav')
+                            self.target_name + '.wav')
         return file

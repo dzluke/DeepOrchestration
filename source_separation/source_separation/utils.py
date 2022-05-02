@@ -2,7 +2,12 @@ import os
 
 import librosa
 import numpy as np
+import scipy.spatial
 
+
+def rm_extension(fname):
+    """Remove the file extension at the end of a string."""
+    return os.path.splitext(fname)[0]
 
 def remove_directory(path):
     for file in os.listdir(path):
@@ -90,12 +95,12 @@ def normalized_magnitude_spectrum(target, solution):
     :return: target normalized magnitude spectrum, solution normalized magnitude spectrum
     """
     # if the target is longer than the solution, must trim the target
-    if target.size > solution.size:
-        target = target[:solution.size]
-        N = next_power_of_2(target.size)
-    else:
-        N = next_power_of_2(solution.size)
-
+    # if target.size > solution.size:
+    #     target = target[:solution.size]
+    #     N = next_power_of_2(target.size)
+    # else:
+    #     N = next_power_of_2(solution.size)
+    N = 4096
     target_spectrum = np.abs(np.fft.rfft(target, N))
     solution_spectrum = np.abs(np.fft.rfft(solution, N))
 
@@ -107,7 +112,7 @@ def normalized_magnitude_spectrum(target, solution):
     return target_spectrum, solution_spectrum
 
 
-def cosine_similarity(target, solution):
+def cosine_distance(target, solution):
     """
     Calculates the cosine similarity between target and solution
     cosine_similarity(X, Y) = <X, Y> / (||X||*||Y||)
@@ -116,12 +121,14 @@ def cosine_similarity(target, solution):
     :return: scalar representing the similarity (distance)
     """
     target_spectrum, solution_spectrum = normalized_magnitude_spectrum(target, solution)
-    dot_product = np.dot(target_spectrum, solution_spectrum)
-    norms = np.linalg.norm(target_spectrum) * np.linalg.norm(solution_spectrum)
-    norms = norms if norms > 0 else 1
-    similarity = dot_product / norms
-    similarity = 1 - similarity
-    return similarity
+    # dot_product = np.dot(target_spectrum, solution_spectrum)
+    # norms = np.linalg.norm(target_spectrum) * np.linalg.norm(solution_spectrum)
+    # norms = norms if norms > 0 else 1
+    # similarity = dot_product / norms
+    # similarity = 1 - similarity
+    distance = scipy.spatial.distance.cosine(target_spectrum,
+                                             solution_spectrum)
+    return distance
 
 
 def spectral_distance(target, solution):
@@ -181,7 +188,8 @@ def frame_distance(custom_distance_metric):
         solution = librosa.util.fix_length(solution, size=length)
 
         frame_length = 4000  # 4000 samples ~ 90 ms
-        target_frames = librosa.util.frame(target, frame_length=frame_length,
+        target_frames = librosa.util.frame(target,
+                                           frame_length=frame_length,
                                            hop_length=frame_length,
                                            axis=0)
         solution_frames = librosa.util.frame(solution,
@@ -194,7 +202,7 @@ def frame_distance(custom_distance_metric):
         for i in range(target_frames.shape[0]):
             distance = custom_distance_metric(target_frames[i], solution_frames[i])
             distances.append(distance)
-            energy = np.sum(np.sqrt(np.square(target_frames[i])))
+            energy = np.sum(np.square(target_frames[i]))
             target_energy.append(energy)
         distances = np.array(distances)
         energy = np.array(target_energy)
@@ -202,3 +210,17 @@ def frame_distance(custom_distance_metric):
         return weighted_sum.item()
     return custom_distance
 
+def create_combinations(samples):
+    """
+    given a nested list of samples, create combinations.
+    example:
+        samples = [[s1, s2], [s3, s4]], where s1 through s4 are different samples
+        creates combinations [s1, s3], [s1, s4], [s2, s3], [s2, s4]
+        then it combines every list to be played simultaneously
+        and returns a list of length 4, where the first element is s1 and s3 played together, etc
+    :param samples: nested list
+    :return: list of combinations
+    """
+    combinations = itertools.product(*samples)
+    combinations = map(combine, combinations)
+    return list(combinations)

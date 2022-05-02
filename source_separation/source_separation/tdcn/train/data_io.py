@@ -19,8 +19,6 @@ import os
 import tensorflow.compat.v1 as tf
 
 
-
-
 class Features(object):
   """Feature keys."""
 
@@ -259,8 +257,8 @@ def wavs_to_dataset(file_list,
   # Read in wav files.
   def decode_wav(wav):
     audio_bytes = tf.read_file(wav)
-    waveform, _ = tf.audio.decode_wav(audio_bytes, desired_channels=1,
-                                      desired_samples=num_samples)
+    waveform, orig_sr = tf.audio.decode_wav(audio_bytes, desired_channels=1,
+                                            desired_samples=num_samples)
     waveform = tf.reshape(waveform, (1, num_samples))
     return waveform
 
