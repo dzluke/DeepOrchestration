@@ -6,7 +6,7 @@ import numpy as np
 import scipy.spatial
 
 
-def rm_extension(fname):
+def remove_extension(fname):
     """Remove the file extension at the end of a string."""
     return os.path.splitext(fname)[0]
 
