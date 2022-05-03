@@ -40,7 +40,7 @@ def create_targets(combinations, outdir, padding=False):
             )
             base = os.path.basename(path)
             name = os.path.splitext(base)[0]
-            sample_metadata = {"name": name, "path": path, "audio": sample}
+            sample_metadata = {"sample name": name, "audio": sample}
             samples.append(sample_metadata)
             if sample.size > longest_length:
                 longest_sample = sample_metadata
@@ -66,8 +66,8 @@ def create_targets(combinations, outdir, padding=False):
 
         # Combine samples into a single audio
         target = combine_with_offset(samples)
-        name = [sample_metadata["name"] for sample_metadata in samples]
-        name = "+".join(sorted(name))
+        name = [sample_metadata["sample name"] for sample_metadata in samples]
+        name = "&".join(sorted(name))
 
         # Add informations to metadata file
         for sample in samples:
@@ -79,10 +79,30 @@ def create_targets(combinations, outdir, padding=False):
         sf.write(target_fname, target, samplerate=config["audio"].getint("sample_rate"))
 
     # write metadata
-    metadata_file = os.path.join(outdir, "metadata.json")
+    metadata_file = os.path.join(outdir, "targets_metadata.json")
     with open(metadata_file, "w") as f:
         json.dump(metadata, f, indent=2)
 
+
+def main(ds_path, n_sources, num_targets):
+    targets_path = os.path.join(ds_path, "targets", f"{n_sources}sources")
+    Path(targets_path).mkdir(parents=True, exist_ok=True)
+    clear_directory(targets_path)
+    samples = librosa.util.find_files(os.path.join(ds_path, "samples"))
+
+    sample_paths = set()
+    if num_targets > comb(len(samples), n_sources):
+        raise ValueError("There are not enough samples to make that many combinations!")
+
+    while len(sample_paths) < num_targets:
+        paths = sample(samples, n_sources)
+        paths = sorted(paths)
+        paths = tuple(paths)  # you can't add lists to a set
+        sample_paths.add(paths)
+
+    print("Creating {} targets".format(len(sample_paths)))
+    create_targets(sample_paths, targets_path)
+    print("Done.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -101,20 +121,4 @@ if __name__ == "__main__":
     )
     args, _ = parser.parse_known_args()
 
-    targets_path = os.path.join(args.ds_path, "targets", f"{args.n_sources}sources")
-    Path(targets_path).mkdir(parents=True, exist_ok=True)
-    clear_directory(targets_path)
-    samples = librosa.util.find_files(os.path.join(args.ds_path, "samples"))
-    sample_paths = set()
-    if args.num_targets > comb(len(samples), args.n_sources):
-        raise ValueError("There are not enough samples to make that many combinations!")
-
-    while len(sample_paths) < args.num_targets:
-        paths = sample(samples, args.n_sources)
-        paths = sorted(paths)
-        paths = tuple(paths)  # you can't add lists to a set
-        sample_paths.add(paths)
-
-    print("Creating {} targets".format(len(sample_paths)))
-    create_targets(sample_paths, targets_path)
-    print("Done.")
+    main(args.ds_path, args.n_sources, args.num_targets)
