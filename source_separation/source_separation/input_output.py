@@ -1,8 +1,15 @@
 # This contains various I/O function
 import os
+from configparser import ConfigParser
 
 import librosa
 import numpy as np
+
+from utils import remove_extension
+
+# Get configuration
+config = ConfigParser(inline_comment_prefixes="#")
+config.read("config.ini")
 
 
 def load_audio_files(paths, sample_rate, normalize=True, paddings=None):
@@ -14,7 +21,9 @@ def load_audio_files(paths, sample_rate, normalize=True, paddings=None):
     """
     waveforms = []
     for i, file in enumerate(paths):
-        audio, _ = librosa.load(file, sr=sample_rate)
+        audio, _ = librosa.load(
+            file, sr=sample_rate, duration=config["targets"].getint("max_duration")
+        )
         if normalize:
             audio = librosa.util.normalize(audio)
         if paddings:
@@ -23,42 +32,41 @@ def load_audio_files(paths, sample_rate, normalize=True, paddings=None):
     return waveforms
 
 
-class Target:
-    """Inspired by MSAF
-    Holds every paths stuff for a given target.
+def rename_separated(target_file_struct, permutation, separation_method):
+    samples_paths = target_file_struct.get_samples_paths()
+    separated_paths = target_file_struct.get_separated_paths(separation_method)
+    separated_folder = os.path.dirname(separated_paths[0])
+
+    for i, sample in enumerate(samples_paths):
+        sample_name = remove_extension(os.path.basename(sample))
+        renamed_sep = os.path.join(separated_folder, sample_name + "_sep.wav")
+        os.rename(separated_paths[permutation[i]], renamed_sep)
+
+
+class TargetFileStruct:
+    """ Holds every paths for a given target.
+
+    Inspired by MSAF
     """
 
-    def __init__(self, ds_path, target_name, n_sources):
+    def __init__(self, ds_path, target_name, target_metadata):
         self.ds_path = ds_path
         self.name = target_name
-        self.n_sources = n_sources
-        self.target_metadata = 0  # target_metadata  #TODO: load metadata in json file
+        self.target_metadata = target_metadata
+        self.n_sources = len(target_metadata)
 
-    def get_samples_paths(self):
-        files = []
-        for data in self.target_metadata:
-            f = os.path.join(self.ds_path, "samples", data["name"] + ".wav")
-            files.append(f)
-        return files
-
-    def get_padding(self):
-        paddings = []
-        for data in self.target_metadata:
-            paddings.append(data["padding"])
-        return paddings
-
-    def get_separated_paths(self, separation_method):
-        sep_folder = os.path.join(
+    def get_path(self):
+        """Get path to the target file."""
+        file = os.path.join(
             self.ds_path,
-            "separated",
+            "targets",
             f"{self.n_sources}sources",
-            separation_method,
-            self.target_name,
+            self.target_name + ".wav",
         )
-        files = librosa.util.find_files(sep_folder)
-        return files
+        return file
 
-    def get_full_target_path(self):
+    def get_full_orch_path(self):
+        """Get path to the full orchestration of the target (no separation)."""
         path = os.path.join(
             self.ds_path,
             "orchestrated",
@@ -68,13 +76,30 @@ class Target:
         )
         return path
 
-    def get_path(self):
-        """Mixture? Target? Which one should I use?
-        """
-        file = os.path.join(
+    def get_samples_paths(self):
+        """Get paths to all samples used to create the target."""
+        files = []
+        for data in self.target_metadata:
+            f = os.path.join(self.ds_path, "samples", data["sample name"] + ".wav")
+            files.append(f)
+        return sorted(files)
+
+    def get_separated_paths(self, separation_method):
+        """Get paths of the separated waveforms outputted by separation_method."""
+        sep_folder = os.path.join(
             self.ds_path,
-            "targets",
+            "separated",
             f"{self.n_sources}sources",
-            self.target_name + ".wav",
+            separation_method,
+            self.name,
         )
-        return file
+        files = librosa.util.find_files(sep_folder)
+        assert len(files) == self.n_sources
+        return sorted(files)
+
+    def get_padding(self):
+        """Get the samples paddings used to create the target."""
+        paddings = []
+        for data in self.target_metadata:
+            paddings.append(data["padding"])
+        return paddings
