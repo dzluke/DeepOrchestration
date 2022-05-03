@@ -12,8 +12,9 @@ from shutil import copyfile
 import librosa
 import soundfile as sf
 from tqdm import tqdm
+from input_output import TargetFileStruct
 
-from utils import cosine_distance, frame_distance, set_config_parameter
+from utils import cosine_distance, frame_distance, set_config_parameter, remove_extension
 
 # Get configuration
 config = ConfigParser(inline_comment_prefixes="#")
@@ -75,19 +76,19 @@ def orchestrate_with_threshold(
     :return: list of solutions
     """
     orchestrations = []
-    save_path.mkdir(parents=True, exist_ok=True)
+    # save_path.mkdir(parents=True, exist_ok=True)
     for onset_threshold in thresholds:
-        save_name = "threshold" + str(onset_threshold)
-        save_name = save_name.replace(".", "_") + ".wav"
-        save_path = save_path / save_name
+        # save_name = "threshold" + str(onset_threshold)
+        # save_name = save_name.replace(".", "_") + ".wav"
+        # save_path = save_path / save_name
         if os.path.exists(save_path):
             # print("Found orchestration on disk")
             solution, _ = librosa.load(save_path, sr=sample_rate)
         else:
             set_config_parameter(config_path, "onsets_threshold", onset_threshold)
             solution = orchestrate(waveform)
-            sf.write(save_path, solution, samplerate=sample_rate)
-        save_path = save_path.parent
+            # sf.write(save_path, solution, samplerate=sample_rate)
+        # save_path = save_path.parent
         orchestrations.append(solution)
     return orchestrations
 
@@ -120,20 +121,20 @@ def compute_distances(distance_metric, target_waveform, orchestrations):
     return distances
 
 
-def do_one_target(target, n_sources, distance_metric):
+def orch_one_target(target_file_struct, n_sources, distance_metric):
 
     # Full target orchestration
     sample_rate = config["audio"].getint("sample_rate")
-    target_waveform = librosa.load(target.get_path(), sr=sample_rate)
+    target_waveform = librosa.load(target_file_struct.get_path(), sr=sample_rate)
     orchestrations = orchestrate_with_threshold(
         target_waveform,
-        config["paths"]["save_path"],
+        os.path.join(target_file_struct.get_orch_folder, 'full_target.wav'),
         config["orchestration"]["thresholds"].split(", "),
         config["paths"]["config_path"],
         sample_rate,
     )
     distances = compute_distances(distance_metric, target_waveform, orchestrations)
-    filename = target.get_full_target_path()
+    filename = target_file_struct.get_full_target_path()
     save_best_orchestration(orchestrations, distances, filename)
 
     # Divide the full orchestra into n_sources orchestras
@@ -142,7 +143,7 @@ def do_one_target(target, n_sources, distance_metric):
     )
 
     # Ground truth orchestration
-    for idx, sample in enumerate(target.get_samples_paths()):
+    for idx, sample in enumerate(target_file_struct.get_samples_paths()):
         sample_waveform = librosa.load(sample, sr=sample_rate)
         set_config_parameter(
             config["paths"]["config_path"], "orchestra", sub_orchestras[idx]
@@ -160,7 +161,9 @@ def do_one_target(target, n_sources, distance_metric):
 
     # Separated orchestration
     for separation_method in config["separation"]["methods"].split(", "):
-        for idx, sample in enumerate(target.get_separated_paths(separation_method)):
+        for idx, sample in enumerate(
+            target_file_struct.get_separated_paths(separation_method)
+        ):
             sample_waveform = librosa.load(sample, sr=sample_rate)
             set_config_parameter(
                 config["paths"]["config_path"], "orchestra", sub_orchestras[idx]
@@ -346,10 +349,14 @@ def do_one_target(target, n_sources, distance_metric):
 
 
 def main(ds_path, n_sources):
-    targets = librosa.util.find_files(ds_path, "targets", f"{n_sources}sources")
+    targets_paths = os.path.join(ds_path, "targets", f"{n_sources}sources")
+    targets_files = librosa.util.find_files(targets_paths)
     distance_metric = frame_distance(cosine_distance)
-    for target in tqdm(targets):
-        do_one_target(target, n_sources, distance_metric)
+
+    for fname in tqdm(targets_files):
+        target_name = remove_extension(os.path.basename(fname))
+        target_file_struct = TargetFileStruct(ds_path, target_name, n_sources=n_sources)
+        orch_one_target(target_file_struct, n_sources, distance_metric)
 
 
 if __name__ == "__main__":
