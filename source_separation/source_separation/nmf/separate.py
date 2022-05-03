@@ -3,7 +3,7 @@ from pathlib import Path
 
 import librosa as lr
 import numpy as np
-import soundfile as sf
+import librosa
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
@@ -58,14 +58,15 @@ def get_sources (mix, n_sources=4, components=32, fft_size=4096, hoplen=512):
     return W, H, clusters.labels_, sources
 
 
-def separate(in_path, out_path, n_sources=4, components=32):
-    out_path = Path(out_path)
-    mix, sr = sf.read(in_path)
+def separate(in_path, sample_rate, n_sources=4, components=32):
+    # mix, sr = sf.read(in_path)
+    mix, _ = librosa.load(in_path, sr=sample_rate)
     W, H, labels, sources = get_sources(mix,
                                         n_sources=n_sources,
                                         components=components,
                                         fft_size=FFT_SIZE,
                                         hoplen=HOPLEN)
-    out_path.mkdir(parents=True, exist_ok=True)
-    for s in range (n_sources):
-        sf.write(out_path.joinpath('source_' + str (s) + '.wav'), sources[s], sr)
+    # out_path.mkdir(parents=True, exist_ok=True)
+    # for s in range(n_sources):
+    #     sf.write(out_path.joinpath('source_' + str (s) + '.wav'), sources[s], sr)
+    return sources
