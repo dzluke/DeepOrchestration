@@ -60,14 +60,16 @@ def evaluate_separation(metadata_path, ds_path, results_file, rename_files=True)
     results = init_results_dict(results_file)
 
     # Evaluate each target
-    for idx, target in enumerate(tqdm(metadata)):
-        if target in results:
+    for idx, target_name in enumerate(tqdm(metadata)):
+        if target_name in results:
             continue  # skip if this target has already been evaluated
 
-        print("{}/{} Evaluating results for {}".format(idx, len(metadata), target))
-        target_file_struct = TargetFileStruct(ds_path, target, metadata[target])
+        print("{}/{} Evaluating results for {}".format(idx, len(metadata), target_name))
+        target_file_struct = TargetFileStruct(
+            ds_path, target_name, target_metadata=metadata[target_name]
+        )
 
-        results[target] = eval_target(target_file_struct, separation_methods)
+        results[target_name] = eval_target(target_file_struct, separation_methods)
         with open(results_file, "w") as f:
             json.dump(results, f, indent=2)
 
@@ -75,8 +77,8 @@ def evaluate_separation(metadata_path, ds_path, results_file, rename_files=True)
             for method in separation_methods:
                 rename_separated(
                     target_file_struct,
-                    permutation=results[target][method]["permutation"],
-                    separation_method=method
+                    permutation=results[target_name][method]["permutation"],
+                    separation_method=method,
                 )
 
     prints_results(separation_methods, results)

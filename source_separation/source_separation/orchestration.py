@@ -21,20 +21,28 @@ config = ConfigParser(inline_comment_prefixes="#")
 config.read("config.ini")
 
 
-def orchestrate(target, sample_rate, config_path):
+def orchestrate_waveform(waveform, sample_rate, orch_config_path):
     """
     Orchestrate 'target' using Orchidea
     :param target: sound file as numpy array, shape (len,)
     :return: orchestrated solution as numpy array, shape (len,)
     """
-    sf.write("target.wav", target, sample_rate)
+    sf.write("target.wav", waveform, sample_rate)
     if config["orchestration"].getboolean("darling"):
-        cmd = ["darling", "shell", "./orchestrate", "target.wav", config_path]
+        cmd = ["darling", "shell", "./orchestrate", "target.wav", orch_config_path]
     else:
-        cmd = ["./orchestrate", "target.wav", config_path]
+        cmd = ["./orchestrate", "target.wav", orch_config_path]
     subprocess.run(cmd, stdout=subprocess.DEVNULL)  # this suppresses output
     solution, _ = librosa.load("connection.wav", sr=sample_rate)
     return solution
+
+
+def orchestrate_file(file, orch_config_path):
+
+    cmd = ["darling", "shell"] if config['orchestration'].getboolean("darling") else []
+    cmd += [os.path.join(config['paths']['orchidea'], "orchestrate"),
+            file, orch_config_path]
+    subprocess.run(cmd, stdout=subprocess.DEVNULL)
 
 
 def assign_orchestras(num_orchestras, full_orchestra):
@@ -86,7 +94,7 @@ def orchestrate_with_threshold(
             solution, _ = librosa.load(save_path, sr=sample_rate)
         else:
             set_config_parameter(config_path, "onsets_threshold", onset_threshold)
-            solution = orchestrate(waveform)
+            solution = orchestrate_waveform(waveform)
             # sf.write(save_path, solution, samplerate=sample_rate)
         # save_path = save_path.parent
         orchestrations.append(solution)
@@ -121,7 +129,7 @@ def compute_distances(distance_metric, target_waveform, orchestrations):
     return distances
 
 
-def orch_one_target(target_file_struct, n_sources, distance_metric):
+def process_target(target_file_struct, n_sources, distance_metric):
 
     # Full target orchestration
     sample_rate = config["audio"].getint("sample_rate")
@@ -356,7 +364,7 @@ def main(ds_path, n_sources):
     for fname in tqdm(targets_files):
         target_name = remove_extension(os.path.basename(fname))
         target_file_struct = TargetFileStruct(ds_path, target_name, n_sources=n_sources)
-        orch_one_target(target_file_struct, n_sources, distance_metric)
+        process_target(target_file_struct, n_sources, distance_metric)
 
 
 if __name__ == "__main__":

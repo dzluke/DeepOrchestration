@@ -49,11 +49,16 @@ class TargetFileStruct:
     Inspired by MSAF
     """
 
-    def __init__(self, ds_path, target_name, target_metadata):
+    def __init__(self, ds_path, target_name, target_metadata=None, n_sources=None):
         self.ds_path = ds_path
-        self.name = target_name
-        self.target_metadata = target_metadata
-        self.n_sources = len(target_metadata)
+        self.target_name = target_name
+
+        assert target_metadata or n_sources
+        if target_metadata:
+            self.target_metadata = target_metadata
+            self.n_sources = len(target_metadata)
+        else:
+            self.n_sources = n_sources
 
     def get_path(self):
         """Get path to the target file."""
@@ -84,6 +89,13 @@ class TargetFileStruct:
             files.append(f)
         return sorted(files)
 
+    def get_padding(self):
+        """Get the samples paddings used to create the target."""
+        paddings = []
+        for data in self.target_metadata:
+            paddings.append(data["padding"])
+        return paddings
+
     def get_separated_paths(self, separation_method):
         """Get paths of the separated waveforms outputted by separation_method."""
         sep_folder = os.path.join(
@@ -91,15 +103,14 @@ class TargetFileStruct:
             "separated",
             f"{self.n_sources}sources",
             separation_method,
-            self.name,
+            self.target_name,
         )
         files = librosa.util.find_files(sep_folder)
         assert len(files) == self.n_sources
         return sorted(files)
 
-    def get_padding(self):
-        """Get the samples paddings used to create the target."""
-        paddings = []
-        for data in self.target_metadata:
-            paddings.append(data["padding"])
-        return paddings
+    def get_orch_folder(self):
+        orch_folder = os.path.join(
+            self.ds_path, "orchestrated", f"{self.n_sources}sources", self.target_name
+        )
+        return orch_folder

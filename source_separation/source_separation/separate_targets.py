@@ -4,6 +4,7 @@ import warnings
 from argparse import ArgumentParser
 from configparser import ConfigParser
 
+import numpy as np
 import soundfile as sf
 from librosa.util import find_files
 from tqdm import tqdm
@@ -31,18 +32,23 @@ def separate(method, target_fname, outdir, n_sources):
         import open_unmix.separate as open_unmix
         open_unmix.separate(target_fname, outdir)
     elif method == "TDCN++":
-        warnings.warn("This is deprecated", DeprecationWarning)
         import tdcn.separate as tdcn
         tdcn_model_path = config["paths"]["tdcn_model"]
         ckpt = os.path.join(tdcn_model_path, "baseline_model")
         mtgph = os.path.join(tdcn_model_path, "baseline_inference.meta")
-        tdcn.separate(
+        separated_waveforms = tdcn.separate(
             target_fname,
             outdir,
             ckpt,
             mtgph,
             target_sr=config["audio"].getint("sample_rate"),
         )
+        if n_sources !=4:
+            # Select the best ones!
+            sep_powers = np.mean(separated_waveforms**2, axis=-1)
+            # Get the n_sources waveforms that have the more power
+            max_indices = sep_powers.argsort()[-n_sources:][::-1]
+            separated_waveforms = separated_waveforms[max_indices]
 
     # Save the waveforms
     out_path = Path(outdir)
