@@ -35,16 +35,21 @@ def eval_target(target_file_struct, separation_models):
         )
         separated_waveforms = np.stack(separated_waveforms)
 
+        # NB: estimated source number perm[j] corresponds to true source number j
         sdr, sir, sar, perm = mir_eval.separation.bss_eval_sources(
             source_waveforms, separated_waveforms
         )
-        # NB: estimated source number perm[j] corresponds to true source number j
+
+        # Compute RMS
+        sep_rms = np.sqrt(np.mean(separated_waveforms ** 2, axis=-1))
+
         print("\t{}\t Average SDR: {}".format(model, np.mean(sdr)))
         results[model] = {
             "sdr": str(np.mean(sdr)),
             "sir": str(np.mean(sir)),
             "sar": str(np.mean(sar)),
             "permutation": perm.tolist(),
+            "rms": sep_rms.tolist(),
         }
     return results
 
@@ -110,7 +115,9 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("ds_path", type=str)
     parser.add_argument(
-        "--n-sources", type=int, default=config["separation"].getint("n_sources"),
+        "--n-sources",
+        type=int,
+        default=config["separation"].getint("n_sources"),
     )
     args, _ = parser.parse_known_args()
 
@@ -119,6 +126,7 @@ if __name__ == "__main__":
     )
     outdir = os.path.join(args.ds_path, "separated", f"{args.n_sources}sources")
     Path(outdir).mkdir(parents=True, exist_ok=True)
+
     results_file = os.path.join(outdir, RESULTS_FNAME)
 
     evaluate_separation(metadata_file, args.ds_path, results_file)
