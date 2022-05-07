@@ -85,15 +85,19 @@ class TargetFileStruct:
         """Get paths to all samples used to create the target."""
         files = []
         for data in self.target_metadata:
-            f = os.path.join(self.ds_path, "samples", data["sample name"] + ".wav")
+            f = os.path.join(self.ds_path, "samples", data["name"] + ".wav")
             files.append(f)
         return sorted(files)
 
     def get_padding(self):
         """Get the samples paddings used to create the target."""
-        paddings = []
-        for data in self.target_metadata:
-            paddings.append(data["padding"])
+        paddings = [[] for i in range(self.n_sources)]
+        # We have a problem, we need to make sure that the paddings are aligned with the correct
+        # sample. (this is a problem only with previous versions of the dataset)
+        args_sorted_samples = np.argsort([s['name'] for s in self.target_metadata])
+        for i, data in enumerate(self.target_metadata):
+            # paddings.append(data["padding"])
+            paddings[args_sorted_samples[i]] = data['padding']
         return paddings
 
     def get_separated_paths(self, separation_method):
@@ -104,7 +108,7 @@ class TargetFileStruct:
             f"{self.n_sources}sources",
             separation_method,
             self.target_name,
-        )
+        ).replace('*', '_')
         files = librosa.util.find_files(sep_folder)
         assert len(files) == self.n_sources
         return sorted(files)
