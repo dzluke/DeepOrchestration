@@ -6,6 +6,7 @@ from configparser import ConfigParser
 from pathlib import Path
 
 import mir_eval
+import museval
 import numpy as np
 from tqdm import tqdm
 
@@ -25,7 +26,10 @@ def eval_target(target_file_struct, separation_models):
         normalize=True,
         paddings=target_file_struct.get_padding(),
     )
-    source_waveforms = np.stack(source_waveforms)
+    try:
+        source_waveforms = np.stack(source_waveforms)
+    except ValueError:
+        return {}
 
     # Evaluate for each separation model
     results = {}
@@ -36,7 +40,7 @@ def eval_target(target_file_struct, separation_models):
         separated_waveforms = np.stack(separated_waveforms)
 
         # NB: estimated source number perm[j] corresponds to true source number j
-        sdr, sir, sar, perm = mir_eval.separation.bss_eval_sources(
+        sdr, _, sir, sar, perm = museval.metrics.bss_eval(
             source_waveforms, separated_waveforms
         )
 
@@ -66,6 +70,8 @@ def evaluate_separation(metadata_path, ds_path, results_file, rename_files=True)
 
     # Evaluate each target
     for idx, target_name in enumerate(tqdm(metadata)):
+        if idx == 180:
+            break
         if target_name in results:
             continue  # skip if this target has already been evaluated
 
@@ -78,14 +84,13 @@ def evaluate_separation(metadata_path, ds_path, results_file, rename_files=True)
         with open(results_file, "w") as f:
             json.dump(results, f, indent=2)
 
-        if rename_files:
-            for method in separation_methods:
-                rename_separated(
-                    target_file_struct,
-                    permutation=results[target_name][method]["permutation"],
-                    separation_method=method,
-                )
-
+        # if rename_files:
+        #     for method in separation_methods:
+        #         rename_separated(
+        #             target_file_struct,
+        #             permutation=results[target_name][method]["permutation"],
+        #             separation_method=method,
+        #         )
     prints_results(separation_methods, results)
 
 
@@ -102,7 +107,10 @@ def prints_results(separation_models, results):
     average_results = {model: [] for model in separation_models}
     for target in results:
         for model in separation_models:
-            average_results[model].append(results[target][model]["sdr"])
+            try:
+                average_results[model].append(results[target][model]["sdr"])
+            except KeyError:
+                print("Error on ", target)
     print("Results over all targets:")
     for model in separation_models:
         print(model, np.mean([float(i) for i in average_results[model]]))
